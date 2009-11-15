@@ -1,0 +1,251 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_BKBTL               ICON                    "BKBTL.ico"
+IDI_SMALL               ICON                    "small.ico"
+IDI_DISKETTE            ICON                    "diskette.ico"
+IDI_DISKETTEWP          ICON                    "diskettewp.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDC_BKBTL MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "Load State…",                 ID_FILE_LOADSTATE, INACTIVE
+        MENUITEM "Save State…",                 ID_FILE_SAVESTATE, INACTIVE
+        MENUITEM SEPARATOR
+        MENUITEM "Screenshot",                  ID_FILE_SCREENSHOT, INACTIVE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tAlt+F4",               IDM_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Toolbar",                     ID_VIEW_TOOLBAR
+        MENUITEM "Debug",                       ID_VIEW_DEBUG
+        MENUITEM "Keyboard",                    ID_VIEW_KEYBOARD
+        MENUITEM "Tape",                        32803, INACTIVE
+        MENUITEM SEPARATOR
+        MENUITEM "RGB Screen",                  ID_VIEW_RGBSCREEN, INACTIVE
+        MENUITEM "Grayscale Screen",            ID_VIEW_GRAYSCREEN, INACTIVE
+        MENUITEM SEPARATOR
+        MENUITEM "Normal Height",               ID_VIEW_NORMALHEIGHT
+        MENUITEM "Double Height",               ID_VIEW_DOUBLEHEIGHT
+    END
+    POPUP "&Emulator"
+    BEGIN
+        MENUITEM "Run\tF5",                     ID_EMULATOR_RUN
+        MENUITEM "Step\tF8",                    ID_EMULATOR_STEP
+        MENUITEM "Reset",                       ID_EMULATOR_RESET
+        MENUITEM SEPARATOR
+        MENUITEM "Sound",                       ID_EMULATOR_SOUND, INACTIVE
+        MENUITEM "Autostart",                   ID_EMULATOR_AUTOSTART
+    END
+    POPUP "&Drives"
+    BEGIN
+        MENUITEM "Floppy A:",                   ID_EMULATOR_FLOPPY0, INACTIVE
+        MENUITEM "Floppy B:",                   ID_EMULATOR_FLOPPY1, INACTIVE
+        MENUITEM "Floppy C:",                   ID_EMULATOR_FLOPPY2, INACTIVE
+        MENUITEM "Floppy D:",                   ID_EMULATOR_FLOPPY3, INACTIVE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      IDM_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDC_BKBTL ACCELERATORS 
+BEGIN
+    VK_F5,          ID_EMULATOR_RUN,        VIRTKEY, NOINVERT
+    VK_F8,          ID_EMULATOR_STEP,       VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 22, 17, 280, 153
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CAPTION | WS_SYSMENU
+CAPTION "About"
+FONT 8, "MS Shell Dlg", 400, 0, 0xCC
+BEGIN
+    LTEXT           "BKBTL Version 1.0",IDC_STATIC,10,10,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2009",IDC_STATIC,10,20,119,8
+    DEFPUSHBUTTON   "OK",IDOK,211,10,57,15,WS_GROUP
+    LTEXT           "Authors:\r\nNikita Zeemin (nzeemin@gmail.com)",IDC_STATIC,10,57,174,36
+    LTEXT           "Build date:",IDC_STATIC,10,120,53,8
+    LTEXT           "????",IDC_BUILDDATE,71,120,139,8
+END
+
+IDD_INPUTBOX DIALOGEX 0, 0, 309, 48
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,245,7,57,14
+    PUSHBUTTON      "Cancel",IDCANCEL,246,24,57,14
+    LTEXT           "Caption:",IDC_STATIC,7,7,216,8
+    EDITTEXT        IDC_EDIT1,7,17,216,14,ES_AUTOHSCROLL
+END
+
+IDD_CREATEDISK DIALOGEX 60, 40, 178, 98
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0xCC
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,67,77,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,121,77,50,14
+    CONTROL         "40 tracks",IDC_TRACKS40,"Button",BS_AUTORADIOBUTTON | WS_GROUP,6,18,45,10
+    CONTROL         "80 tracks",IDC_TRACKS80,"Button",BS_AUTORADIOBUTTON,6,30,45,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        BOTTOMMARGIN, 141
+        HORZGUIDE, 10
+    END
+
+    IDD_INPUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 41
+    END
+
+    IDD_CREATEDISK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 171
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 91
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_KEYBOARD            BITMAP                  "keyboard.bmp"
+IDB_TOOLBAR             BITMAP                  "Toolbar.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_TITLE           "BK Back to Life"
+    IDC_BKBTL               "BKBTL"
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

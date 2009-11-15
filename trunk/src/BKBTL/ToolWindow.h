@@ -1,0 +1,16 @@
+// ToolWindow.h
+
+#pragma once
+
+
+//////////////////////////////////////////////////////////////////////
+
+
+const LPCTSTR CLASSNAME_TOOLWINDOW = _T("BKBTLTOOLWINDOW");
+
+void ToolWindow_RegisterClass();
+LRESULT CALLBACK ToolWindowWndProc(HWND, UINT, WPARAM, LPARAM);
+
+
+//////////////////////////////////////////////////////////////////////
+
