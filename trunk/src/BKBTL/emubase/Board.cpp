@@ -72,8 +72,8 @@ void CMotherboard::Reset ()
     m_timerdivider = 0;
 
     m_Port177660 = 0100;
-    m_Port177662 = 0;
-    m_Port177664 = 0330;
+    m_Port177662rd = m_Port177662wr = 0;
+    m_Port177664 = 0;
     m_Port177716 = 0140200;
 
     m_pCPU->Start();
@@ -154,18 +154,12 @@ BYTE CMotherboard::GetROMByte(WORD offset)
 
 //////////////////////////////////////////////////////////////////////
 
-void CMotherboard::Tick8000 ()
-{
-    m_pCPU->Execute();
-}
-void CMotherboard::Tick6250 ()
-{
-    //m_pPPU->Execute();
-}
 void CMotherboard::Tick50 ()
 {
-	//if((m_pPPU->GetMemoryController()->GetPortView(0177054)&01000)==0)
-		m_pCPU->TickEVNT();
+    if ((m_Port177662wr & 040000) != 0)
+    {
+        m_pCPU->TickEVNT();
+    }
 }
 
 void CMotherboard::ExecuteCPU ()
@@ -307,10 +301,10 @@ BOOL CMotherboard::SystemFrame()
     {
         //TimerTick();  // System timer tick
 
-        //if (frameticks % 10000 == 0)  // EVNT
-        //{
-        //    Tick50();  // 1/50 timer event
-        //}
+        if (frameticks % 10000 == 0)  // EVNT
+        {
+            Tick50();  // 1/50 timer event
+        }
 
         for (int procticks = 0; procticks < 8; procticks++)  // CPU - 8 times
         {
@@ -335,7 +329,7 @@ void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed)
 
     if ((m_Port177660 & 0200) == 0)
     {
-        m_Port177662 = scancode;
+        m_Port177662rd = scancode;
         m_Port177660 |= 0200;
         if ((m_Port177660 & 0100) == 0100)
         {
@@ -505,7 +499,7 @@ WORD CMotherboard::GetPortWord(WORD address)
 
     case 0177662:  // Keyboard register
         m_Port177660 &= ~0200;  // Reset "Ready" bit
-        return m_Port177662;
+        return m_Port177662rd;
 
     case 0177664:  // Scroll register
         return m_Port177664;
@@ -533,10 +527,10 @@ WORD CMotherboard::GetPortView(WORD address)
 {
     switch (address) {
     case 0177660:  // Keyboard status register
-        return 0;  //TODO
+        return m_Port177660;
 
     case 0177662:  // Keyboard data register
-        return 0;  //TODO
+        return m_Port177662rd;
 
     case 0177664:  // Scroll register
         return m_Port177664;
@@ -579,11 +573,11 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         break;
 
     case 0177662:  // Palette register
-        //TODO
+        m_Port177662wr = word;
         break;
 
     case 0177664:  // Scroll register
-        m_Port177664 = word;
+        m_Port177664 = word & 01377;
         break;
 
     case 0177714:  // Parallel port register

@@ -83,9 +83,7 @@ public:  // System control
     void        Reset();  // Reset computer
     void        LoadROM(int bank, const BYTE* pBuffer);  // Load 8 KB ROM image from the biffer
     void        LoadRAM(const BYTE* pBuffer);  // Load 32 KB RAM image from the biffer
-    void        Tick8000();  // Tick 8.00 MHz
-    void        Tick6250();  // Tick 6.25 MHz
-    void        Tick50();    // Tick 50 Hz - goes to CPU/PPU EVNT line
+    void        Tick50();    // Tick 50 Hz - goes to CPU EVNT line
 	void		TimerTick();		// Timer Tick, 2uS -- dividers are within timer routine
 	WORD		GetTimerValue();	// returns current timer value
 	WORD		GetTimerValueView() { return m_timer; }	// Returns current timer value for debugger
@@ -152,7 +150,8 @@ protected:  // Access to I/O ports
     void SetPortByte(WORD address, BYTE byte);
 protected:  // Memory: implementation
     WORD        m_Port177660;  // Keyboard status register
-    WORD        m_Port177662;  // Keyboard register
+    WORD        m_Port177662rd;  // Keyboard register
+    WORD        m_Port177662wr;  // Palette register
     WORD        m_Port177664;  // Scroll register
     WORD        m_Port177716;  // System register
 
