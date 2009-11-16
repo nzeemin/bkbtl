@@ -63,8 +63,6 @@ void CMotherboard::Reset ()
 
     //m_pFloppyCtl->Reset();
 
-    m_cputicks = 0;
-    m_pputicks = 0;
     m_lineticks = 0;
     m_timer = 0;
     m_timerreload = 0;
@@ -75,6 +73,7 @@ void CMotherboard::Reset ()
     m_Port177662rd = m_Port177662wr = 0;
     m_Port177664 = 0;
     m_Port177716 = 0140200;
+    m_Port177716mem = m_Port177716tap = 0;
 
     m_pCPU->Start();
 }
@@ -539,7 +538,7 @@ WORD CMotherboard::GetPortView(WORD address)
         return 0;  //TODO
 
     case 0177716:  // System register
-        return 0140200;  //TODO
+        return m_Port177716;
 
         default:
             return 0;
@@ -585,7 +584,14 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         break;
 
     case 0177716:  // System register - memory management, tape management
-        //TODO
+        if ((word & 04000) != 0)
+        {
+            m_Port177716mem = word;
+        }
+        else
+        {
+            m_Port177716tap = word;
+        }
         break;
 
 	default:
