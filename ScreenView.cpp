@@ -249,10 +249,17 @@ void ScreenView_PrepareScreen()
 {
     if (m_bits == NULL) return;
 
+    // Get scroll value
+    WORD scroll = g_pBoard->GetPortView(0177664);
+    BOOL okSmallScreen = ((scroll & 01000) == 0);
+    scroll &= 0377;
+    scroll = (scroll >= 0330) ? scroll - 0330 : 050 + scroll;
+
     //NOTE: Реализован только черно-белый видеорежим 512 x 256
-    WORD addressBits = 040000;
     for (int y = 0; y < 256; y++)
     {
+        int yy = (y + scroll) & 0377;
+        WORD addressBits = 040000 + yy * 0100;
         DWORD* pBits = m_bits + (256 - 1 - y) * 512;
         for (int x = 0; x < 512 / 16; x++)
         {
