@@ -71,6 +71,8 @@ void CMotherboard::Reset ()
     m_timerflags = 0;
     m_timerdivider = 0;
 
+    m_Port177660 = 0100;
+    m_Port177662 = 0;
     m_Port177664 = 0330;
     m_Port177716 = 0140200;
 
@@ -329,8 +331,18 @@ BOOL CMotherboard::SystemFrame()
 // Key pressed or released
 void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed)
 {
-    //CSecondMemoryController* pMemCtl = (CSecondMemoryController*) m_pSecondMemCtl;
-    //pMemCtl->KeyboardEvent(scancode, okPressed);
+    if (!okPressed) return;
+
+    if ((m_Port177660 & 0200) == 0)
+    {
+        m_Port177662 = scancode;
+        m_Port177660 |= 0200;
+        if ((m_Port177660 & 0100) == 0100)
+        {
+            m_pCPU->InterruptVIRQ(1, 060);
+            //TODO: Interrupt 60/270
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -489,10 +501,11 @@ WORD CMotherboard::GetPortWord(WORD address)
     switch (address)
     {
     case 0177660:  // Keyboard status register
-        return 0;  //TODO
+        return m_Port177660;
 
     case 0177662:  // Keyboard register
-        return 0;  //TODO
+        m_Port177660 &= ~0200;  // Reset "Ready" bit
+        return m_Port177662;
 
     case 0177664:  // Scroll register
         return m_Port177664;

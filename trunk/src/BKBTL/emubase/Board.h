@@ -151,6 +151,8 @@ protected:  // Access to I/O ports
     BYTE GetPortByte(WORD address);
     void SetPortByte(WORD address, BYTE byte);
 protected:  // Memory: implementation
+    WORD        m_Port177660;  // Keyboard status register
+    WORD        m_Port177662;  // Keyboard register
     WORD        m_Port177664;  // Scroll register
     WORD        m_Port177716;  // System register
 
