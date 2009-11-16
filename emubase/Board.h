@@ -58,11 +58,9 @@ public:  // Construct / destruct
 
 protected:  // Devices
     CProcessor*     m_pCPU;  // CPU device
-    //CMemoryController*  m_pMemCtl;  // CPU memory control
     //CFloppyController*  m_pFloppyCtl;  // FDD control
 public:  // Getting devices
     CProcessor*     GetCPU() { return m_pCPU; }
-    //CMemoryController*  GetMemoryController() { return m_pMemCtl; }
 
 protected:  // Memory
     BYTE*       m_pRAM;  // RAM, 64 KB
@@ -77,7 +75,6 @@ public:  // Memory access
 public:  // Debug
     void        DebugTicks();  // One Debug PPU tick -- use for debug step or debug breakpoint
     void        SetCPUBreakpoint(WORD bp) { m_CPUbp = bp; } // Set CPU breakpoint
-    void        SetPPUBreakpoint(WORD bp) { m_PPUbp = bp; } // Set PPU breakpoint
 
 public:  // System control
     void        Reset();  // Reset computer
@@ -148,12 +145,14 @@ protected:  // Access to I/O ports
     void SetPortWord(WORD address, WORD word);
     BYTE GetPortByte(WORD address);
     void SetPortByte(WORD address, BYTE byte);
-protected:  // Memory: implementation
-    WORD        m_Port177660;  // Keyboard status register
-    WORD        m_Port177662rd;  // Keyboard register
-    WORD        m_Port177662wr;  // Palette register
-    WORD        m_Port177664;  // Scroll register
-    WORD        m_Port177716;  // System register
+protected:  // Ports: implementation
+    WORD        m_Port177660;       // Keyboard status register
+    WORD        m_Port177662rd;     // Keyboard register
+    WORD        m_Port177662wr;     // Palette register
+    WORD        m_Port177664;       // Scroll register
+    WORD        m_Port177716;       // System register (read only)
+    WORD        m_Port177716mem;    // System register (memory)
+    WORD        m_Port177716tap;    // System register (tape)
 
 public:  // Saving/loading emulator status
     //void        SaveToImage(BYTE* pImage);
@@ -164,12 +163,9 @@ private: // Timing
 	int freq_per[6];
 	int freq_out[6];
 	int freq_enable[6];
-    int m_pputicks;
-    int m_cputicks;
     unsigned int m_lineticks;
 private:
     WORD        m_CPUbp;
-    WORD        m_PPUbp;
 	WORD		m_timer;
 	WORD		m_timerreload;
 	WORD		m_timerflags;

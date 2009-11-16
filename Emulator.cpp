@@ -16,7 +16,6 @@ CMotherboard* g_pBoard = NULL;
 BOOL g_okEmulatorRunning = FALSE;
 
 WORD m_wEmulatorCPUBreakpoint = 0177777;
-WORD m_wEmulatorPPUBreakpoint = 0177777;
 
 BOOL m_okEmulatorSound = FALSE;
 
@@ -29,8 +28,6 @@ BYTE* g_pEmulatorRam;  // RAM values - for change tracking
 BYTE* g_pEmulatorChangedRam;  // RAM change flags
 WORD g_wEmulatorCpuPC = 0177777;      // Current PC value
 WORD g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
-WORD g_wEmulatorPpuPC = 0177777;      // Current PC value
-WORD g_wEmulatorPrevPpuPC = 0177777;  // Previous PC value
 
 
 //////////////////////////////////////////////////////////////////////
@@ -163,7 +160,6 @@ void Emulator_Stop()
 {
     g_okEmulatorRunning = FALSE;
     m_wEmulatorCPUBreakpoint = 0177777;
-    m_wEmulatorPPUBreakpoint = 0177777;
 
     // Reset title bar message
     SetWindowText(g_hwnd, _T("BK Back to Life [stop]"));
@@ -190,10 +186,7 @@ void Emulator_SetCPUBreakpoint(WORD address)
 {
     m_wEmulatorCPUBreakpoint = address;
 }
-void Emulator_SetPPUBreakpoint(WORD address)
-{
-    m_wEmulatorPPUBreakpoint = address;
-}
+
 BOOL Emulator_IsBreakpoint()
 {
     WORD wCPUAddr = g_pBoard->GetCPU()->GetPC();
@@ -224,7 +217,6 @@ void Emulator_SetSound(BOOL soundOnOff)
 int Emulator_SystemFrame()
 {
     g_pBoard->SetCPUBreakpoint(m_wEmulatorCPUBreakpoint);
-    g_pBoard->SetPPUBreakpoint(m_wEmulatorPPUBreakpoint);
 
     ScreenView_ScanKeyboard();
     

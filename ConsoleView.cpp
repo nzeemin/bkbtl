@@ -18,7 +18,6 @@ HWND m_hwndConsoleLog = (HWND) INVALID_HANDLE_VALUE;  // Console log window - re
 HWND m_hwndConsoleEdit = (HWND) INVALID_HANDLE_VALUE;  // Console prompt - edit control
 HFONT m_hfontConsole = NULL;
 WNDPROC m_wndprocConsoleEdit = NULL;  // Old window proc address of the console prompt
-BOOL m_okCurrentProc = FALSE;  // Current processor: TRUE - CPU, FALSE - PPU
 
 CProcessor* ConsoleView_GetCurrentProcessor();
 void ClearConsole();
@@ -509,16 +508,8 @@ void DoConsoleCommand()
                 ConsoleView_Print(MESSAGE_WRONG_VALUE);
             else
             {
-                if (m_okCurrentProc)
-                {
-                    Emulator_SetCPUBreakpoint(value);
-                    Emulator_Start();
-                }
-                else
-                {
-                    Emulator_SetPPUBreakpoint(value);
-                    Emulator_Start();
-                }
+                Emulator_SetCPUBreakpoint(value);
+                Emulator_Start();
             }
         }
         break;
