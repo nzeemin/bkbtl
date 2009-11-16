@@ -89,11 +89,6 @@ public:  // System control
 	WORD		GetTimerState();	// returns timer state
 	WORD		GetTimerStateView() { return m_timerflags; } // Returns timer state for debugger
 
-	void		ChanWriteByCPU(BYTE chan, BYTE data);
-	void		ChanWriteByPPU(BYTE chan, BYTE data);
-	BYTE		ChanReadByCPU(BYTE chan);
-	BYTE		ChanReadByPPU(BYTE chan);
-
 	//void		FloppyDebug(BYTE val);
 
 	void		SetTimerReload(WORD val);	//sets timer reload value
