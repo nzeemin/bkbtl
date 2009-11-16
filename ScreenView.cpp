@@ -59,21 +59,6 @@ yrgb  R   G   B  0xRRGGBB
 1111 255 255 255 0xFFFFFF
 */
 
-// Table for color conversion yrgb (4 bits) -> DWORD (32 bits)
-const DWORD ScreenView_StandardRGBColors[16] = {
-    0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000, 0x808080,
-    0x000000, 0x0000FF, 0x00FF00, 0x00FFFF, 0xFF0000, 0xFF00FF, 0xFFFF00, 0xFFFFFF,
-};
-const DWORD ScreenView_StandardGRBColors[16] = {
-    0x000000, 0x000080, 0x800000, 0x800080, 0x008000, 0x008080, 0x808000, 0x808080,
-    0x000000, 0x0000FF, 0xFF0000, 0xFF00FF, 0x00FF00, 0x00FFFF, 0xFFFF00, 0xFFFFFF,
-};
-// Table for color conversion, gray (black and white) display
-const DWORD ScreenView_GrayColors[16] = {
-    0x000000, 0x242424, 0x484848, 0x6C6C6C, 0x909090, 0xB4B4B4, 0xD8D8D8, 0xFFFFFF,
-    0x000000, 0x242424, 0x484848, 0x6C6C6C, 0x909090, 0xB4B4B4, 0xD8D8D8, 0xFFFFFF,
-};
-
 //////////////////////////////////////////////////////////////////////
 
 
@@ -308,22 +293,23 @@ WORD ScreenView_GetKeyEventFromQueue()
     return keyevent;
 }
 
-const BYTE arrPcscan2Ukncscan[256] = {
+// Ins = ВС, Tab = ТАБ
+const BYTE arrPcscan2Bkscan[256] = {
 /*       0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f  */
-/*0*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0132, 0026, 0000, 0000, 0000, 0153, 0000, 0000, 
-/*1*/    0000, 0000, 0000, 0004, 0107, 0000, 0000, 0000, 0000, 0000, 0000, 0006, 0000, 0000, 0000, 0000, 
-/*2*/    0113, 0004, 0151, 0172, 0000, 0116, 0154, 0133, 0134, 0000, 0000, 0000, 0000, 0171, 0152, 0000, 
-/*3*/    0176, 0030, 0031, 0032, 0013, 0034, 0035, 0016, 0017, 0177, 0000, 0000, 0000, 0000, 0000, 0000, 
-/*4*/    0000, 0072, 0076, 0050, 0057, 0033, 0047, 0055, 0156, 0073, 0027, 0052, 0056, 0112, 0054, 0075, 
-/*5*/    0053, 0067, 0074, 0111, 0114, 0051, 0137, 0071, 0115, 0070, 0157, 0000, 0000, 0000, 0000, 0000, 
-/*6*/    0126, 0127, 0147, 0167, 0130, 0150, 0170, 0125, 0145, 0165, 0025, 0155, 0000, 0005, 0146, 0131, 
-/*7*/    0010, 0011, 0012, 0014, 0015, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
+/*0*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0030, 0015, 0000, 0000, 0000, 0012, 0000, 0000, 
+/*1*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
+/*2*/    0040, 0000, 0000, 0000, 0000, 0010, 0032, 0031, 0033, 0000, 0000, 0000, 0000, 0023, 0000, 0000, 
+/*3*/    0060, 0061, 0062, 0063, 0064, 0065, 0066, 0067, 0070, 0071, 0000, 0000, 0000, 0000, 0000, 0000, 
+/*4*/    0000, 0146, 0151, 0163, 0167, 0165, 0141, 0160, 0162, 0173, 0157, 0154, 0144, 0170, 0164, 0175, 
+/*5*/    0172, 0152, 0153, 0171, 0145, 0147, 0155, 0143, 0176, 0156, 0161, 0000, 0000, 0000, 0000, 0000, 
+/*6*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
+/*7*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
 /*8*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
 /*9*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
-/*a*/    0105, 0106, 0046, 0066, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
-/*b*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0173, 0117, 0175, 0135, 0117, 
-/*c*/    0007, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
-/*d*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0110, 0135, 0174, 0000, 0000, 
+/*a*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
+/*b*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0166, 0000, 0142, 0055, 0140, 0000, 
+/*c*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
+/*d*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0150, 0000, 0000, 0174, 0000, 
 /*e*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
 /*f*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 
 };
@@ -331,46 +317,51 @@ const BYTE arrPcscan2Ukncscan[256] = {
 void ScreenView_ScanKeyboard()
 {
     if (! g_okEmulatorRunning) return;
-    if (::GetFocus() != g_hwndScreen) return;
-
-    // Read current keyboard state
-    BYTE keys[256];
-    VERIFY(::GetKeyboardState(keys));
-
-    // Check every key for state change
-    for (int scan = 0; scan < 256; scan++)
+    if (::GetFocus() == g_hwndScreen)
     {
-        BYTE newstate = keys[scan];
-        BYTE oldstate = m_ScreenKeyState[scan];
-        if ((newstate & 128) != (oldstate & 128))  // Key state changed - key pressed or released
+        // Read current keyboard state
+        BYTE keys[256];
+        VERIFY(::GetKeyboardState(keys));
+
+        // Check every key for state change
+        for (int scan = 0; scan < 256; scan++)
         {
-            BYTE pcscan = (BYTE) scan;
-            //TODO: Выбирать таблицу маппинга в зависимости от флага РУС/ЛАТ в УКНЦ
-            BYTE ukncscan = arrPcscan2Ukncscan[pcscan]; //TranslateVkeyToUkncScan(pcscan, FALSE, FALSE);
-            if (ukncscan != 0)
+            BYTE newstate = keys[scan];
+            BYTE oldstate = m_ScreenKeyState[scan];
+            if ((newstate & 128) != 0 && (oldstate & 128) == 0)  // Key pressed
             {
-                BYTE pressed = newstate & 128;
-                WORD keyevent = MAKEWORD(ukncscan, pressed);
-                ScreenView_PutKeyEventToQueue(keyevent);
-            }
-
+                BYTE pcscan = (BYTE) scan;
 #if !defined(PRODUCT)
-                TCHAR bufoct[7];  PrintOctalValue(bufoct, ukncscan);
-                DebugPrintFormat(_T("KeyEvent: pc:0x%02x bk:%s %x\r\n"), scan, bufoct, (newstate & 128) != 0);
+                DebugPrintFormat(_T("Key PC: 0x%0x\r\n"), scan);
 #endif
+                //TODO: Выбирать таблицу маппинга в зависимости от флага РУС/ЛАТ в БК
+                BYTE bkscan = arrPcscan2Bkscan[pcscan]; //TranslateVkeyToUkncScan(pcscan, FALSE, FALSE);
+                if (bkscan != 0)
+                {
+                    BYTE pressed = newstate & 128;
+                    WORD keyevent = MAKEWORD(bkscan, pressed);
+                    ScreenView_PutKeyEventToQueue(keyevent);
+                }
+            }
         }
-    }
 
-    // Save keyboard state
-    ::CopyMemory(m_ScreenKeyState, keys, 256);
+        // Save keyboard state
+        ::CopyMemory(m_ScreenKeyState, keys, 256);
+    }
 
     // Process next event in the keyboard queue
     WORD keyevent = ScreenView_GetKeyEventFromQueue();
     if (keyevent != 0)
     {
         BOOL pressed = ((keyevent & 0x8000) != 0);
-        BYTE ukncscan = LOBYTE(keyevent);
-        g_pBoard->KeyboardEvent(ukncscan, pressed);
+        BYTE bkscan = LOBYTE(keyevent);
+
+#if !defined(PRODUCT)
+        TCHAR bufoct[7];  PrintOctalValue(bufoct, bkscan);
+        DebugPrintFormat(_T("KeyEvent: %s %d\r\n"), bufoct, pressed);
+#endif
+
+        g_pBoard->KeyboardEvent(bkscan, pressed);
     }
 }
 
