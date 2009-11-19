@@ -219,13 +219,8 @@ void CProcessor::Init()
 	RegisterMethodRef( 0040000, 0047777, &CProcessor::ExecuteBIC );
 	RegisterMethodRef( 0050000, 0057777, &CProcessor::ExecuteBIS );
 	RegisterMethodRef( 0060000, 0067777, &CProcessor::ExecuteADD );
-	
-	RegisterMethodRef( 0070000, 0070777, &CProcessor::ExecuteMUL );
-	RegisterMethodRef( 0071000, 0071777, &CProcessor::ExecuteDIV );
-	RegisterMethodRef( 0072000, 0072777, &CProcessor::ExecuteASH );
-	RegisterMethodRef( 0073000, 0073777, &CProcessor::ExecuteASHC );
+
 	RegisterMethodRef( 0074000, 0074777, &CProcessor::ExecuteXOR );
-	RegisterMethodRef( 0075000, 0075037, &CProcessor::ExecuteFIS );
 	RegisterMethodRef( 0077000, 0077777, &CProcessor::ExecuteSOB );
 
 	RegisterMethodRef( 0100000, 0100377, &CProcessor::ExecuteBPL );
@@ -926,11 +921,6 @@ void CProcessor::Execute000030()  // Unknown command
 
     //TODO: Реализовать команду
     m_RPLYrq = TRUE;
-}
-
-void CProcessor::ExecuteFIS()  // Floating point instruction set
-{
-    m_FIS_rq = TRUE;
 }
 
 void CProcessor::ExecuteRUN()
@@ -2026,174 +2016,6 @@ void CProcessor::ExecuteXOR ()  // XOR
 		SetReg(m_regdest,dst);
 	
 	m_internalTick=XOR_TIMING[m_methdest];
-}
-
-void CProcessor::ExecuteMUL ()  // MUL
-{
-    WORD dst = GetReg(m_regsrc);
-	WORD src = m_methdest?GetWord(GetWordAddr(m_methdest,m_regdest)):GetReg(m_regdest);
-	int res;
-	
-	if(dst>>15)
-		dst|=~077777; 
-	if(src>>15)
-		src|=~077777;	
-	
-	res=(signed short)dst*(signed short)src;
-    
-    SetReg(m_regsrc,(res>>16));
-	SetReg(m_regsrc|1,res&0177777);
-
-    SetN( res>>31 );
-    SetZ( !res );
-    SetV( FALSE );
-	SetC( (res > 32767) || (res < -32768) );
-
-	m_internalTick=MUL_TIMING[m_methdest];
-}
-void CProcessor::ExecuteDIV ()  // DIV
-{
-	//время надо считать тут
-
-    int longsrc;
-	int res;
-
-	int src2=m_methdest?(short)GetWord(GetWordAddr(m_methdest,m_regdest)):(short)GetReg(m_regdest);
-
-	longsrc=(GetReg(m_regsrc)<<16)|GetReg(m_regsrc|1);
-
-	m_internalTick=DIV_TIMING[m_methdest];
-
-    if(src2==0)
-	{
-		SetV(TRUE);
-		SetC(TRUE); //если делят на 0 -- то устанавливаем V и C
-		return; 
-	}	
-	if ((longsrc == 020000000000) && (src2 == 0177777))
-	{
-		SetV(TRUE);
-		SetC(FALSE); // переполняемся, товарищи
-		return;
-	}
-    
-	if(src2>>15)
-		src2|=~077777;
-	if(GetReg(m_regsrc)>>15)
-		longsrc|=~017777777777;
-
-	res=(signed)longsrc/(signed)src2;
-
-	if ((res >= 32767) || (res < -32768)) 
-	{
-		SetV(TRUE);
-		SetC(FALSE); // переполняемся, товарищи
-		return;
-	}
-
-
-    SetReg(m_regsrc,res&0177777);
-	SetReg(m_regsrc|1,(longsrc-(src2*res))&0177777);
-
-    SetN( res&0100000 );
-    SetZ( res==0 );
-    SetV( FALSE );
-	SetC( FALSE );
-}
-void CProcessor::ExecuteASH ()  // ASH
-{
-		WORD src2;
-		WORD src;
-		WORD dst;
-		int sign;
-		int i;
-
-		m_internalTick=ASH_TIMING[m_methdest];
-
-		src2 = m_methdest?GetWord(GetWordAddr(m_methdest,m_regdest)):GetReg(m_regdest);
-		src2 = src2 & 077;
-		sign = GetReg(m_regsrc)>>15;
-		src = sign? GetReg(m_regsrc) | ~077777: GetReg(m_regsrc);
-		if (src2 == 0) 
-		{			/* [0] */
-			dst = src;
-			SetV(0);
-			SetC(0);  
-		}
-		else if (src2 <= 15) 
-		{			/* [1,15] */
-
-			m_internalTick+=ASH_S_TIMING*src2;
-			dst = src << src2;
-			i = (src >> (16 - src2)) & 0177777;
-			SetV(i != ((dst & 0100000)? 0177777: 0));
-			SetC(i & 1);  
-		}
-		else if (src2 <= 31) 
-		{			/* [16,31] */
-			dst = 0;
-			SetV(src != 0);
-			SetC((src << (src2 - 16)) & 1);  
-		}
-		else 
-		{					/* [-32,-1] */
-
-			m_internalTick+=ASH_S_TIMING*(64 - src2);
-			dst = (src >> (64 - src2)) | (-sign << (src2 - 32));
-			SetV(0);
-			SetC((src >> (63 - src2)) & 1);  
-		}
-		
-		SetReg(m_regsrc,dst);
-		//dst&=0177777;
-		
-		SetN(dst>>15);
-		SetZ(!dst);
-
-}
-void CProcessor::ExecuteASHC ()  // ASHC
-{
-		WORD src2;
-		int src;
-		int dst;
-		int sign;
-		int i;
-
-		m_internalTick=ASHC_TIMING[m_methdest];
-		src2 = m_methdest?GetWord(GetWordAddr(m_methdest,m_regdest)):GetReg(m_regdest);
-		src2 = src2 & 077;
-		sign = GetReg(m_regsrc)>>15;//GET_SIGN_W (R[srcspec]);
-		src = (GetReg(m_regsrc) << 16) | GetReg(m_regsrc|1);
-		if (src2 == 0) 
-		{ 			/* [0] */
-			dst = src;
-			SetV(0); 
-			SetC(0);  
-		}
-		else if (src2 <= 31) 
-		{			/* [1,31] */
-			dst = src << src2;
-			m_internalTick+=ASHC_S_TIMING*src2;
-			i = (src >> (32 - src2)) | (-sign << src2);
-			SetV(i != ((dst & 020000000000)? -1: 0));
-			SetC(i & 1);  
-		}
-		else 
-		{					/* [-32,-1] */
-			m_internalTick+=ASHC_S_TIMING*(64 - src2);
-			dst = (src >> (64 - src2)) | (-sign << (src2 - 32));
-			SetV(0);
-			SetC((src >> (63 - src2)) & 1);  
-		}
-		i = (dst >> 16) & 0177777;
-		dst = dst & 0177777;
-		
-		SetReg(m_regsrc,i);
-		SetReg(m_regsrc|1,dst);
-
-		
-		SetN(i>>15);
-		SetZ(!dst & !i);
 }
 
 void CProcessor::ExecuteSOB ()  // SOB - subtract one: R = R - 1 ; if R != 0 : PC = PC - 2*nn

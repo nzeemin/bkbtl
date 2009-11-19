@@ -31,6 +31,17 @@ class CProcessor;
 #define BKIMAGE_VERSION 0x00010000  // 1.0
 
 
+//////////////////////////////////////////////////////////////////////
+// BK special key codes
+
+#define BK_KEY_STOP         0201
+#define BK_KEY_AR2          0202
+#define BK_KEY_BACKSHIFT    0203
+#define BK_KEY_LOWER        0204
+#define BK_KEY_UPPER        0205
+#define BK_KEY_REPEAT       0206
+
+
 #define KEYB_RUS		0x01
 #define KEYB_LAT		0x02
 #define KEYB_LOWERREG	0x10
