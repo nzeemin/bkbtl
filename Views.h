@@ -19,9 +19,8 @@ const LPCTSTR CLASSNAME_TAPEVIEW    = _T("BKBTLTAPE");
 // ScreenView
 
 enum ScreenViewMode {
-    RGBScreen = 1,
-    GrayScreen = 2,
-    GRBScreen = 3,
+    ColorScreen = 1,
+    BlackWhiteScreen = 2,
 };
 
 extern HWND g_hwndScreen;  // Screen View window handle

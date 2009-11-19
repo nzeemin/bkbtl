@@ -44,7 +44,7 @@
 #define ID_VIEW_DOUBLEHEIGHT            32792
 #define ID_VIEW_RGBSCREEN               32793
 #define ID_VIEW_GRBSCREEN               32794
-#define ID_VIEW_GRAYSCREEN              32795
+#define ID_VIEW_BWSCREEN                32795
 #define ID_EMULATOR_AUTOSTART           32800
 #define ID_EMULATOR_REALSPEED           32801
 #define ID_VIEW_KEYBOARD                32802

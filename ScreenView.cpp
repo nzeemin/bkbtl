@@ -20,7 +20,7 @@ DWORD * m_bits = NULL;
 int m_cxScreenWidth;
 int m_cyScreenHeight;
 BYTE m_ScreenKeyState[256];
-ScreenViewMode m_ScreenMode = RGBScreen;
+ScreenViewMode m_ScreenMode = ColorScreen;
 int m_ScreenHeightMode = 1;  // 1 - Normal height, 2 - Double height
 
 void ScreenView_CreateDisplay();
@@ -39,25 +39,10 @@ WORD ScreenView_GetKeyEventFromQueue();
 //////////////////////////////////////////////////////////////////////
 // Colors
 
-/*
-yrgb  R   G   B  0xRRGGBB
-0000 000 000 000 0x000000
-0001 000 000 128 0x000080
-0010 000 128 000 0x008000
-0011 000 128 128 0x008080
-0100 128 000 000 0x800000
-0101 128 000 128 0x800080
-0110 128 128 000 0x808000
-0111 128 128 128 0x808080
-1000 000 000 000 0x000000
-1001 000 000 255 0x0000FF
-1010 000 255 000 0x00FF00
-1011 000 255 255 0x00FFFF
-1100 255 000 000 0xFF0000
-1101 255 000 255 0xFF00FF
-1110 255 255 000 0xFFFF00
-1111 255 255 255 0xFFFFFF
-*/
+const DWORD ScreenView_ColorPalette[4] = {
+    0x000000, 0x0000FF, 0x00FF00, 0xFF0000
+};
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -255,7 +240,7 @@ void ScreenView_PrepareScreen()
     scroll &= 0377;
     scroll = (scroll >= 0330) ? scroll - 0330 : 050 + scroll;
 
-    //NOTE: Реализован только черно-белый видеорежим 512 x 256
+    // Render to bitmap
     for (int y = 0; y < 256; y++)
     {
         int yy = (y + scroll) & 0377;
@@ -264,12 +249,28 @@ void ScreenView_PrepareScreen()
         for (int x = 0; x < 512 / 16; x++)
         {
             WORD src = g_pBoard->GetRAMWord(addressBits);
-            for (int bit = 0; bit < 16; bit++)
+
+            if (m_ScreenMode == BlackWhiteScreen)  // Black and white mode 512 x 256
             {
-                DWORD color = (src & 1) ? 0x0ffffff : 0;
-                *pBits = color;
-                pBits++;
-                src = src >> 1;
+                for (int bit = 0; bit < 16; bit++)
+                {
+                    DWORD color = (src & 1) ? 0x0ffffff : 0;
+                    *pBits = color;
+                    pBits++;
+                    src = src >> 1;
+                }
+            }
+            else  // Color mode 256 x 256
+            {
+                for (int bit = 0; bit < 16; bit += 2)
+                {
+                    DWORD color = ScreenView_ColorPalette[src & 3];
+                    *pBits = color;
+                    pBits++;
+                    *pBits = color;
+                    pBits++;
+                    src = src >> 2;
+                }
             }
 
             addressBits += 2;

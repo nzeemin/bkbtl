@@ -171,7 +171,7 @@ void MainWindow_RestoreSettings()
 
     // Restore ScreenViewMode
     int mode = Settings_GetScreenViewMode();
-    if (mode <= 0 || mode > 3) mode = RGBScreen;
+    if (mode <= 0 || mode > 2) mode = ColorScreen;
     ScreenView_SetMode((ScreenViewMode) mode);
 
     // Restore ScreenHeightMode
@@ -501,11 +501,10 @@ void MainWindow_UpdateMenu()
     UINT scrmodecmd = 0;
     switch (ScreenView_GetMode())
     {
-    case RGBScreen: scrmodecmd = ID_VIEW_RGBSCREEN; break;
-    case GRBScreen: scrmodecmd = ID_VIEW_GRBSCREEN; break;
-    case GrayScreen: scrmodecmd = ID_VIEW_GRAYSCREEN; break;
+    case ColorScreen: scrmodecmd = ID_VIEW_RGBSCREEN; break;
+    case BlackWhiteScreen: scrmodecmd = ID_VIEW_BWSCREEN; break;
     }
-    CheckMenuRadioItem(hMenu, ID_VIEW_RGBSCREEN, ID_VIEW_GRAYSCREEN, scrmodecmd, MF_BYCOMMAND);
+    CheckMenuRadioItem(hMenu, ID_VIEW_RGBSCREEN, ID_VIEW_BWSCREEN, scrmodecmd, MF_BYCOMMAND);
     // View|Normal Height and View|Double Height radio
     UINT scrheimodecmd = 0;
     switch (ScreenView_GetHeightMode())
@@ -569,13 +568,10 @@ bool MainWindow_DoCommand(int commandId)
         MainWindow_DoViewTape();
         break;
     case ID_VIEW_RGBSCREEN:
-        MainWindow_DoViewScreenMode(RGBScreen);
+        MainWindow_DoViewScreenMode(ColorScreen);
         break;
-    case ID_VIEW_GRBSCREEN:
-        MainWindow_DoViewScreenMode(GRBScreen);
-        break;
-    case ID_VIEW_GRAYSCREEN:
-        MainWindow_DoViewScreenMode(GrayScreen);
+    case ID_VIEW_BWSCREEN:
+        MainWindow_DoViewScreenMode(BlackWhiteScreen);
         break;
     case ID_VIEW_NORMALHEIGHT:
         MainWindow_DoViewHeightMode(1);

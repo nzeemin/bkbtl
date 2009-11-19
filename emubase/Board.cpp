@@ -324,7 +324,11 @@ BOOL CMotherboard::SystemFrame()
 // Key pressed or released
 void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed)
 {
-    if (!okPressed) return;
+    if (!okPressed)
+    {
+        m_Port177716 |= 0100;  // "Key pressed" flag in system register
+        return;
+    }
 
     if (scancode == BK_KEY_STOP)
     {
@@ -334,8 +338,10 @@ void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed)
 
     if ((m_Port177660 & 0200) == 0)
     {
+        m_Port177716 &= ~0100;  // "Key pressed" flag in system register
+
         m_Port177662rd = scancode;
-        m_Port177660 |= 0200;
+        m_Port177660 |= 0200;  // "Key ready" flag in keyboard state register
         if ((m_Port177660 & 0100) == 0100)
         {
             m_pCPU->InterruptVIRQ(1, 060);
