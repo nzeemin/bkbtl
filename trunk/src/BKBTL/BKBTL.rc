@@ -98,8 +98,8 @@ BEGIN
         MENUITEM "Keyboard",                    ID_VIEW_KEYBOARD
         MENUITEM "Tape",                        32803, INACTIVE
         MENUITEM SEPARATOR
-        MENUITEM "RGB Screen",                  ID_VIEW_RGBSCREEN, INACTIVE
-        MENUITEM "Grayscale Screen",            ID_VIEW_GRAYSCREEN, INACTIVE
+        MENUITEM "Black && White Screen",       ID_VIEW_BWSCREEN
+        MENUITEM "Color Screen",                ID_VIEW_RGBSCREEN
         MENUITEM SEPARATOR
         MENUITEM "Normal Height",               ID_VIEW_NORMALHEIGHT
         MENUITEM "Double Height",               ID_VIEW_DOUBLEHEIGHT
