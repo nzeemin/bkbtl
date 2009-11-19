@@ -6,17 +6,6 @@
 
 
 //////////////////////////////////////////////////////////////////////
-// BK special key codes
-
-#define BK_KEY_STOP         0701
-#define BK_KEY_AR2          0702
-#define BK_KEY_BACKSHIFT    0703
-#define BK_KEY_LOWER        0704
-#define BK_KEY_UPPER        0705
-#define BK_KEY_REPEAT       0706
-
-
-//////////////////////////////////////////////////////////////////////
 
 
 extern CMotherboard* g_pBoard;

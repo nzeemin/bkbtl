@@ -326,6 +326,12 @@ void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed)
 {
     if (!okPressed) return;
 
+    if (scancode == BK_KEY_STOP)
+    {
+        m_pCPU->InterruptVIRQ(1, 0000004);
+        return;
+    }
+
     if ((m_Port177660 & 0200) == 0)
     {
         m_Port177662rd = scancode;

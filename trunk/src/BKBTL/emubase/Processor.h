@@ -170,7 +170,6 @@ protected:  // Implementation - instruction execution
 	void		ExecuteSTEP	();
     void        ExecuteRSEL ();
     void        Execute000030 ();
-    void        ExecuteFIS ();
 	void		ExecuteRUN	();
     void        ExecuteRTT ();
     void        ExecuteNOP ();
@@ -252,10 +251,10 @@ protected:  // Implementation - instruction execution
     void        ExecuteJSR ();
     void        ExecuteXOR ();
     void        ExecuteSOB ();
-	void		ExecuteMUL ();
-	void		ExecuteDIV ();
-	void		ExecuteASH ();
-	void		ExecuteASHC ();
+	//void		ExecuteMUL ();
+	//void		ExecuteDIV ();
+	//void		ExecuteASH ();
+	//void		ExecuteASHC ();
 
     // Four fields
     void        ExecuteMOV ();
