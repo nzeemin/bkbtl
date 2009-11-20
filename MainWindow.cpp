@@ -35,7 +35,7 @@ void MainWindow_DoViewDebug();
 void MainWindow_DoViewToolbar();
 void MainWindow_DoViewKeyboard();
 void MainWindow_DoViewTape();
-void MainWindow_DoViewScreenMode(ScreenViewMode);
+void MainWindow_DoViewColorScreen();
 void MainWindow_DoViewHeightMode(int newMode);
 void MainWindow_DoEmulatorRun();
 void MainWindow_DoEmulatorAutostart();
@@ -105,7 +105,7 @@ BOOL MainWindow_InitToolbar()
     addbitmap.nID = IDB_TOOLBAR;
     SendMessage(m_hwndToolbar, TB_ADDBITMAP, 2, (LPARAM) &addbitmap);
 
-    TBBUTTON buttons[2];
+    TBBUTTON buttons[4];
     ZeroMemory(buttons, sizeof(buttons));
     for (int i = 0; i < sizeof(buttons) / sizeof(TBBUTTON); i++)
     {
@@ -113,22 +113,18 @@ BOOL MainWindow_InitToolbar()
         buttons[i].iString = -1;
     }
     buttons[0].idCommand = ID_EMULATOR_RUN;
-    buttons[0].iBitmap = 0;
+    buttons[0].iBitmap = ToolbarImageRun;
     buttons[0].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
     buttons[0].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Run"));
     buttons[1].idCommand = ID_EMULATOR_RESET;
-    buttons[1].iBitmap = 2;
+    buttons[1].iBitmap = ToolbarImageReset;
     buttons[1].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
     buttons[1].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Reset"));
-    //buttons[2].fsStyle = BTNS_SEP;
-    //buttons[3].idCommand = ID_EMULATOR_FLOPPY0;
-    //buttons[3].iBitmap = 4;
-    //buttons[3].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
-    //buttons[3].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("0"));
-    //buttons[4].idCommand = ID_EMULATOR_FLOPPY1;
-    //buttons[4].iBitmap = 4;
-    //buttons[4].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
-    //buttons[4].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("1"));
+    buttons[2].fsStyle = BTNS_SEP;
+    buttons[3].idCommand = ID_VIEW_RGBSCREEN;
+    buttons[3].iBitmap = ToolbarImageColorScreen;
+    buttons[3].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
+    buttons[3].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Color"));
 
     SendMessage(m_hwndToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons); 
 
@@ -492,19 +488,16 @@ void MainWindow_UpdateMenu()
     // Emulator|Run check
     CheckMenuItem(hMenu, ID_EMULATOR_RUN, (g_okEmulatorRunning ? MF_CHECKED : MF_UNCHECKED));
     SendMessage(m_hwndToolbar, TB_CHECKBUTTON, ID_EMULATOR_RUN, (g_okEmulatorRunning ? 1 : 0));
+    MainWindow_SetToolbarImage(ID_EMULATOR_RUN, g_okEmulatorRunning ? ToolbarImageRun : ToolbarImagePause);
     // View|Debug check
     CheckMenuItem(hMenu, ID_VIEW_TOOLBAR, (Settings_GetToolbar() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_DEBUG, (Settings_GetDebug() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_KEYBOARD, (Settings_GetKeyboard() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_TAPE, (Settings_GetTape() ? MF_CHECKED : MF_UNCHECKED));
-    // View|Color and View|Grayscale radio
-    UINT scrmodecmd = 0;
-    switch (ScreenView_GetMode())
-    {
-    case ColorScreen: scrmodecmd = ID_VIEW_RGBSCREEN; break;
-    case BlackWhiteScreen: scrmodecmd = ID_VIEW_BWSCREEN; break;
-    }
-    CheckMenuRadioItem(hMenu, ID_VIEW_RGBSCREEN, ID_VIEW_BWSCREEN, scrmodecmd, MF_BYCOMMAND);
+    // View|Color Screen
+    CheckMenuItem(hMenu, ID_VIEW_RGBSCREEN, ((ScreenView_GetMode() == ColorScreen) ? MF_CHECKED : MF_UNCHECKED));
+    MainWindow_SetToolbarImage(ID_VIEW_RGBSCREEN,
+        (ScreenView_GetMode() == ColorScreen) ? ToolbarImageColorScreen : ToolbarImageBWScreen);
     // View|Normal Height and View|Double Height radio
     UINT scrheimodecmd = 0;
     switch (ScreenView_GetHeightMode())
@@ -568,10 +561,7 @@ bool MainWindow_DoCommand(int commandId)
         MainWindow_DoViewTape();
         break;
     case ID_VIEW_RGBSCREEN:
-        MainWindow_DoViewScreenMode(ColorScreen);
-        break;
-    case ID_VIEW_BWSCREEN:
-        MainWindow_DoViewScreenMode(BlackWhiteScreen);
+        MainWindow_DoViewColorScreen();
         break;
     case ID_VIEW_NORMALHEIGHT:
         MainWindow_DoViewHeightMode(1);
@@ -650,8 +640,9 @@ void MainWindow_DoViewTape()
     MainWindow_ShowHideTape();
 }
 
-void MainWindow_DoViewScreenMode(ScreenViewMode newMode)
+void MainWindow_DoViewColorScreen()
 {
+    ScreenViewMode newMode = (ScreenView_GetMode() == ColorScreen) ? BlackWhiteScreen : ColorScreen;
     ScreenView_SetMode(newMode);
 
     MainWindow_UpdateMenu();

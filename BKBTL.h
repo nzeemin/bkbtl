@@ -42,18 +42,12 @@ enum ToolbarButtons
     ToolbarButtonRun = 0,
     ToolbarButtonReset = 1,
     // Separator
-    ToolbarButtonMZ0 = 3,
-    ToolbarButtonMZ1 = 4,
-    ToolbarButtonMZ2 = 5,
-    ToolbarButtonMZ3 = 6,
-    // Separator
-    ToolbarButtonCart1 = 8,
-    ToolbarButtonCart2 = 9,
+    ToolbarButtonColor = 3,
 };
 enum ToolbarButtonImages
 {
     ToolbarImageRun = 0,
-    ToolbarImageStep = 1,
+    ToolbarImagePause = 1,
     ToolbarImageReset = 2,
     ToolbarImageFloppyDisk = 3,
     ToolbarImageFloppySlot = 4,
@@ -62,6 +56,8 @@ enum ToolbarButtonImages
     ToolbarImageSoundOn = 7,
     ToolbarImageSoundOff = 8,
     ToolbarImageFloppyDiskWP = 9,
+    ToolbarImageColorScreen = 10,
+    ToolbarImageBWScreen = 11,
 };
 
 enum StatusbarParts
