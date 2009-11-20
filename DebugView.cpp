@@ -323,6 +323,24 @@ void DrawPorts(HDC hdc, CMotherboard* pBoard, int x, int y)
     DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
     TextOut(hdc, x + 33 * cxChar, y, _T("scroll"), 6);
     y += cyLine;
+    value = g_pBoard->GetPortView(0177706);
+    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177706);
+    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
+    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 33 * cxChar, y, _T("timer reload"), 12);
+    y += cyLine;
+    value = g_pBoard->GetPortView(0177710);
+    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177710);
+    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
+    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 33 * cxChar, y, _T("timer value"), 11);
+    y += cyLine;
+    value = g_pBoard->GetPortView(0177712);
+    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177712);
+    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
+    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 33 * cxChar, y, _T("timer manage"), 12);
+    y += cyLine;
     value = g_pBoard->GetPortView(0177714);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177714);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
@@ -334,6 +352,18 @@ void DrawPorts(HDC hdc, CMotherboard* pBoard, int x, int y)
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
     DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
     TextOut(hdc, x + 33 * cxChar, y, _T("system"), 6);
+    y += cyLine;
+    value = g_pBoard->GetPortView(0177130);
+    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177130);
+    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
+    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 33 * cxChar, y, _T("floppy state"), 12);
+    y += cyLine;
+    value = g_pBoard->GetPortView(0177132);
+    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177132);
+    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
+    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 33 * cxChar, y, _T("floppy data"), 11);
 }
 
 

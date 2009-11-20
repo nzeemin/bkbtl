@@ -69,8 +69,10 @@ void CMotherboard::Reset ()
     m_timerflags = 0;
     m_timerdivider = 0;
 
+    m_Port177706 = m_Port177710 = m_Port177712 = 0;
     m_Port177660 = 0100;
-    m_Port177662rd = m_Port177662wr = 0;
+    m_Port177662rd = 0;
+    m_Port177662wr = 040000;
     m_Port177664 = 0;
     m_Port177716 = 0140200;
     m_Port177716mem = m_Port177716tap = 0;
@@ -155,7 +157,7 @@ BYTE CMotherboard::GetROMByte(WORD offset)
 
 void CMotherboard::Tick50 ()
 {
-    if ((m_Port177662wr & 040000) != 0)
+    if ((m_Port177662wr & 040000) == 0)
     {
         m_pCPU->TickEVNT();
     }
@@ -293,9 +295,16 @@ void CMotherboard::DebugTicks()
 * 20000 тиков системного таймера - на каждый 1-й тик;
 * 2 сигнала EVNT, в 0-й и 10000-й тик фрейма
 * 160000 тиков ÷ѕ - 8 раз за один тик (дл€ 4 ћ√ц), либо 6 раз за тик (дл€ 3 ћ√ц)
+* 800 тиков чтени€ с магнитофона - каждый 25-й тик (20к√ц)
 */
 BOOL CMotherboard::SystemFrame()
 {
+	const int tapeReadTicks = 25;
+	int tapeReadSamplesPerFrame = 0;
+	int tapeReadError = 0;
+	if (m_TapeReadCallback != NULL)
+		tapeReadSamplesPerFrame = m_nTapeReadSampleRate / 25;
+
     for (int frameticks = 0; frameticks < 20000; frameticks++)
     {
         //TimerTick();  // System timer tick
@@ -316,6 +325,26 @@ BOOL CMotherboard::SystemFrame()
         //{
         //    m_pFloppyCtl->Periodic();
         //}
+
+		if (m_TapeReadCallback != NULL && frameticks % tapeReadTicks == 0)
+		{
+			int tapeSamplesToRead = 0;
+			const int readsTotal = 20000 / tapeReadTicks;
+			while (true)
+			{
+				tapeSamplesToRead++;
+				tapeReadError += readsTotal;
+				if (2 * tapeReadError >= tapeReadSamplesPerFrame)
+				{
+					tapeReadError -= tapeReadSamplesPerFrame;
+					break;
+				}
+			}
+
+			// Reading the tape
+			BOOL tapeBit = (*m_TapeReadCallback)(tapeSamplesToRead);
+			TapeInput(tapeBit);
+		}
     }
 
     return TRUE;
@@ -324,31 +353,48 @@ BOOL CMotherboard::SystemFrame()
 // Key pressed or released
 void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed)
 {
-    if (!okPressed)
+    if (scancode == BK_KEY_STOP)
     {
-        m_Port177716 |= 0100;  // "Key pressed" flag in system register
+        if (okPressed)
+        {
+            m_pCPU->InterruptVIRQ(1, 0000004);
+        }
         return;
     }
 
-    if (scancode == BK_KEY_STOP)
+    if (!okPressed)  // Key released
     {
-        m_pCPU->InterruptVIRQ(1, 0000004);
+        m_Port177716 |= 0100;  // Reset "Key pressed" flag in system register
+        m_Port177716 |= 4;  // Set "ready" flag
         return;
     }
 
     if ((m_Port177660 & 0200) == 0)
     {
-        m_Port177716 &= ~0100;  // "Key pressed" flag in system register
+        m_Port177716 &= ~0100;  // Set "Key pressed" flag in system register
+        m_Port177716 |= 4;  // Set "ready" flag
 
-        m_Port177662rd = scancode;
+        m_Port177662rd = scancode & 0177;
         m_Port177660 |= 0200;  // "Key ready" flag in keyboard state register
-        if ((m_Port177660 & 0100) == 0100)
+        if ((m_Port177660 & 0100) == 0100)  // Keyboard interrupt enabled
         {
             m_pCPU->InterruptVIRQ(1, 060);
             //TODO: Interrupt 60/270
         }
     }
 }
+
+void CMotherboard::TapeInput(BOOL inputBit)
+{
+    WORD tapeBitOld = (m_Port177716 & 40);
+    WORD tapeBitNew = inputBit ? 0 : 40;
+    if (tapeBitNew != tapeBitOld)
+    {
+        m_Port177716 = (m_Port177716 & ~40) | tapeBitNew;  // Write new tape bit
+        m_Port177716 |= 4;  // Set "ready" flag
+    }
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // Motherboard: memory management
@@ -505,6 +551,10 @@ WORD CMotherboard::GetPortWord(WORD address)
 {
     switch (address)
     {
+    //TODO: 0177706 -- System Timer counter start value -- регистр установки таймера
+    //TODO: 0177710 -- System Timer Counter -- регистр счетчика таймера
+    //TODO: 0177712 -- System Timer Manage -- регистр управлени€ таймера
+
     case 0177660:  // Keyboard status register
         return m_Port177660;
 
@@ -537,9 +587,15 @@ WORD CMotherboard::GetPortWord(WORD address)
 WORD CMotherboard::GetPortView(WORD address)
 {
     switch (address) {
+    case 0177706:  // System Timer counter start value -- регистр установки таймера
+        return m_Port177706;
+    case 0177710:  // System Timer Counter -- регистр счетчика таймера
+        return m_Port177710;
+    case 0177712:  // System Timer Manage -- регистр управлени€ таймера
+        return m_Port177712;
+
     case 0177660:  // Keyboard status register
         return m_Port177660;
-
     case 0177662:  // Keyboard data register
         return m_Port177662rd;
 
@@ -552,8 +608,8 @@ WORD CMotherboard::GetPortView(WORD address)
     case 0177716:  // System register
         return m_Port177716;
 
-        default:
-            return 0;
+    default:
+        return 0;
     }
 }
 
@@ -579,17 +635,10 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 {
     switch (address)
     {
-    case 0177660:  // Keyboard status register
-        //TODO
-        break;
-
-    case 0177662:  // Palette register
-        m_Port177662wr = word;
-        break;
-
-    case 0177664:  // Scroll register
-        m_Port177664 = word & 01377;
-        break;
+    //TODO: 0177700, 0177702, 0177704 -- Unknown
+    //TODO: 0177706 -- System Timer counter start value -- регистр установки таймера
+    //TODO: 0177710 -- System Timer Counter -- регистр счетчика таймера
+    //TODO: 0177712 -- System Timer Manage -- регистр управлени€ таймера
 
     case 0177714:  // Parallel port register
         //TODO
@@ -606,6 +655,21 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         }
         break;
 
+    case 0177660:  // Keyboard status register
+        //TODO
+        break;
+
+    case 0177662:  // Palette register
+        m_Port177662wr = word;
+        break;
+
+    case 0177664:  // Scroll register
+        m_Port177664 = word & 01377;
+        break;
+
+    //TODO: 0177130 -- регистр управлени€  Ќ√ћƒ
+    //TODO: 0177132 -- регистр данных  Ќ√ћƒ
+
 	default:
 		m_pCPU->MemoryError();
 		break;
@@ -619,11 +683,9 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 //   32 bytes  - Header
 //   32 bytes  - Board status
 //   32 bytes  - CPU status
-//   32 bytes  - PPU status
 //   64 bytes  - CPU memory/IO controller status
-//   64 bytes  - PPU memory/IO controller status
 //   32 Kbytes - ROM image
-//   64 Kbytes * 3  - RAM planes 0, 1, 2
+//   64 Kbytes - RAM image
 
 //void CMotherboard::SaveToImage(BYTE* pImage)
 //{

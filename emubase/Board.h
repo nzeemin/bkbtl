@@ -108,6 +108,7 @@ public:  // System control
     void        ExecutePPU();  // Execute one PPU instruction
     BOOL        SystemFrame();  // Do one frame -- use for normal run
     void        KeyboardEvent(BYTE scancode, BOOL okPressed);  // Key pressed or released
+    void        TapeInput(BOOL inputBit);  // Tape input bit received
     
     BOOL        AttachFloppyImage(int slot, LPCTSTR sFileName);
     void        DetachFloppyImage(int slot);
@@ -152,6 +153,9 @@ protected:  // Access to I/O ports
     BYTE GetPortByte(WORD address);
     void SetPortByte(WORD address, BYTE byte);
 protected:  // Ports: implementation
+    WORD        m_Port177706;       // System Timer counter start value -- регистр установки таймера
+    WORD        m_Port177710;       // System Timer Counter -- регистр счетчика таймера
+    WORD        m_Port177712;       // System Timer Manage -- регистр управления таймера
     WORD        m_Port177660;       // Keyboard status register
     WORD        m_Port177662rd;     // Keyboard register
     WORD        m_Port177662wr;     // Palette register

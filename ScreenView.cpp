@@ -264,6 +264,7 @@ void ScreenView_PrepareScreen()
             {
                 for (int bit = 0; bit < 16; bit += 2)
                 {
+                    //TODO: Use palette defined by port 177662
                     DWORD color = ScreenView_ColorPalette[src & 3];
                     *pBits = color;
                     pBits++;
