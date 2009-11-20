@@ -111,6 +111,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Sound",                       ID_EMULATOR_SOUND, INACTIVE
         MENUITEM "Autostart",                   ID_EMULATOR_AUTOSTART
+        MENUITEM SEPARATOR
+        MENUITEM "BK 0010(01) BASIC",           ID_CONF_BK0010BASIC
+        MENUITEM "BK 0010(01) FOCAL",           ID_CONF_BK0010FOCAL
     END
     POPUP "&Drives"
     BEGIN

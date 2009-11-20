@@ -83,6 +83,17 @@ BOOL Settings_LoadDwordValue(LPCTSTR sName, DWORD* dwValue)
     }
 }
 
+void Settings_SetConfiguration(int configuration)
+{
+    Settings_SaveDwordValue(_T("Configuration"), (DWORD) configuration);
+}
+int Settings_GetConfiguration()
+{
+    DWORD dwValue;
+    Settings_LoadDwordValue(_T("Configuration"), &dwValue);
+    return (int) dwValue;
+}
+
 void Settings_GetFloppyFilePath(int slot, LPTSTR buffer)
 {
     TCHAR bufValueName[] = _T("Floppy0");

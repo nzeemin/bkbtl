@@ -140,7 +140,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     InitCommonControlsEx(&ics);
 
     Settings_Init();
-    if (!InitEmulator()) return FALSE;
+    if (!InitEmulator((BKConfiguration)Settings_GetConfiguration()))
+        return FALSE;
     Emulator_SetSound(Settings_GetSound());
 
     // Create main window    
