@@ -21,7 +21,6 @@ enum BKConfiguration
 
 extern CMotherboard* g_pBoard;
 extern BKConfiguration g_nEmulatorConfiguration;  // Current configuration
-
 extern BOOL g_okEmulatorRunning;
 
 extern BYTE* g_pEmulatorRam;  // RAM values - for change tracking

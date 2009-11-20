@@ -12,7 +12,7 @@
 
 
 CMotherboard* g_pBoard = NULL;
-
+BKConfiguration g_nEmulatorConfiguration;  // Current configuration
 BOOL g_okEmulatorRunning = FALSE;
 
 WORD m_wEmulatorCPUBreakpoint = 0177777;
@@ -33,12 +33,32 @@ WORD g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
 //////////////////////////////////////////////////////////////////////
 
 
-const LPCTSTR FILENAME_BKROM_MONIT10 = _T("monit10.bin");
-const LPCTSTR FILENAME_BKROM_FOCAL = _T("focal.bin");
-const LPCTSTR FILENAME_BKROM_TESTS = _T("tests.bin");
-const LPCTSTR FILENAME_BKROM_BASIC10_1 = _T("basic10_1.bin");
-const LPCTSTR FILENAME_BKROM_BASIC10_2 = _T("basic10_2.bin");
-const LPCTSTR FILENAME_BKROM_BASIC10_3 = _T("basic10_3.bin");
+const LPCTSTR FILENAME_BKROM_MONIT10    = _T("monit10.bin");
+const LPCTSTR FILENAME_BKROM_FOCAL      = _T("focal.bin");
+const LPCTSTR FILENAME_BKROM_TESTS      = _T("tests.bin");
+const LPCTSTR FILENAME_BKROM_BASIC10_1  = _T("basic10_1.bin");
+const LPCTSTR FILENAME_BKROM_BASIC10_2  = _T("basic10_2.bin");
+const LPCTSTR FILENAME_BKROM_BASIC10_3  = _T("basic10_3.bin");
+
+BOOL Emulator_LoadRomFile(LPCTSTR strFileName, PBYTE buffer, DWORD bytesToRead)
+{
+    HANDLE hRomFile = CreateFile(strFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hRomFile == INVALID_HANDLE_VALUE)
+        return false;
+
+    DWORD dwBytesRead;
+    ReadFile(hRomFile, buffer, bytesToRead, &dwBytesRead, NULL);
+    if (dwBytesRead != bytesToRead)
+    {
+        CloseHandle(hRomFile);
+        return false;
+    }
+
+    CloseHandle(hRomFile);
+
+    return TRUE;
+}
 
 BOOL InitEmulator(BKConfiguration configuration)
 {
@@ -49,68 +69,44 @@ BOOL InitEmulator(BKConfiguration configuration)
     g_pBoard = new CMotherboard();
 
     BYTE buffer[8192];
-    DWORD dwBytesRead;
 
     // Load Monitor ROM file
     ZeroMemory(buffer, 8192);
-    HANDLE hRomFile = CreateFile(FILENAME_BKROM_MONIT10, GENERIC_READ, FILE_SHARE_READ, NULL,
-            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (hRomFile == INVALID_HANDLE_VALUE)
+    if (!Emulator_LoadRomFile(FILENAME_BKROM_MONIT10, buffer, 8192))
     {
         AlertWarning(_T("Failed to load Monitor ROM file."));
-        return false;
+        return FALSE;
     }
-    ReadFile(hRomFile, buffer, 8192, &dwBytesRead, NULL);
-    ASSERT(dwBytesRead == 8192);
-    CloseHandle(hRomFile);
-
     g_pBoard->LoadROM(0, buffer);
 
     // Load BASIC ROM 1 file
     ZeroMemory(buffer, 8192);
-    hRomFile = CreateFile(FILENAME_BKROM_BASIC10_1, GENERIC_READ, FILE_SHARE_READ, NULL,
-            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (hRomFile == INVALID_HANDLE_VALUE)
+    if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_1, buffer, 8192))
     {
         AlertWarning(_T("Failed to load BASIC ROM 1 file."));
-        return false;
+        return FALSE;
     }
-    ReadFile(hRomFile, buffer, 8192, &dwBytesRead, NULL);
-    ASSERT(dwBytesRead == 8192);
-    CloseHandle(hRomFile);
-
     g_pBoard->LoadROM(1, buffer);
 
     // Load BASIC ROM 2 file
     ZeroMemory(buffer, 8192);
-    hRomFile = CreateFile(FILENAME_BKROM_BASIC10_2, GENERIC_READ, FILE_SHARE_READ, NULL,
-            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (hRomFile == INVALID_HANDLE_VALUE)
+    if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_2, buffer, 8192))
     {
         AlertWarning(_T("Failed to load BASIC ROM 2 file."));
-        return false;
+        return FALSE;
     }
-    ReadFile(hRomFile, buffer, 8192, &dwBytesRead, NULL);
-    ASSERT(dwBytesRead == 8192);
-    CloseHandle(hRomFile);
-
     g_pBoard->LoadROM(2, buffer);
 
     // Load BASIC ROM 3 file
     ZeroMemory(buffer, 8192);
-    hRomFile = CreateFile(FILENAME_BKROM_BASIC10_3, GENERIC_READ, FILE_SHARE_READ, NULL,
-            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (hRomFile == INVALID_HANDLE_VALUE)
+    if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_3, buffer, 8064))
     {
         AlertWarning(_T("Failed to load BASIC ROM 3 file."));
-        return false;
+        return FALSE;
     }
-    ReadFile(hRomFile, buffer, 8064, &dwBytesRead, NULL);
-    ASSERT(dwBytesRead == 8064);
-    CloseHandle(hRomFile);
-
     g_pBoard->LoadROM(3, buffer);
 
+    g_nEmulatorConfiguration = configuration;
 
     g_pBoard->Reset();
 
