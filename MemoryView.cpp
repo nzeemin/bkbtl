@@ -260,11 +260,17 @@ BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM lParam)
     case VK_HOME:
         MemoryView_ScrollTo(0);
         break;
+    case VK_LEFT:
+        MemoryView_Scroll(-2);
+        break;
+    case VK_RIGHT:
+        MemoryView_Scroll(2);
+        break;
     case VK_UP:
-        MemoryView_Scroll(-1);
+        MemoryView_Scroll(-16);
         break;
     case VK_DOWN:
-        MemoryView_Scroll(1);
+        MemoryView_Scroll(16);
         break;
   //  case VK_SPACE:
   //      if (m_Mode == MEMMODE_LAST)
@@ -275,16 +281,17 @@ BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM lParam)
 		//MemoryView_UpdateWindowText();
   //      break;
     case VK_PRIOR:
-        MemoryView_Scroll(-m_nPageSize);
+        MemoryView_Scroll(-m_nPageSize * 16);
         break;
     case VK_NEXT:
-        MemoryView_Scroll(m_nPageSize);
+        MemoryView_Scroll(m_nPageSize * 16);
         break;
     case 0x47:  // G - Go To Address
         {
             WORD value = m_wBaseAddress;
             if (InputBoxOctal(m_hwndMemoryViewer, _T("Go To Address"), _T("Address (octal):"), &value))
                 MemoryView_ScrollTo(value);
+            SetFocus(m_hwndMemoryViewer);
             break;
         }
     default:
@@ -301,7 +308,7 @@ BOOL MemoryView_OnMouseWheel(WPARAM wParam, LPARAM lParam)
     if (nDelta > 5) nDelta = 5;
     if (nDelta < -5) nDelta = -5;
 
-    MemoryView_Scroll(-nDelta * 2);
+    MemoryView_Scroll(-nDelta * 2 * 16);
 
     return FALSE;
 }
@@ -313,16 +320,16 @@ BOOL MemoryView_OnVScroll(WPARAM wParam, LPARAM lParam)
     switch (scrollcmd)
     {
     case SB_LINEDOWN:
-        MemoryView_Scroll(1);
+        MemoryView_Scroll(16);
         break;
     case SB_LINEUP:
-        MemoryView_Scroll(-1);
+        MemoryView_Scroll(-16);
         break;
     case SB_PAGEDOWN:
-        MemoryView_Scroll(m_nPageSize);
+        MemoryView_Scroll(m_nPageSize * 16);
         break;
     case SB_PAGEUP:
-        MemoryView_Scroll(-m_nPageSize);
+        MemoryView_Scroll(-m_nPageSize * 16);
         break;
     case SB_THUMBPOSITION:
         MemoryView_ScrollTo(scrollpos * 16);
@@ -335,7 +342,7 @@ BOOL MemoryView_OnVScroll(WPARAM wParam, LPARAM lParam)
 // Scroll window to given base address
 void MemoryView_ScrollTo(WORD wAddress)
 {
-    m_wBaseAddress = wAddress & ((WORD)~15);
+    m_wBaseAddress = wAddress & ((WORD)~1);
     InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
 
     MemoryView_UpdateScrollPos();
@@ -345,7 +352,8 @@ void MemoryView_Scroll(int nDelta)
 {
     if (nDelta == 0) return;
 
-    m_wBaseAddress += nDelta * 16;
+    m_wBaseAddress += nDelta;
+    m_wBaseAddress = m_wBaseAddress & ((WORD)~1);
     InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
     
     MemoryView_UpdateScrollPos();

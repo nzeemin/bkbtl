@@ -183,9 +183,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
     switch (message)
     {
     case WM_ACTIVATE:
-        if (Settings_GetDebug())
-            ConsoleView_Activate();
-        else
+        if (!Settings_GetDebug())
             SetFocus(g_hwndScreen);
         break;
     case WM_COMMAND:
