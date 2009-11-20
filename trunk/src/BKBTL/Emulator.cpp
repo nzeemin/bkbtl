@@ -34,11 +34,13 @@ WORD g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
 
 
 const LPCTSTR FILENAME_BKROM_MONIT10 = _T("monit10.bin");
+const LPCTSTR FILENAME_BKROM_FOCAL = _T("focal.bin");
+const LPCTSTR FILENAME_BKROM_TESTS = _T("tests.bin");
 const LPCTSTR FILENAME_BKROM_BASIC10_1 = _T("basic10_1.bin");
 const LPCTSTR FILENAME_BKROM_BASIC10_2 = _T("basic10_2.bin");
 const LPCTSTR FILENAME_BKROM_BASIC10_3 = _T("basic10_3.bin");
 
-BOOL InitEmulator()
+BOOL InitEmulator(BKConfiguration configuration)
 {
     ASSERT(g_pBoard == NULL);
 

@@ -10,10 +10,11 @@ class CProcessor;
 
 //////////////////////////////////////////////////////////////////////
 
+
 // TranslateAddress result code
-#define ADDRTYPE_RAM  0    // RAM
-#define ADDRTYPE_ROM   8    // ROM
-#define ADDRTYPE_IO    16   // I/O port
+#define ADDRTYPE_RAM     0  // RAM
+#define ADDRTYPE_ROM     8  // ROM
+#define ADDRTYPE_IO     16  // I/O port
 #define ADDRTYPE_NONE  128  // No data
 #define ADDRTYPE_DENY  255  // Access denied
 

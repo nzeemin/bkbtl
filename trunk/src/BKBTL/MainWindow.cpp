@@ -45,6 +45,7 @@ void MainWindow_DoEmulatorSound();
 void MainWindow_DoFileSaveState();
 void MainWindow_DoFileLoadState();
 void MainWindow_DoEmulatorFloppy(int slot);
+void MainWindow_DoEmulatorConf(BKConfiguration configuration);
 void MainWindow_DoFileScreenshot();
 void MainWindow_DoFileCreateDisk();
 void MainWindow_OnStatusbarClick(LPNMMOUSE lpnm);
@@ -609,6 +610,13 @@ bool MainWindow_DoCommand(int commandId)
         break;
     case ID_FILE_CREATEDISK:
         MainWindow_DoFileCreateDisk();
+        break;
+    case ID_CONF_BK0010BASIC:
+        MainWindow_DoEmulatorConf(BK_CONF_BK0010_BASIC);
+        break;
+    case ID_CONF_BK0010FOCAL:
+        MainWindow_DoEmulatorConf(BK_CONF_BK0010_FOCAL);
+        break;
     default:
         return false;
     }
@@ -746,6 +754,13 @@ void MainWindow_DoFileScreenshot()
 void MainWindow_DoFileCreateDisk()
 {
     ShowCreateDiskDialog();
+}
+
+void MainWindow_DoEmulatorConf(BKConfiguration configuration)
+{
+    //TODO: Check if configuration changed
+    //TODO: Ask user -- we have to reset machine to change configuration
+    //TODO: Change configuration
 }
 
 void MainWindow_DoEmulatorFloppy(int slot)

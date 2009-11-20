@@ -7,8 +7,20 @@
 
 //////////////////////////////////////////////////////////////////////
 
+// Machine configurations
+enum BKConfiguration
+{
+    BK_CONF_BK0010_BASIC = 0,  // БК-0010(01) и BASIC-86
+    BK_CONF_BK0010_FOCAL = 1,  // БК-0010(01) и Фокал + тесты
+    //TODO: Конфигурации БК-0011М
+};
+
+
+//////////////////////////////////////////////////////////////////////
+
 
 extern CMotherboard* g_pBoard;
+extern BKConfiguration g_nEmulatorConfiguration;  // Current configuration
 
 extern BOOL g_okEmulatorRunning;
 
@@ -23,7 +35,7 @@ extern WORD g_wEmulatorPrevPpuPC;  // Previous PC value
 //////////////////////////////////////////////////////////////////////
 
 
-BOOL InitEmulator();
+BOOL InitEmulator(BKConfiguration configuration);
 void DoneEmulator();
 void Emulator_SetCPUBreakpoint(WORD address);
 void Emulator_SetPPUBreakpoint(WORD address);
