@@ -14,11 +14,10 @@ class CProcessor  // KM1801VM1 processor
 {
 
 public:  // Constructor / initialization
-                CProcessor(LPCTSTR name, CMotherboard* pBoard);
+                CProcessor(CMotherboard* pBoard);
     void        AssertHALT();
 	void		DeassertHALT();
 	void		MemoryError();
-    LPCTSTR     GetName() const { return m_name; }
 	void        SetInternalTick (WORD tick) { m_internalTick = tick; }
 
 public:
@@ -30,7 +29,6 @@ protected:  // Statics
     static void RegisterMethodRef(WORD start, WORD end, CProcessor::ExecuteMethodRef methodref);
 
 protected:  // Processor state
-	TCHAR       m_name[5];          // Processor name (DO NOT use it inside the processor code!!!)
     WORD        m_internalTick;     // How many ticks waiting to the end of current instruction
     WORD        m_psw;              // Processor Status Word (PSW)
     WORD        m_R[8];             // Registers (R0..R5, R6=SP, R7=PC)

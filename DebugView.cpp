@@ -177,8 +177,7 @@ void DoDrawDebugView(HDC hdc)
     WORD* arrR = m_wDebugCpuR;
     BOOL* arrRChanged = m_okDebugCpuRChanged;
 
-    LPCTSTR sProcName = pDebugPU->GetName();
-    TextOut(hdc, cxChar * 1, 2 + 1 * cyLine, sProcName, 3);
+    TextOut(hdc, cxChar * 1, 2 + 1 * cyLine, _T("CPU"), 3);
 
 	DrawProcessor(hdc, pDebugPU, cxChar * 6, 2 + 1 * cyLine, arrR, arrRChanged);
 
