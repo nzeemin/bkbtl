@@ -40,12 +40,15 @@ const LPCTSTR FILENAME_BKROM_BASIC10_1  = _T("basic10_1.bin");
 const LPCTSTR FILENAME_BKROM_BASIC10_2  = _T("basic10_2.bin");
 const LPCTSTR FILENAME_BKROM_BASIC10_3  = _T("basic10_3.bin");
 
-BOOL Emulator_LoadRomFile(LPCTSTR strFileName, PBYTE buffer, DWORD bytesToRead)
+BOOL Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, DWORD bytesToRead)
 {
     HANDLE hRomFile = CreateFile(strFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hRomFile == INVALID_HANDLE_VALUE)
         return false;
+
+    ASSERT(bytesToRead <= 8192);
+    ZeroMemory(buffer, 8192);
 
     DWORD dwBytesRead;
     ReadFile(hRomFile, buffer, bytesToRead, &dwBytesRead, NULL);
@@ -60,7 +63,7 @@ BOOL Emulator_LoadRomFile(LPCTSTR strFileName, PBYTE buffer, DWORD bytesToRead)
     return TRUE;
 }
 
-BOOL InitEmulator(BKConfiguration configuration)
+BOOL Emulator_Init()
 {
     ASSERT(g_pBoard == NULL);
 
@@ -68,45 +71,9 @@ BOOL InitEmulator(BKConfiguration configuration)
 
     g_pBoard = new CMotherboard();
 
-    BYTE buffer[8192];
-
-    // Load Monitor ROM file
-    ZeroMemory(buffer, 8192);
-    if (!Emulator_LoadRomFile(FILENAME_BKROM_MONIT10, buffer, 8192))
-    {
-        AlertWarning(_T("Failed to load Monitor ROM file."));
-        return FALSE;
-    }
-    g_pBoard->LoadROM(0, buffer);
-
-    // Load BASIC ROM 1 file
-    ZeroMemory(buffer, 8192);
-    if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_1, buffer, 8192))
-    {
-        AlertWarning(_T("Failed to load BASIC ROM 1 file."));
-        return FALSE;
-    }
-    g_pBoard->LoadROM(1, buffer);
-
-    // Load BASIC ROM 2 file
-    ZeroMemory(buffer, 8192);
-    if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_2, buffer, 8192))
-    {
-        AlertWarning(_T("Failed to load BASIC ROM 2 file."));
-        return FALSE;
-    }
-    g_pBoard->LoadROM(2, buffer);
-
-    // Load BASIC ROM 3 file
-    ZeroMemory(buffer, 8192);
-    if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_3, buffer, 8064))
-    {
-        AlertWarning(_T("Failed to load BASIC ROM 3 file."));
-        return FALSE;
-    }
-    g_pBoard->LoadROM(3, buffer);
-
-    g_nEmulatorConfiguration = configuration;
+    // Allocate memory for old RAM values
+    g_pEmulatorRam = (BYTE*) ::LocalAlloc(LPTR, 65536);
+    g_pEmulatorChangedRam = (BYTE*) ::LocalAlloc(LPTR, 65536);
 
     g_pBoard->Reset();
 
@@ -116,17 +83,10 @@ BOOL InitEmulator(BKConfiguration configuration)
         g_pBoard->SetSoundGenCallback(SoundGen_FeedDAC);
     }
 
-    m_nUptimeFrameCount = 0;
-    m_dwEmulatorUptime = 0;
-
-    // Allocate memory for old RAM values
-    g_pEmulatorRam = (BYTE*) ::LocalAlloc(LPTR, 65536);
-    g_pEmulatorChangedRam = (BYTE*) ::LocalAlloc(LPTR, 65536);
-
     return TRUE;
 }
 
-void DoneEmulator()
+void Emulator_Done()
 {
     ASSERT(g_pBoard != NULL);
 
@@ -141,6 +101,71 @@ void DoneEmulator()
     // Free memory used for old RAM values
     ::LocalFree(g_pEmulatorRam);
     ::LocalFree(g_pEmulatorChangedRam);
+}
+
+BOOL Emulator_InitConfiguration(BKConfiguration configuration)
+{
+    BYTE buffer[8192];
+    // Load Monitor ROM file - in all configurations
+    if (!Emulator_LoadRomFile(FILENAME_BKROM_MONIT10, buffer, 8192))
+    {
+        AlertWarning(_T("Failed to load Monitor ROM file."));
+        return FALSE;
+    }
+    g_pBoard->LoadROM(0, buffer);
+    if (configuration == BK_CONF_BK0010_BASIC)
+    {
+        // Load BASIC ROM 1 file
+        if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_1, buffer, 8192))
+        {
+            AlertWarning(_T("Failed to load BASIC ROM 1 file."));
+            return FALSE;
+        }
+        g_pBoard->LoadROM(1, buffer);
+        // Load BASIC ROM 2 file
+        if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_2, buffer, 8192))
+        {
+            AlertWarning(_T("Failed to load BASIC ROM 2 file."));
+            return FALSE;
+        }
+        g_pBoard->LoadROM(2, buffer);
+        // Load BASIC ROM 3 file
+        if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_3, buffer, 8064))
+        {
+            AlertWarning(_T("Failed to load BASIC ROM 3 file."));
+            return FALSE;
+        }
+        g_pBoard->LoadROM(3, buffer);
+    }
+    else if (configuration == BK_CONF_BK0010_FOCAL)
+    {
+        // Load Focal ROM file
+        if (!Emulator_LoadRomFile(FILENAME_BKROM_FOCAL, buffer, 8192))
+        {
+            AlertWarning(_T("Failed to load Focal ROM file."));
+            return FALSE;
+        }
+        g_pBoard->LoadROM(1, buffer);
+        // Unused 8KB
+        ZeroMemory(buffer, 8192);
+        g_pBoard->LoadROM(2, buffer);
+        // Load Tests ROM file
+        if (!Emulator_LoadRomFile(FILENAME_BKROM_TESTS, buffer, 8064))
+        {
+            AlertWarning(_T("Failed to load Tests ROM file."));
+            return FALSE;
+        }
+        g_pBoard->LoadROM(3, buffer);
+    }
+
+    g_nEmulatorConfiguration = configuration;
+
+    g_pBoard->Reset();
+
+    m_nUptimeFrameCount = 0;
+    m_dwEmulatorUptime = 0;
+
+    return TRUE;
 }
 
 void Emulator_Start()

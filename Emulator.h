@@ -34,8 +34,9 @@ extern WORD g_wEmulatorPrevPpuPC;  // Previous PC value
 //////////////////////////////////////////////////////////////////////
 
 
-BOOL InitEmulator(BKConfiguration configuration);
-void DoneEmulator();
+BOOL Emulator_Init();
+BOOL Emulator_InitConfiguration(BKConfiguration configuration);
+void Emulator_Done();
 void Emulator_SetCPUBreakpoint(WORD address);
 void Emulator_SetPPUBreakpoint(WORD address);
 BOOL Emulator_IsBreakpoint();
