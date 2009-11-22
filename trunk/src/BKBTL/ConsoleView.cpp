@@ -196,7 +196,7 @@ void PrintConsolePrompt()
     TCHAR bufferAddr[7];
     PrintOctalValue(bufferAddr, pProc->GetPC());
     TCHAR buffer[14];
-    wsprintf(buffer, _T("%s:%s> "), pProc->GetName(), bufferAddr);
+    wsprintf(buffer, _T("%s> "), bufferAddr);
     ConsoleView_Print(buffer);
 }
 
@@ -219,22 +219,18 @@ void PrintRegister(LPCTSTR strName, WORD value)
 }
 
 void SaveMemoryDump(CProcessor *pProc)
-{ //
+{
 	BYTE buf[65536];
-	HANDLE file;
-	TCHAR fname[256];
-
-	for(int i=0;i<65536;i++)
+	for(int i = 0; i < 65536; i++)
 	{
-		buf[i]=g_pBoard->GetByte(i,1);
+		buf[i] = g_pBoard->GetByte(i, 1);
 	}
 
-	wsprintf(fname,_T("memdump%s.bin"),pProc->GetName());
-    
-        // Create file
-        file = CreateFile(fname,
-                GENERIC_WRITE, FILE_SHARE_READ, NULL,
-                OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    // Create file
+	HANDLE file;
+    file = CreateFile(_T("memdump.bin"),
+            GENERIC_WRITE, FILE_SHARE_READ, NULL,
+            OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     
     //SetFilePointer(Common_LogFile, 0, NULL, FILE_END);
 
@@ -242,8 +238,8 @@ void SaveMemoryDump(CProcessor *pProc)
     DWORD dwBytesWritten = 0;
     WriteFile(file, buf, dwLength, &dwBytesWritten, NULL);
 	CloseHandle(file);
-
 }
+
 // Print memory dump
 void PrintMemoryDump(CProcessor* pProc, WORD address, int lines)
 {

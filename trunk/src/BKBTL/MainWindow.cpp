@@ -661,9 +661,9 @@ void MainWindow_DoViewColorScreen()
     ScreenViewMode newMode = (ScreenView_GetMode() == ColorScreen) ? BlackWhiteScreen : ColorScreen;
     ScreenView_SetMode(newMode);
 
-    MainWindow_UpdateMenu();
-
     Settings_SetScreenViewMode(newMode);
+    MainWindow_UpdateMenu();
+    InvalidateRect(g_hwndScreen, NULL, TRUE);  // Update screen
 }
 
 void MainWindow_DoViewHeightMode(int newMode)
@@ -780,6 +780,7 @@ void MainWindow_DoEmulatorConf(BKConfiguration configuration)
     Emulator_InitConfiguration(configuration);
 
     MainWindow_UpdateMenu();
+    InvalidateRect(g_hwndScreen, NULL, TRUE);  // Update screen
 }
 
 void MainWindow_DoEmulatorFloppy(int slot)

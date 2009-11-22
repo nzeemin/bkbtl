@@ -32,7 +32,7 @@ CMotherboard::CMotherboard ()
 
 	m_multiply=1;
 
-    m_pCPU = new CProcessor(_T("CPU"), this);
+    m_pCPU = new CProcessor(this);
     //m_pFloppyCtl = new CFloppyController();
 
 	m_TapeReadCallback = NULL;
@@ -72,7 +72,7 @@ void CMotherboard::Reset ()
     m_Port177706 = m_Port177710 = m_Port177712 = 0;
     m_Port177660 = 0100;
     m_Port177662rd = 0;
-    m_Port177662wr = 040000;
+    m_Port177662wr = 047400;
     m_Port177664 = 0;
     m_Port177716 = 0140200;
     m_Port177716mem = m_Port177716tap = 0;

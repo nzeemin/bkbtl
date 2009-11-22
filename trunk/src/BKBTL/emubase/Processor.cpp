@@ -273,11 +273,10 @@ void CProcessor::RegisterMethodRef(WORD start, WORD end, CProcessor::ExecuteMeth
 //////////////////////////////////////////////////////////////////////
 
 
-CProcessor::CProcessor (LPCTSTR name, CMotherboard* pBoard)
+CProcessor::CProcessor (CMotherboard* pBoard)
 {
     ASSERT(pBoard != NULL);
     m_pBoard = pBoard;
-    lstrcpy(m_name, name);
     ZeroMemory(m_R, sizeof(m_R));
 	m_psw = 0400;  // Start value of PSW is 340
     m_savepc = m_savepsw = 0;
