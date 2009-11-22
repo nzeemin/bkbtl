@@ -101,14 +101,13 @@ public:  // System control
 	WORD		GetTimerState();	// returns timer state
 	WORD		GetTimerStateView() { return m_timerflags; } // Returns timer state for debugger
 
-	//void		FloppyDebug(BYTE val);
-
 	void		SetTimerReload(WORD val);	//sets timer reload value
 	void		SetTimerState(WORD val);	//sets timer state
     void        ExecuteCPU();  // Execute one CPU instruction
     void        ExecutePPU();  // Execute one PPU instruction
     BOOL        SystemFrame();  // Do one frame -- use for normal run
-    void        KeyboardEvent(BYTE scancode, BOOL okPressed);  // Key pressed or released
+    void        KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2);  // Key pressed or released
+	WORD        GetKeyboardRegister(void);
     void        TapeInput(BOOL inputBit);  // Tape input bit received
     
     BOOL        AttachFloppyImage(int slot, LPCTSTR sFileName);
@@ -186,9 +185,7 @@ private:
 	int			m_nTapeReadSampleRate;
     SOUNDGENCALLBACK m_SoundGenCallback;
 
-	WORD GetKeyboardRegister(void);
 	void DoSound(void);
-	
 };
 
 
