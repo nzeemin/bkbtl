@@ -18,7 +18,7 @@ int m_nKeyboardBitmapTop = 0;
 BYTE m_nKeyboardKeyPressed = 0;  // BK scan-code for the key pressed, or 0
 
 void KeyboardView_OnDraw(HDC hdc);
-BYTE KeyboardView_GetKeyByPoint(int x, int y);
+int KeyboardView_GetKeyByPoint(int x, int y);
 void Keyboard_DrawKey(HDC hdc, BYTE keyscan);
 
 
@@ -56,48 +56,48 @@ const WORD m_arrKeyboardKeys[] = {
     498,38,  50,34,    0030, 0030,  // Backspace
 
       4,73,  50,34,    0015, 0015,  // TAB
-     56,73,  34,34,    0152, 0000,  // É J
-     91,73,  34,34,    0143, 0000,  // Ö C
-    126,73,  35,34,    0165, 0000,  // Ó U
-    162,73,  34,34,    0153, 0000,  // Ê K
-    197,73,  34,34,    0145, 0000,  // Å E
-    232,73,  34,34,    0156, 0000,  // Í N
-    267,73,  34,34,    0147, 0000,  // Ã G
-    302,73,  35,34,    0173, 0133,  // Ø [
-    338,73,  34,34,    0175, 0135,  // Ù ]
-    373,73,  34,34,    0172, 0000,  // Ç Z
-    408,73,  34,34,    0150, 0000,  // Õ H
+     56,73,  34,34,    0112, 0152,  // É J
+     91,73,  34,34,    0103, 0143,  // Ö C
+    126,73,  35,34,    0125, 0165,  // Ó U
+    162,73,  34,34,    0113, 0153,  // Ê K
+    197,73,  34,34,    0105, 0145,  // Å E
+    232,73,  34,34,    0116, 0156,  // Í N
+    267,73,  34,34,    0107, 0147,  // Ã G
+    302,73,  35,34,    0133, 0133,  // Ø [
+    338,73,  34,34,    0135, 0135,  // Ù ]
+    373,73,  34,34,    0132, 0172,  // Ç Z
+    408,73,  34,34,    0110, 0150,  // Õ H
     443,73,  35,34,    0072, 0052,  // : *
-    479,73,  34,34,    0000, 0000,  // Ú }
+    479,73,  34,34,    0137, 0377,  // Ú }
     514,73,  34,34,    0023, 0023,  // ÂÑ
 
      12,109, 50,34,    0000, 0000,  // ÑÓ
-     64,109, 34,34,    0146, 0000,  // Ô F
-     99,109, 35,34,    0171, 0000,  // Û Y
-    135,109, 34,34,    0167, 0000,  // Â W
-    170,109, 34,34,    0141, 0000,  // À A
-    205,109, 34,34,    0160, 0000,  // Ï P
-    240,109, 34,34,    0162, 0000,  // Ð R
-    275,109, 35,34,    0157, 0000,  // Î O
-    311,109, 34,34,    0154, 0000,  // Ë L
-    346,109, 34,34,    0144, 0000,  // Ä D
-    381,109, 34,34,    0166, 0000,  // Æ V
-    416,109, 34,34,    0174, 0134,  // Ý Backslash
-    452,109, 34,34,    0056, 0076,  // . >
+     64,109, 34,34,    0106, 0146,  // Ô F
+     99,109, 35,34,    0131, 0171,  // Û Y
+    135,109, 34,34,    0127, 0167,  // Â W
+    170,109, 34,34,    0101, 0141,  // À A
+    205,109, 34,34,    0120, 0160,  // Ï P
+    240,109, 34,34,    0122, 0162,  // Ð R
+    275,109, 35,34,    0117, 0157,  // Î O
+    311,109, 34,34,    0114, 0154,  // Ë L
+    346,109, 34,34,    0104, 0144,  // Ä D
+    381,109, 34,34,    0126, 0166,  // Æ V
+    416,109, 34,34,    0134, 0134,  // Ý Backslash
+    452,109, 34,34,    0076, 0056,  // . >
     488,109, 50,34,    0012, 0012,  // ENTER
 
      12,144, 34,34,    BK_KEY_LOWER, BK_KEY_LOWER,  // ÑÒÐ
      47,144, 34,34,    BK_KEY_UPPER, BK_KEY_UPPER,  // ÇÀÃË
-     82,144, 34,34,    0161, 0000,  // ß Q
-    117,144, 34,34,    0176, 0000,  // × ^
-    152,144, 34,34,    0163, 0000,  // Ñ S
-    187,144, 35,34,    0155, 0000,  // Ì M
-    223,144, 34,34,    0151, 0000,  // È I
+     82,144, 34,34,    0121, 0161,  // ß Q
+    117,144, 34,34,    0136, 0000,  // × ^
+    152,144, 34,34,    0123, 0163,  // Ñ S
+    187,144, 35,34,    0115, 0155,  // Ì M
+    223,144, 34,34,    0111, 0151,  // È I
     258,144, 34,34,    0124, 0164,  // Ò T
-    293,144, 34,34,    0170, 0000,  // Ü X
-    328,144, 34,34,    0142, 0000,  // Á B
-    363,144, 35,34,    0140, 0000,  // Þ @
-    399,144, 34,34,    0054, 0074,  // , <
+    293,144, 34,34,    0130, 0170,  // Ü X
+    328,144, 34,34,    0102, 0142,  // Á B
+    363,144, 35,34,    0100, 0000,  // Þ @
+    399,144, 34,34,    0074, 0054,  // , <
 
      12,179, 50,34,    0016, 0016,  // RUS
      64,179, 35,34,    BK_KEY_AR2, BK_KEY_AR2,  // AR2
@@ -173,30 +173,39 @@ LRESULT CALLBACK KeyboardViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
         {
             POINT ptCursor;  ::GetCursorPos(&ptCursor);
             ::ScreenToClient(g_hwndKeyboard, &ptCursor);
-            BYTE keyscan = KeyboardView_GetKeyByPoint(ptCursor.x, ptCursor.y);
-            LPCTSTR cursor = (keyscan == 0) ? IDC_ARROW : IDC_HAND;
+            int keyindex = KeyboardView_GetKeyByPoint(ptCursor.x, ptCursor.y);
+            LPCTSTR cursor = (keyindex == -1) ? IDC_ARROW : IDC_HAND;
             ::SetCursor(::LoadCursor(NULL, cursor));
         }
         return (LRESULT)TRUE;
     case WM_LBUTTONDOWN:
         {
             int x = LOWORD(lParam); 
-            int y = HIWORD(lParam); 
-            BYTE keyscan = KeyboardView_GetKeyByPoint(x, y);
-            if (keyscan != 0)
-            {
-                // Fire keydown event and capture mouse
-                ScreenView_KeyEvent(keyscan, TRUE);
-                ::SetCapture(g_hwndKeyboard);
+            int y = HIWORD(lParam);
+            WORD fwkeys = wParam;
 
-                // Draw focus frame for the key pressed
-                HDC hdc = ::GetDC(g_hwndKeyboard);
-                Keyboard_DrawKey(hdc, keyscan);
-                ::ReleaseDC(g_hwndKeyboard, hdc);
+            int keyindex = KeyboardView_GetKeyByPoint(x, y);
+            if (keyindex == -1) break;
+            BYTE keyscan = (BYTE) m_arrKeyboardKeys[keyindex * KEYBOARD_KEYS_ARRAY_WIDTH + 4];
+            if (keyscan == 0) break;
 
-                // Remember key pressed
-                m_nKeyboardKeyPressed = keyscan;
-            }
+            BOOL okShift = ((fwkeys & MK_SHIFT) != 0);
+            if (okShift && keyscan >= 0100 && keyscan <= 0137)
+                keyscan += 040;
+            else if (okShift && keyscan >= 0060 && keyscan <= 0077)
+                keyscan -= 020;
+
+            // Fire keydown event and capture mouse
+            ScreenView_KeyEvent(keyscan, TRUE);
+            ::SetCapture(g_hwndKeyboard);
+
+            // Draw focus frame for the key pressed
+            HDC hdc = ::GetDC(g_hwndKeyboard);
+            Keyboard_DrawKey(hdc, keyscan);
+            ::ReleaseDC(g_hwndKeyboard, hdc);
+
+            // Remember key pressed
+            m_nKeyboardKeyPressed = keyscan;
         }
         break;
     case WM_LBUTTONUP:
@@ -263,8 +272,8 @@ void KeyboardView_OnDraw(HDC hdc)
     //}
 }
 
-// Returns: BK scan-code of key under the cursor position, or 0 if not found
-BYTE KeyboardView_GetKeyByPoint(int x, int y)
+// Returns: index of key under the cursor position, or -1 if not found
+int KeyboardView_GetKeyByPoint(int x, int y)
 {
     for (int i = 0; i < m_nKeyboardKeysCount; i++)
     {
@@ -276,10 +285,10 @@ BYTE KeyboardView_GetKeyByPoint(int x, int y)
 
         if (x >= rcKey.left && x < rcKey.right && y >= rcKey.top && y < rcKey.bottom)
         {
-            return (BYTE) m_arrKeyboardKeys[i * KEYBOARD_KEYS_ARRAY_WIDTH + 4];
+            return i;
         }
     }
-    return 0;
+    return -1;
 }
 
 void Keyboard_DrawKey(HDC hdc, BYTE keyscan)

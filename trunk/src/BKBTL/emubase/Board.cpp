@@ -69,6 +69,7 @@ void CMotherboard::Reset ()
     m_timerflags = 0;
     m_timerdivider = 0;
 
+    // Reset ports
     m_Port177706 = m_Port177710 = m_Port177712 = 0;
     m_Port177660 = 0100;
     m_Port177662rd = 0;
@@ -351,7 +352,7 @@ BOOL CMotherboard::SystemFrame()
 }
 
 // Key pressed or released
-void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed)
+void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2)
 {
     if (scancode == BK_KEY_STOP)
     {
@@ -378,8 +379,7 @@ void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed)
         m_Port177660 |= 0200;  // "Key ready" flag in keyboard state register
         if ((m_Port177660 & 0100) == 0100)  // Keyboard interrupt enabled
         {
-            m_pCPU->InterruptVIRQ(1, 060);
-            //TODO: Interrupt 60/270
+            m_pCPU->InterruptVIRQ(1, (okAr2 ? 0274 : 060));
         }
     }
 }
@@ -865,33 +865,12 @@ void	CMotherboard::SetFloppyData(WORD val)
 
 WORD CMotherboard::GetKeyboardRegister(void)
 {
-	WORD res;
-	WORD w7214;
-	BYTE b22556;
+	WORD res = 0;
 
-	w7214=GetRAMWord(07214);
-	b22556=GetRAMByte(022556);
-
-	switch(w7214)
-	{
-		case 010534: //fix
-		case 07234:  //main
-			res=(b22556&0200)?KEYB_RUS:KEYB_LAT;
-			break;
-		case 07514: //lower register
-			res=(b22556&0200)?(KEYB_RUS|KEYB_LOWERREG):(KEYB_LAT|KEYB_LOWERREG);
-			break;
-		case 07774: //graph
-			res=KEYB_RUS;
-			break;
-		case 010254: //control
-			res=KEYB_LAT;
-			break;
-		default:
-			res=KEYB_LAT;
-			break;
-	}
-	return res;
+    WORD mem000042 = GetRAMWord(000042);
+    res |= (mem000042 & 0100000) == 0 ? KEYB_LAT : KEYB_RUS;
+    
+    return res;
 }
 
 void CMotherboard::DoSound(void)

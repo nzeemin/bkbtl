@@ -161,7 +161,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
         return FALSE;
 
     // Create screen window as a child of the main window
-    CreateScreenView(g_hwnd, 4, 4);
+    CreateScreenView(g_hwnd, 4, 4, 620);
 
     MainWindow_RestoreSettings();
 
