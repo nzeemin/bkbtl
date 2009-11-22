@@ -511,6 +511,16 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_EMULATOR_REALSPEED, (Settings_GetRealSpeed() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_SOUND, (Settings_GetSound() ? MF_CHECKED : MF_UNCHECKED));
     MainWindow_SetToolbarImage(ID_EMULATOR_SOUND, (Settings_GetSound() ? ToolbarImageSoundOn : ToolbarImageSoundOff));
+    EnableMenuItem(hMenu, ID_CONF_BK0010BASIC, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
+    EnableMenuItem(hMenu, ID_CONF_BK0010FOCAL, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
+
+    UINT configcmd = 0;
+    switch (g_nEmulatorConfiguration)
+    {
+    case BK_CONF_BK0010_BASIC: configcmd = ID_CONF_BK0010BASIC; break;
+    case BK_CONF_BK0010_FOCAL: configcmd = ID_CONF_BK0010FOCAL; break;
+    }
+    CheckMenuRadioItem(hMenu, ID_CONF_BK0010BASIC, ID_CONF_BK0010FOCAL, configcmd, MF_BYCOMMAND);
 
     // Emulator|FloppyX
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY0, (g_pBoard->IsFloppyImageAttached(0) ? MF_CHECKED : MF_UNCHECKED));
@@ -758,9 +768,18 @@ void MainWindow_DoFileCreateDisk()
 
 void MainWindow_DoEmulatorConf(BKConfiguration configuration)
 {
-    //TODO: Check if configuration changed
-    //TODO: Ask user -- we have to reset machine to change configuration
-    //TODO: Change configuration
+    // Check if configuration changed
+    if (g_nEmulatorConfiguration == configuration)
+        return;
+    
+    // Ask user -- we have to reset machine to change configuration
+    if (!AlertOkCancel(_T("Reset required after configuration change.\nAre you agree?")))
+        return;
+    
+    // Change configuration
+    Emulator_InitConfiguration(configuration);
+
+    MainWindow_UpdateMenu();
 }
 
 void MainWindow_DoEmulatorFloppy(int slot)

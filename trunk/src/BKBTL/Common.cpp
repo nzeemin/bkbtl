@@ -30,6 +30,11 @@ void AlertWarning(LPCTSTR sMessage)
 {
     ::MessageBox(NULL, sMessage, _T("BK Back to Life"), MB_OK | MB_ICONEXCLAMATION);
 }
+BOOL AlertOkCancel(LPCTSTR sMessage)
+{
+    int result = ::MessageBox(NULL, sMessage, _T("BK Back to Life"), MB_OKCANCEL | MB_ICONQUESTION);
+    return (result == IDOK);
+}
 
 
 //////////////////////////////////////////////////////////////////////
