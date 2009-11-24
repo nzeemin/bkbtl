@@ -56,6 +56,8 @@
 #define ID_EMULATOR_CONF                32808
 #define ID_CONF_BK0010BASIC             32809
 #define ID_CONF_BK0010FOCAL             32810
+#define ID_Menu                         32811
+#define ID_VIEW_MEMORYMAP               32812
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -64,7 +66,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32811
+#define _APS_NEXT_COMMAND_VALUE         32813
 #define _APS_NEXT_CONTROL_VALUE         1004
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

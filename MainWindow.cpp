@@ -32,6 +32,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND, UINT, WPARAM, LPARAM);
 void MainWindow_AdjustWindowLayout();
 bool MainWindow_DoCommand(int commandId);
 void MainWindow_DoViewDebug();
+void MainWindow_DoMemoryMap();
 void MainWindow_DoViewToolbar();
 void MainWindow_DoViewKeyboard();
 void MainWindow_DoViewTape();
@@ -76,12 +77,14 @@ void MainWindow_RegisterClass()
     RegisterClassEx(&wcex);
 
 	ToolWindow_RegisterClass();
+    OverlappedWindow_RegisterClass();
 
     // Register view classes
     ScreenView_RegisterClass();
     KeyboardView_RegisterClass();
     MemoryView_RegisterClass();
     DebugView_RegisterClass();
+    MemoryMapView_RegisterClass();
     DisasmView_RegisterClass();
     ConsoleView_RegisterClass();
 	TapeView_RegisterClass();
@@ -479,6 +482,14 @@ void MainWindow_ShowHideTape()
     MainWindow_UpdateMenu();
 }
 
+void MainWindow_ShowHideMemoryMap()
+{
+    if (g_hwndMemoryMap == INVALID_HANDLE_VALUE)
+    {
+        CreateMemoryMapView(100,100, 320,320);
+    }
+}
+
 void MainWindow_UpdateMenu()
 {
     // Get main menu
@@ -560,6 +571,9 @@ bool MainWindow_DoCommand(int commandId)
     case ID_VIEW_DEBUG:
         MainWindow_DoViewDebug();
         break;
+    case ID_VIEW_MEMORYMAP:
+        MainWindow_DoMemoryMap();
+        break;
     case ID_VIEW_TOOLBAR:
         MainWindow_DoViewToolbar();
         break;
@@ -639,6 +653,10 @@ void MainWindow_DoViewDebug()
 
     Settings_SetDebug(!Settings_GetDebug());
     MainWindow_ShowHideDebug();
+}
+void MainWindow_DoMemoryMap()
+{
+    MainWindow_ShowHideMemoryMap();
 }
 void MainWindow_DoViewToolbar()
 {

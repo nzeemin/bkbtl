@@ -96,3 +96,27 @@ LRESULT CALLBACK ToolWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
 
 
 //////////////////////////////////////////////////////////////////////
+
+
+void OverlappedWindow_RegisterClass()
+{
+    WNDCLASSEX wcex;
+    wcex.cbSize = sizeof(WNDCLASSEX);
+
+    wcex.style			= CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc	= DefWindowProc;
+    wcex.cbClsExtra		= 0;
+    wcex.cbWndExtra		= 0;
+    wcex.hInstance		= g_hInst;
+    wcex.hIcon			= NULL;
+    wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground	= (HBRUSH)(COLOR_BTNFACE+1);
+    wcex.lpszMenuName	= NULL;
+    wcex.lpszClassName	= CLASSNAME_OVERLAPPEDWINDOW;
+    wcex.hIconSm		= NULL;
+
+    RegisterClassEx(&wcex);
+}
+
+
+//////////////////////////////////////////////////////////////////////

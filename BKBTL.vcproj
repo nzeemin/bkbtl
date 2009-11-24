@@ -394,6 +394,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\MemoryMapView.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\MemoryView.cpp"
 			>
 		</File>

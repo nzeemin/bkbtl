@@ -11,6 +11,7 @@ const LPCTSTR CLASSNAME_KEYBOARDVIEW = _T("BKBTLKEYBOARD");
 const LPCTSTR CLASSNAME_DEBUGVIEW   = _T("BKBTLDEBUG");
 const LPCTSTR CLASSNAME_DISASMVIEW  = _T("BKBTLDISASM");
 const LPCTSTR CLASSNAME_MEMORYVIEW  = _T("BKBTLMEMORY");
+const LPCTSTR CLASSNAME_MEMORYMAPVIEW  = _T("BKBTLMEMORYMAP");
 const LPCTSTR CLASSNAME_CONSOLEVIEW = _T("BKBTLCONSOLE");
 const LPCTSTR CLASSNAME_TAPEVIEW    = _T("BKBTLTAPE");
 
@@ -88,6 +89,17 @@ void MemoryView_RegisterClass();
 void CreateMemoryView(HWND hwndParent, int x, int y, int width, int height);
 LRESULT CALLBACK MemoryViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MemoryViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+
+//////////////////////////////////////////////////////////////////////
+// MemoryMapView
+
+extern HWND g_hwndMemoryMap;  // MemoryMap view window handler
+
+void MemoryMapView_RegisterClass();
+void CreateMemoryMapView(int x, int y, int width, int height);
+LRESULT CALLBACK MemoryMapViewWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK MemoryMapViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 
 //////////////////////////////////////////////////////////////////////
