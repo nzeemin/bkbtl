@@ -17,6 +17,8 @@ HWND g_hwndMemoryMap = (HWND) INVALID_HANDLE_VALUE;  // MemoryMap view window ha
 
 HWND m_hwndMemoryMapViewer = (HWND) INVALID_HANDLE_VALUE;
 
+void MemoryMapView_OnDraw(HDC hdc);
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -82,17 +84,52 @@ LRESULT CALLBACK MemoryMapViewViewerWndProc(HWND hWnd, UINT message, WPARAM wPar
     UNREFERENCED_PARAMETER(lParam);
     switch (message)
     {
+    case WM_PAINT:
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+
+            MemoryMapView_OnDraw(hdc);  // Draw memory dump
+
+            EndPaint(hWnd, &ps);
+        }
+        break;
     //TODO
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return (LRESULT)FALSE;
-    //TODO
 }
 
 void MemoryMapView_OnDraw(HDC hdc)
 {
-    //TODO
+    ASSERT(g_pBoard != NULL);
+
+    //TODO: Draw using bitmap
+    for (int y = 0; y < 256; y += 1)
+    {
+        for (int x = 0; x < 256; x += 2)
+        {
+            WORD address = (WORD)(x + y * 256);
+            BOOL valid;
+            WORD value = g_pBoard->GetWordView(address, FALSE, FALSE, &valid);
+            COLORREF color1, color2;
+            if (valid)
+            {
+                BYTE val;
+                val = value & 0xff00;
+                color1 = RGB(val, val, val);
+                val = value & 0x00ff;
+                color2 = RGB(val, val, val);
+            }
+            else
+            {
+                color1 = color2 = RGB(128,0,0);
+            }
+            ::SetPixel(hdc, x, y, color1);
+            ::SetPixel(hdc, x + 1, y, color2);
+        }
+    }
 }
 
 
