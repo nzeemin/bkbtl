@@ -21,10 +21,18 @@ BITMAPINFO m_bmpinfoMemoryMap;
 HBITMAP m_hMemoryMapBitmap = NULL;
 DWORD * m_pMemoryMap_bits = NULL;
 
+int m_nMemoryMap_xpos = 0;
+int m_nMemoryMap_ypos = 0;
+int m_nMemoryMap_scale = 2;
+
 void MemoryMapView_OnDraw(HDC hdc);
+BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM lParam);
+BOOL MemoryMapView_OnMouseWheel(WPARAM wParam, LPARAM lParam);
 void MemoryMapView_InitBitmap();
 void MemoryMapView_DoneBitmap();
-void MemoryMap_PrepareBitmap();
+void MemoryMapView_PrepareBitmap();
+void MemoryMapView_Zoom(BOOL inout);
+void MemoryMapView_UpdateScrollPos();
 
 
 //////////////////////////////////////////////////////////////////////
@@ -52,11 +60,11 @@ void MemoryMapView_RegisterClass()
 
 void CreateMemoryMapView(int x, int y)
 {
-    int cxBorder = ::GetSystemMetrics(SM_CXBORDER);
-    int cyBorder = ::GetSystemMetrics(SM_CYBORDER);
+    int cxBorder = ::GetSystemMetrics(SM_CXDLGFRAME);
+    int cyBorder = ::GetSystemMetrics(SM_CYDLGFRAME);
     int cxScroll = ::GetSystemMetrics(SM_CXVSCROLL);
     int cyScroll = ::GetSystemMetrics(SM_CYHSCROLL);
-    int cyCaption = ::GetSystemMetrics(SM_CYCAPTION);
+    int cyCaption = ::GetSystemMetrics(SM_CYSMCAPTION);
 
     int width = 256 * 2 + cxScroll + cxBorder * 2;
     int height = 256 * 2 + cyScroll + cyBorder * 2 + cyCaption;
@@ -73,14 +81,15 @@ void CreateMemoryMapView(int x, int y)
 
     RECT rcClient;  GetClientRect(g_hwndMemoryMap, &rcClient);
     
-	m_hwndMemoryMapViewer = CreateWindowEx(
-            WS_EX_STATICEDGE,
+	m_hwndMemoryMapViewer = CreateWindow(
             CLASSNAME_MEMORYMAPVIEW, NULL,
             WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | WS_TABSTOP,
             0, 0, rcClient.right, rcClient.bottom,
             g_hwndMemoryMap, NULL, g_hInst, NULL);
 
     MemoryMapView_InitBitmap();
+    MemoryMapView_UpdateScrollPos();
+    ::SetFocus(m_hwndMemoryMapViewer);
 }
 
 void MemoryMapView_InitBitmap()
@@ -120,6 +129,9 @@ LRESULT CALLBACK MemoryMapViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
     UNREFERENCED_PARAMETER(lParam);
     switch (message)
     {
+    case WM_SETFOCUS:
+        ::SetFocus(m_hwndMemoryMapViewer);
+        break;
     case WM_DESTROY:
         g_hwndMemoryMap = (HWND) INVALID_HANDLE_VALUE;  // We are closed! Bye-bye!..
         return CallWindowProc(m_wndprocMemoryMapToolWindow, hWnd, message, wParam, lParam);
@@ -148,26 +160,77 @@ LRESULT CALLBACK MemoryMapViewViewerWndProc(HWND hWnd, UINT message, WPARAM wPar
         // Free resources
         MemoryMapView_DoneBitmap();
         return DefWindowProc(hWnd, message, wParam, lParam);
+    case WM_LBUTTONDOWN:
+        SetFocus(hWnd);
+        break;
+    case WM_KEYDOWN:
+        return (LRESULT) MemoryMapView_OnKeyDown(wParam, lParam);
+    case WM_MOUSEWHEEL:
+        return (LRESULT) MemoryMapView_OnMouseWheel(wParam, lParam);
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return (LRESULT)FALSE;
 }
 
+BOOL MemoryMapView_OnMouseWheel(WPARAM wParam, LPARAM lParam)
+{
+    short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+    MemoryMapView_Zoom(zDelta > 0);
+
+    return FALSE;
+}
+
+void MemoryMapView_Zoom(BOOL inout)
+{
+    if (inout)
+    {
+        if (m_nMemoryMap_scale >= 40)
+            return;
+        m_nMemoryMap_scale += 1;
+    }
+    else
+    {
+        if (m_nMemoryMap_scale <= 2)
+            return;
+        m_nMemoryMap_scale -= 1;
+    }
+
+    InvalidateRect(m_hwndMemoryMapViewer, NULL, FALSE);
+    MemoryMapView_UpdateScrollPos();
+}
+
+BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM lParam)
+{
+    switch (vkey)
+    {
+    case VK_OEM_MINUS:
+        MemoryMapView_Zoom(FALSE);
+        break;
+    case VK_OEM_PLUS:
+        MemoryMapView_Zoom(TRUE);
+        break;
+    default:
+        return TRUE;
+    }
+    return FALSE;
+}
+
 void MemoryMapView_OnDraw(HDC hdc)
 {
     ASSERT(g_pBoard != NULL);
 
-    MemoryMap_PrepareBitmap();
+    MemoryMapView_PrepareBitmap();
 
     DrawDibDraw(m_hMemoryMapDrawDib, hdc,
-        0, 0, 256 * 2, 256 * 2,
+        0, 0, 256 * m_nMemoryMap_scale, 256 * m_nMemoryMap_scale,
         &m_bmpinfoMemoryMap.bmiHeader, m_pMemoryMap_bits, 0,0,
         256, 256,
         0);
 }
 
-void MemoryMap_PrepareBitmap()
+void MemoryMapView_PrepareBitmap()
 {
     for (int y = 0; y < 256; y += 1)
     {
@@ -181,7 +244,7 @@ void MemoryMap_PrepareBitmap()
             if (valid)
             {
                 BYTE val;
-                val = value & 0xff00;
+                val = (value & 0xff00) >> 8;
                 color1 = RGB(val, val, val);
                 val = value & 0x00ff;
                 color2 = RGB(val, val, val);
@@ -197,6 +260,29 @@ void MemoryMap_PrepareBitmap()
             pBits++;
         }
     }
+}
+
+void MemoryMapView_UpdateScrollPos()
+{
+    SCROLLINFO siV;
+    ZeroMemory(&siV, sizeof(siV));
+    siV.cbSize = sizeof(siV);
+    siV.fMask = SIF_PAGE | SIF_POS | SIF_RANGE | SIF_DISABLENOSCROLL;
+    siV.nPage = 256 * 2 / m_nMemoryMap_scale;
+    siV.nPos = m_nMemoryMap_xpos;  //TODO
+    siV.nMin = 0;
+    siV.nMax = m_nMemoryMap_scale * 256 - 512;
+    SetScrollInfo(m_hwndMemoryMapViewer, SB_VERT, &siV, TRUE);
+
+    SCROLLINFO siH;
+    ZeroMemory(&siH, sizeof(siH));
+    siH.cbSize = sizeof(siH);
+    siH.fMask = SIF_PAGE | SIF_POS | SIF_RANGE | SIF_DISABLENOSCROLL;
+    siH.nPage = 256 * 2 / m_nMemoryMap_scale;
+    siH.nPos = m_nMemoryMap_ypos;  //TODO
+    siH.nMin = 0;
+    siH.nMax = m_nMemoryMap_scale * 256 - 512;
+    SetScrollInfo(m_hwndMemoryMapViewer, SB_HORZ, &siH, TRUE);
 }
 
 
