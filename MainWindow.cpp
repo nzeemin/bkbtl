@@ -486,7 +486,11 @@ void MainWindow_ShowHideMemoryMap()
 {
     if (g_hwndMemoryMap == INVALID_HANDLE_VALUE)
     {
-        CreateMemoryMapView(100,100, 320,320);
+        CreateMemoryMapView(400, 250);
+    }
+    else
+    {
+        ::SetFocus(g_hwndMemoryMap);
     }
 }
 

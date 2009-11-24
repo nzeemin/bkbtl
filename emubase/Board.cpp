@@ -551,8 +551,10 @@ WORD CMotherboard::GetPortWord(WORD address)
 {
     switch (address)
     {
-    //TODO: 0177706 -- System Timer counter start value -- регистр установки таймера
-    //TODO: 0177710 -- System Timer Counter -- регистр счетчика таймера
+    case 0177706:  // System Timer counter start value -- регистр установки таймера
+        return m_Port177706;
+    case 0177710:  // System Timer Counter -- регистр счетчика таймера
+        return m_Port177710;
     //TODO: 0177712 -- System Timer Manage -- регистр управления таймера
 
     case 0177660:  // Keyboard status register
@@ -636,9 +638,19 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
     switch (address)
     {
     //TODO: 0177700, 0177702, 0177704 -- Unknown
-    //TODO: 0177706 -- System Timer counter start value -- регистр установки таймера
-    //TODO: 0177710 -- System Timer Counter -- регистр счетчика таймера
-    //TODO: 0177712 -- System Timer Manage -- регистр управления таймера
+    
+    case 0177706:  // System Timer counter start value -- регистр установки таймера
+        m_Port177706 = word;
+        //TODO
+        break;
+    case 0177710:  // System Timer Counter -- регистр счетчика таймера
+        m_Port177710 = word;
+        //TODO
+        break;
+    case 0177712:  // System Timer Manage -- регистр управления таймера
+        m_Port177712 = word;
+        //TODO
+        break;
 
     case 0177714:  // Parallel port register
         //TODO

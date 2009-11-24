@@ -97,7 +97,7 @@ LRESULT CALLBACK MemoryViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
 extern HWND g_hwndMemoryMap;  // MemoryMap view window handler
 
 void MemoryMapView_RegisterClass();
-void CreateMemoryMapView(int x, int y, int width, int height);
+void CreateMemoryMapView(int x, int y);
 LRESULT CALLBACK MemoryMapViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MemoryMapViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
