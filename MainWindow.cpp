@@ -486,7 +486,8 @@ void MainWindow_ShowHideMemoryMap()
 {
     if (g_hwndMemoryMap == INVALID_HANDLE_VALUE)
     {
-        CreateMemoryMapView(400, 250);
+        RECT rcScreen;  ::GetWindowRect(g_hwndScreen, &rcScreen);
+        CreateMemoryMapView(rcScreen.right, rcScreen.top);
     }
     else
     {
@@ -925,6 +926,8 @@ void MainWindow_UpdateAllViews()
         InvalidateRect(g_hwndDisasm, NULL, TRUE);
     if (g_hwndMemory != NULL)
         InvalidateRect(g_hwndMemory, NULL, TRUE);
+    if (g_hwndMemoryMap != NULL)
+        InvalidateRect(g_hwndMemoryMap, NULL, TRUE);
 }
 
 void MainWindow_SetToolbarImage(int commandId, int imageIndex)

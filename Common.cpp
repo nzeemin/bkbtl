@@ -28,11 +28,11 @@ BOOL AssertFailedLine(LPCSTR lpszFileName, int nLine)
 
 void AlertWarning(LPCTSTR sMessage)
 {
-    ::MessageBox(NULL, sMessage, _T("BK Back to Life"), MB_OK | MB_ICONEXCLAMATION);
+    ::MessageBox(NULL, sMessage, _T("BK Back to Life"), MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
 }
 BOOL AlertOkCancel(LPCTSTR sMessage)
 {
-    int result = ::MessageBox(NULL, sMessage, _T("BK Back to Life"), MB_OKCANCEL | MB_ICONQUESTION);
+    int result = ::MessageBox(NULL, sMessage, _T("BK Back to Life"), MB_OKCANCEL | MB_ICONQUESTION | MB_TOPMOST);
     return (result == IDOK);
 }
 

@@ -60,9 +60,10 @@ void CreateMemoryMapView(int x, int y)
 
     int width = 256 * 2 + cxScroll + cxBorder * 2;
     int height = 256 * 2 + cyScroll + cyBorder * 2 + cyCaption;
-    g_hwndMemoryMap = CreateWindow(
+    g_hwndMemoryMap = CreateWindowEx(
+            WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
             CLASSNAME_OVERLAPPEDWINDOW, _T("BK Memory Map"),
-            WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_VISIBLE,
+            WS_POPUPWINDOW | WS_CAPTION | WS_VISIBLE,
             x, y, width, height,
             NULL, NULL, g_hInst, NULL);
 
