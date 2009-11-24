@@ -803,7 +803,7 @@ void MainWindow_DoEmulatorConf(BKConfiguration configuration)
     Emulator_InitConfiguration(configuration);
 
     MainWindow_UpdateMenu();
-    InvalidateRect(g_hwndScreen, NULL, TRUE);  // Update screen
+    MainWindow_UpdateAllViews();
 }
 
 void MainWindow_DoEmulatorFloppy(int slot)
