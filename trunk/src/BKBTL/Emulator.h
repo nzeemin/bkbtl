@@ -10,8 +10,9 @@
 // Machine configurations
 enum BKConfiguration
 {
-    BK_CONF_BK0010_BASIC = 0,  // БК-0010(01) и BASIC-86
-    BK_CONF_BK0010_FOCAL = 1,  // БК-0010(01) и Фокал + тесты
+    BK_CONF_BK0010_MONIT = 0,  // БК-0010(01), только Монитор
+    BK_CONF_BK0010_BASIC = 1,  // БК-0010(01) и BASIC-86
+    BK_CONF_BK0010_FOCAL = 2,  // БК-0010(01) и Фокал + тесты
     //TODO: Конфигурации БК-0011М
 };
 
