@@ -95,7 +95,7 @@ BEGIN
     BEGIN
         MENUITEM "Toolbar",                     ID_VIEW_TOOLBAR
         MENUITEM "Keyboard",                    ID_VIEW_KEYBOARD
-        MENUITEM "Tape",                        32803, INACTIVE
+        MENUITEM "Tape",                        32803
         MENUITEM "Debug",                       ID_VIEW_DEBUG
         MENUITEM "Memory Map",                  ID_VIEW_MEMORYMAP
         MENUITEM SEPARATOR
