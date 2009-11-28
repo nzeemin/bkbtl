@@ -240,7 +240,8 @@ void ScreenView_PrepareScreen()
     scroll = (scroll >= 0330) ? scroll - 0330 : 050 + scroll;
 
     // Render to bitmap
-    for (int y = 0; y < 256; y++)
+    int linesToShow = okSmallScreen ? 64 : 256;
+    for (int y = 0; y < linesToShow; y++)
     {
         int yy = (y + scroll) & 0377;
         WORD addressBits = 040000 + yy * 0100;
@@ -275,6 +276,11 @@ void ScreenView_PrepareScreen()
 
             addressBits += 2;
         }
+    }
+
+    if (okSmallScreen)
+    {
+        ::ZeroMemory(m_bits, (256 - 64) * 512 * sizeof(DWORD));
     }
 }
 
