@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include <commdlg.h>
 #include "Dialogs.h"
+#include "Emulator.h"
 #include "BKBTL.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -10,8 +11,9 @@
 
 INT_PTR CALLBACK AboutBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK InputBoxProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK CreateDiskProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-void Dialogs_DoCreateDisk(int tracks);
+INT_PTR CALLBACK LoadBinProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+void Dialogs_DoLoadBinPrepare(HWND hDlg, LPCTSTR strFileName);
+void Dialogs_DoLoadBinLoad(LPCTSTR strFileName);
 BOOL InputBoxValidate(HWND hDlg);
 
 LPCTSTR m_strInputBoxTitle = NULL;
@@ -145,30 +147,63 @@ BOOL ShowSaveDialog(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strFilter, TCHAR* 
     return okResult;
 }
 
+BOOL ShowOpenDialog(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strFilter, TCHAR* bufFileName)
+{
+    *bufFileName = 0;
+    OPENFILENAME ofn;
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = hwndOwner;
+    ofn.hInstance = g_hInst;
+    ofn.lpstrTitle = strTitle;
+    ofn.lpstrFilter = strFilter;
+    ofn.Flags = OFN_FILEMUSTEXIST;
+    ofn.lpstrFile = bufFileName;
+    ofn.nMaxFile = MAX_PATH;
+
+    BOOL okResult = GetOpenFileName(&ofn);
+    return okResult;
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // Create Disk Dialog
 
-void ShowCreateDiskDialog()
+void ShowLoadBinDialog()
 {
-    DialogBox(g_hInst, MAKEINTRESOURCE(IDD_CREATEDISK), g_hwnd, CreateDiskProc);
+    DialogBox(g_hInst, MAKEINTRESOURCE(IDD_LOADBIN), g_hwnd, LoadBinProc);
 }
 
-INT_PTR CALLBACK CreateDiskProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK LoadBinProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
     case WM_INITDIALOG:
         {
-            CheckRadioButton(hDlg, IDC_TRACKS40, IDC_TRACKS80, IDC_TRACKS80);
+            ::PostMessage(hDlg, WM_COMMAND, IDC_BUTTONBROWSE, 0);
             return (INT_PTR)FALSE;
         }
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
-        case IDOK:
-            Dialogs_DoCreateDisk(IsDlgButtonChecked(hDlg, IDC_TRACKS40) == BST_CHECKED ? 40 : 80);
+        case IDC_BUTTONBROWSE:
+            {
+                TCHAR bufFileName[MAX_PATH];
+                BOOL okResult = ShowOpenDialog(g_hwnd,
+                    _T("Select BIN file to load"),
+                    _T("BK binary files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
+                    bufFileName);
+                if (! okResult) break;
 
+                Dialogs_DoLoadBinPrepare(hDlg, bufFileName);
+            }
+            break;
+        case IDOK:
+            {
+                TCHAR bufFileName[MAX_PATH];
+                ::GetDlgItemText(hDlg, IDC_EDITFILE, bufFileName, sizeof(bufFileName) / sizeof(TCHAR));
+                Dialogs_DoLoadBinLoad(bufFileName);
+            }
             EndDialog(hDlg, LOWORD(wParam));
             return (INT_PTR)TRUE;
         case IDCANCEL:
@@ -182,26 +217,103 @@ INT_PTR CALLBACK CreateDiskProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
     return (INT_PTR) FALSE;
 }
 
-void Dialogs_DoCreateDisk(int tracks)
+void Dialogs_DoLoadBinPrepare(HWND hDlg, LPCTSTR strFileName)
 {
-    TCHAR bufFileName[MAX_PATH];
-    BOOL okResult = ShowSaveDialog(g_hwnd,
-        _T("Save new disk as"),
-        _T("Bitmaps (*.dsk)\0*.dsk\0All Files (*.*)\0*.*\0\0"),
-        bufFileName);
-    if (! okResult) return;
+    ::SetDlgItemText(hDlg, IDC_EDITFILE, NULL);
 
-    // Create zero-filled file
-    LONG fileSize = tracks * 10240;
-	HANDLE hFile = ::CreateFile(bufFileName,
-		GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	//if (hFileNew == INVALID_HANDLE_VALUE)
-    ::SetFilePointer(hFile, fileSize, NULL, FILE_BEGIN);
-    ::SetEndOfFile(hFile);
+    // Open file for reading
+    HANDLE hFile = CreateFile(strFileName,
+            GENERIC_READ, FILE_SHARE_READ, NULL,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        AlertWarning(_T("Failed to load binary file."));
+        return;
+    }
+    
+    // Load BIN header
+    BYTE bufHeader[20];
+	DWORD bytesRead;
+	::ReadFile(hFile, bufHeader, 4, &bytesRead, NULL);
+    if (bytesRead != 4)
+    {
+        ::CloseHandle(hFile);
+        AlertWarning(_T("Failed to load binary file."));
+        return;
+    }
+
+    WORD baseAddress = *((WORD*)bufHeader);
+    WORD dataSize = *(((WORD*)bufHeader) + 1);
+
+    //TCHAR bufName[17];
+    //::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)(bufHeader + 4), 16, bufName, 17);
+    //bufName[16] = 0;
+
+    // Set controls text
+    TCHAR bufValue[8];
+    ::SetDlgItemText(hDlg, IDC_EDITFILE, strFileName);
+    PrintOctalValue(bufValue, baseAddress);
+    ::SetDlgItemText(hDlg, IDC_EDITADDR, bufValue);
+    PrintOctalValue(bufValue, dataSize);
+    ::SetDlgItemText(hDlg, IDC_EDITSIZE, bufValue);
+    //::SetDlgItemText(hDlg, IDC_EDITNAME, bufName);
+}
+
+void Dialogs_DoLoadBinLoad(LPCTSTR strFileName)
+{
+    // Open file for reading
+    HANDLE hFile = CreateFile(strFileName,
+            GENERIC_READ, FILE_SHARE_READ, NULL,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        AlertWarning(_T("Failed to load binary file."));
+        return;
+    }
+
+    // Load BIN header
+    BYTE bufHeader[20];
+	DWORD bytesRead;
+	::ReadFile(hFile, bufHeader, 4, &bytesRead, NULL);
+    if (bytesRead != 4)
+    {
+        ::CloseHandle(hFile);
+        AlertWarning(_T("Failed to load binary file."));
+        return;
+    }
+
+    WORD baseAddress = *((WORD*)bufHeader);
+    WORD dataSize = *(((WORD*)bufHeader) + 1);
+
+    // Get file size
+    DWORD bytesToRead = dataSize;
+    WORD memoryBytes = (dataSize + 1) & 0xfffe;
+
+    // Allocate memory
+    BYTE* pBuffer = (BYTE*)::LocalAlloc(LPTR, memoryBytes);
+
+    // Load file data
+	::ReadFile(hFile, pBuffer, dataSize, &bytesRead, NULL);
+    if (bytesRead != bytesToRead)
+    {
+        ::LocalFree(pBuffer);
+        ::CloseHandle(hFile);
+        AlertWarning(_T("Failed to load binary file."));
+        return;
+    }
+
+    // Copy data to BK memory
+    WORD address = baseAddress;
+    WORD* pData = (WORD*)pBuffer;
+    while (address < baseAddress + memoryBytes)
+    {
+        WORD value = *pData++;
+        g_pBoard->SetRAMWord(address, value);
+        address += 2;
+    }
+
+    ::LocalFree(pBuffer);
     ::CloseHandle(hFile);
-
-    ::MessageBox(g_hwnd, _T("New disk file created successfully.\nPlease initialize the disk using INIT command."),
-        _T("BKBTL"), MB_OK | MB_ICONINFORMATION);
 }
 
 

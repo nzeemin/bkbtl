@@ -19,11 +19,18 @@
 #define IDB_KEYBOARD                    142
 #define IDB_TOOLBAR                     143
 #define IDD_CREATEDISK                  144
+#define IDD_LOADBIN                     145
 #define IDC_EDIT1                       1000
 #define IDC_BUILDDATE                   1001
+#define IDC_EDITADDR                    1001
 #define IDC_TRACKS40                    1002
+#define IDC_EDITSIZE                    1002
 #define IDC_RADIO2                      1003
 #define IDC_TRACKS80                    1003
+#define IDC_EDITSIZE2                   1003
+#define IDC_EDITNAME                    1003
+#define IDC_BUTTONBROWSE                1004
+#define IDC_EDITFILE                    1005
 #define ID_VIEW                         32771
 #define ID_VIEW_MEMORY                  32772
 #define ID_EMULATOR                     32773
@@ -58,6 +65,7 @@
 #define ID_CONF_BK0010FOCAL             32810
 #define ID_Menu                         32811
 #define ID_VIEW_MEMORYMAP               32812
+#define ID_FILE_LOADBIN                 32813
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -65,9 +73,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32813
-#define _APS_NEXT_CONTROL_VALUE         1004
+#define _APS_NEXT_RESOURCE_VALUE        146
+#define _APS_NEXT_COMMAND_VALUE         32814
+#define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

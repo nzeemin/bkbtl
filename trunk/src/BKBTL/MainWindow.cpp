@@ -48,7 +48,7 @@ void MainWindow_DoFileLoadState();
 void MainWindow_DoEmulatorFloppy(int slot);
 void MainWindow_DoEmulatorConf(BKConfiguration configuration);
 void MainWindow_DoFileScreenshot();
-void MainWindow_DoFileCreateDisk();
+void MainWindow_DoFileLoadBin();
 void MainWindow_OnStatusbarClick(LPNMMOUSE lpnm);
 void MainWindow_OnStatusbarDrawItem(LPDRAWITEMSTRUCT);
 void MainWindow_OnToolbarGetInfoTip(LPNMTBGETINFOTIP);
@@ -637,8 +637,8 @@ bool MainWindow_DoCommand(int commandId)
     case ID_FILE_SCREENSHOT:
         MainWindow_DoFileScreenshot();
         break;
-    case ID_FILE_CREATEDISK:
-        MainWindow_DoFileCreateDisk();
+    case ID_FILE_LOADBIN:
+        MainWindow_DoFileLoadBin();
         break;
     case ID_CONF_BK0010BASIC:
         MainWindow_DoEmulatorConf(BK_CONF_BK0010_BASIC);
@@ -784,9 +784,9 @@ void MainWindow_DoFileScreenshot()
     ScreenView_SaveScreenshot(bufFileName);
 }
 
-void MainWindow_DoFileCreateDisk()
+void MainWindow_DoFileLoadBin()
 {
-    ShowCreateDiskDialog();
+    ShowLoadBinDialog();
 }
 
 void MainWindow_DoEmulatorConf(BKConfiguration configuration)
