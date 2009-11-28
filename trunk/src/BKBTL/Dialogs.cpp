@@ -257,6 +257,8 @@ void Dialogs_DoLoadBinPrepare(HWND hDlg, LPCTSTR strFileName)
     PrintOctalValue(bufValue, dataSize);
     ::SetDlgItemText(hDlg, IDC_EDITSIZE, bufValue);
     //::SetDlgItemText(hDlg, IDC_EDITNAME, bufName);
+
+    ::CloseHandle(hFile);
 }
 
 void Dialogs_DoLoadBinLoad(LPCTSTR strFileName)
