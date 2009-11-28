@@ -296,15 +296,18 @@ void CMotherboard::DebugTicks()
 * 20000 тиков системного таймера - на каждый 1-й тик;
 * 2 сигнала EVNT, в 0-й и 10000-й тик фрейма
 * 160000 тиков ÷ѕ - 8 раз за один тик (дл€ 4 ћ√ц), либо 6 раз за тик (дл€ 3 ћ√ц)
-* 800 тиков чтени€ с магнитофона - каждый 25-й тик (20к√ц)
+* 1666 тиков чтени€ с магнитофона - каждый 12-й тик (25 * 1666 = 41666 √ц)
 */
 BOOL CMotherboard::SystemFrame()
 {
-	const int tapeReadTicks = 25;
-	int tapeReadSamplesPerFrame = 0;
-	int tapeReadError = 0;
+    const int frameProcTicks = 6;
+
+	int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
 	if (m_TapeReadCallback != NULL)
-		tapeReadSamplesPerFrame = m_nTapeReadSampleRate / 25;
+    {
+		tapeSamplesPerFrame = m_nTapeReadSampleRate / 25;
+        frameTapeTicks = 20000 / tapeSamplesPerFrame;
+    }
 
     for (int frameticks = 0; frameticks < 20000; frameticks++)
     {
@@ -315,7 +318,7 @@ BOOL CMotherboard::SystemFrame()
             Tick50();  // 1/50 timer event
         }
 
-        for (int procticks = 0; procticks < 8; procticks++)  // CPU - 8 times
+        for (int procticks = 0; procticks < frameProcTicks; procticks++)  // CPU - 8 times
         {
             if (m_pCPU->GetPC() == m_CPUbp)
                 return FALSE;  // Breakpoint
@@ -327,17 +330,17 @@ BOOL CMotherboard::SystemFrame()
         //    m_pFloppyCtl->Periodic();
         //}
 
-		if (m_TapeReadCallback != NULL && frameticks % tapeReadTicks == 0)
+		if (m_TapeReadCallback != NULL && frameticks % frameTapeTicks == 0)
 		{
 			int tapeSamplesToRead = 0;
-			const int readsTotal = 20000 / tapeReadTicks;
+			const int readsTotal = 20000 / frameTapeTicks;
 			while (true)
 			{
 				tapeSamplesToRead++;
 				tapeReadError += readsTotal;
-				if (2 * tapeReadError >= tapeReadSamplesPerFrame)
+				if (2 * tapeReadError >= tapeSamplesPerFrame)
 				{
-					tapeReadError -= tapeReadSamplesPerFrame;
+					tapeReadError -= tapeSamplesPerFrame;
 					break;
 				}
 			}
@@ -386,11 +389,11 @@ void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2)
 
 void CMotherboard::TapeInput(BOOL inputBit)
 {
-    WORD tapeBitOld = (m_Port177716 & 40);
-    WORD tapeBitNew = inputBit ? 0 : 40;
+    WORD tapeBitOld = (m_Port177716 & 040);
+    WORD tapeBitNew = inputBit ? 0 : 040;
     if (tapeBitNew != tapeBitOld)
     {
-        m_Port177716 = (m_Port177716 & ~40) | tapeBitNew;  // Write new tape bit
+        m_Port177716 = (m_Port177716 & ~040) | tapeBitNew;  // Write new tape bit
         m_Port177716 |= 4;  // Set "ready" flag
     }
 }
