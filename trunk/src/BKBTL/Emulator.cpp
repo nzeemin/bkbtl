@@ -242,6 +242,7 @@ int Emulator_SystemFrame()
     g_pBoard->SetCPUBreakpoint(m_wEmulatorCPUBreakpoint);
 
     ScreenView_ScanKeyboard();
+    ScreenView_ProcessKeyboard();
     
 	if (!g_pBoard->SystemFrame())
         return 0;
