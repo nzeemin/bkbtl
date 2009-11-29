@@ -98,7 +98,7 @@ int APIENTRY _tWinMain(
             ::DispatchMessage(&msg);
         }
 #if 1
-        //if (g_okEmulatorRunning && Settings_GetRealSpeed())
+        if (g_okEmulatorRunning /*&& Settings_GetRealSpeed()*/)
         {
             // Slow down to 25 frames per second
             LARGE_INTEGER nFrameFinishTime;  // Frame start time

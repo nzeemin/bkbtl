@@ -84,9 +84,10 @@ IDC_BKBTL MENU
 BEGIN
     POPUP "&File"
     BEGIN
+        MENUITEM "Load BIN...",                 ID_FILE_LOADBIN
+        MENUITEM SEPARATOR
         MENUITEM "Load State…",                 ID_FILE_LOADSTATE, INACTIVE
         MENUITEM "Save State…",                 ID_FILE_SAVESTATE, INACTIVE
-        MENUITEM "Load BIN...",                 ID_FILE_LOADBIN
         MENUITEM SEPARATOR
         MENUITEM "Screenshot",                  ID_FILE_SCREENSHOT
         MENUITEM SEPARATOR
