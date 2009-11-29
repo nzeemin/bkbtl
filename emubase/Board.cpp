@@ -11,27 +11,6 @@
 CMotherboard::CMotherboard ()
 {
     // Create devices
-	freq_per[0]=0;
-	freq_per[1]=0;
-	freq_per[2]=0;
-	freq_per[3]=0;
-	freq_per[4]=0;
-
-	freq_out[0]=0;
-	freq_out[1]=0;
-	freq_out[2]=0;
-	freq_out[3]=0;
-	freq_out[4]=0;
-
-	freq_enable[0]=0;
-	freq_enable[1]=0;
-	freq_enable[2]=0;
-	freq_enable[3]=0;
-	freq_enable[4]=0;
-	freq_enable[5]=0;
-
-	m_multiply=1;
-
     m_pCPU = new CProcessor(this);
     //m_pFloppyCtl = new CFloppyController();
 
@@ -63,20 +42,15 @@ void CMotherboard::Reset ()
 
     //m_pFloppyCtl->Reset();
 
-    m_lineticks = 0;
-    m_timer = 0;
-    m_timerreload = 0;
-    m_timerflags = 0;
-    m_timerdivider = 0;
 
     // Reset ports
-    m_Port177706 = m_Port177710 = m_Port177712 = 0;
     m_Port177660 = 0100;
     m_Port177662rd = 0;
     m_Port177662wr = 047400;
     m_Port177664 = 0;
     m_Port177716 = 0140200;
     m_Port177716mem = m_Port177716tap = 0;
+    m_timer = m_timerreload = m_timerflags = m_timerdivider = 0;
 
     m_pCPU->Start();
 }
@@ -156,7 +130,7 @@ BYTE CMotherboard::GetROMByte(WORD offset)
 
 //////////////////////////////////////////////////////////////////////
 
-void CMotherboard::Tick50 ()
+void CMotherboard::Tick50()  // 50 Hz timer
 {
     if ((m_Port177662wr & 040000) == 0)
     {
@@ -164,41 +138,39 @@ void CMotherboard::Tick50 ()
     }
 }
 
-void CMotherboard::ExecuteCPU ()
+void CMotherboard::ExecuteCPU()
 {
     m_pCPU->Execute();
 }
 
-void CMotherboard::TimerTick() // Timer Tick, 2uS -- dividers are within timer routine
+void CMotherboard::TimerTick() // Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
 {
-    int flag;
-	
-    if ((m_timerflags & 1) == 0)  // Nothing to do
+    if ((m_timerflags & 1) == 0)  // Timer is off, nothing to do
         return;
 
-	flag=0;
+	int flag = 0;
     m_timerdivider++;
     switch((m_timerflags >> 1) & 3)
     {
-        case 0: //2uS
+        case 0: // 32uS
             flag = 1;
             m_timerdivider = 0;
             break;
-        case 1: //4uS
+        case 1: // 64uS
             if (m_timerdivider >= 2)
             {
                 flag = 1;
                 m_timerdivider = 0;
             }
             break;
-        case 2: //8uS
+        case 2: // 128uS
             if (m_timerdivider >= 4)
             {
                 flag = 1;
                 m_timerdivider = 0;
             }
             break;
-        case 3:
+        case 3:  // 256 uS
             if (m_timerdivider >= 8)
             {
                 flag = 1;
@@ -220,33 +192,11 @@ void CMotherboard::TimerTick() // Timer Tick, 2uS -- dividers are within timer r
         m_timerflags |= 0200;  // 0
         m_timer = m_timerreload & 07777; // Reload it
 
-        if((m_timerflags & 0100) && (m_timerflags & 0200))
-        {
-            //m_pPPU->InterruptVIRQ(2, 0304); 
-        }
+        //if((m_timerflags & 0100) && (m_timerflags & 0200))
+        //{
+        //    //m_pPPU->InterruptVIRQ(2, 0304); 
+        //}
     }
-}
-WORD CMotherboard::GetTimerValue()  // Returns current timer value
-{
-    if(m_timerflags & 0200)
-    {
-        m_timerflags &= ~0200;  // Clear it
-        return m_timer;
-    }
-    return m_timer;
-}
-WORD CMotherboard::GetTimerReload()  // Returns timer reload value
-{
-    return m_timerreload;
-}
-
-WORD CMotherboard::GetTimerState() // Returns timer state
-{
-    WORD res = m_timerflags;
-    m_timerflags &= ~010;  // Clear overflow
-    m_timerflags &= ~040;  // Clear external int
-    
-    return res;
 }
 
 void CMotherboard::SetTimerReload(WORD val)	 // Sets timer reload value
@@ -255,7 +205,6 @@ void CMotherboard::SetTimerReload(WORD val)	 // Sets timer reload value
 	if ((m_timerflags & 1) == 0)
 		m_timer=m_timerreload;
 }
-
 void CMotherboard::SetTimerState(WORD val) // Sets timer state
 {
     // 753   200 40 10
@@ -265,21 +214,21 @@ void CMotherboard::SetTimerState(WORD val) // Sets timer state
     m_timerflags &= 0250;  // Clear everything but bits 7,5,3
     m_timerflags |= (val & (~0250));  // Preserve bits 753
 
-    switch((m_timerflags >> 1) & 3)
-    {
-        case 0: //2uS
-			m_multiply=8;
-            break;
-        case 1: //4uS
-			m_multiply=4;
-            break;
-        case 2: //8uS
-			m_multiply=2;
-            break;
-        case 3:
-			m_multiply=1;
-            break;
-    }
+   // switch((m_timerflags >> 1) & 3)
+   // {
+   //     case 0: //2uS
+			//m_multiply=8;
+   //         break;
+   //     case 1: //4uS
+			//m_multiply=4;
+   //         break;
+   //     case 2: //8uS
+			//m_multiply=2;
+   //         break;
+   //     case 3:
+			//m_multiply=1;
+   //         break;
+   // }
 }
 
 void CMotherboard::DebugTicks()
@@ -293,7 +242,7 @@ void CMotherboard::DebugTicks()
 /*
 Каждый фрейм равен 1/25 секунды = 40 мс = 20000 тиков, 1 тик = 2 мкс.
 
-* 20000 тиков системного таймера - на каждый 1-й тик;
+* 2150 тиков системного таймера - на каждый 16-й тик;
 * 2 сигнала EVNT, в 0-й и 10000-й тик фрейма
 * 160000 тиков ЦП - 8 раз за один тик (для 4 МГц), либо 6 раз за тик (для 3 МГц)
 * 1666 тиков чтения с магнитофона - каждый 12-й тик (25 * 1666 = 41666 Гц)
@@ -311,11 +260,14 @@ BOOL CMotherboard::SystemFrame()
 
     for (int frameticks = 0; frameticks < 20000; frameticks++)
     {
-        //TimerTick();  // System timer tick
-
         if (frameticks % 10000 == 0)  // EVNT
         {
             Tick50();  // 1/50 timer event
+        }
+
+        if (frameticks % 16 == 0)
+        {
+            TimerTick();  // System timer tick
         }
 
         for (int procticks = 0; procticks < frameProcTicks; procticks++)  // CPU - 8 times
@@ -555,11 +507,20 @@ WORD CMotherboard::GetPortWord(WORD address)
     switch (address)
     {
     case 0177706:  // System Timer counter start value -- регистр установки таймера
-        return m_Port177706;
+        return m_timerreload;
     case 0177710:  // System Timer Counter -- регистр счетчика таймера
-        return m_Port177710;
-    //TODO: 0177712 -- System Timer Manage -- регистр управления таймера
-
+        {
+            if (m_timerflags & 0200)
+                m_timerflags &= ~0200;  // Clear it
+            return m_timer;
+        }
+    case 0177712:  // System Timer Manage -- регистр управления таймера
+        {
+            WORD res = m_timerflags;
+            m_timerflags &= ~010;  // Clear overflow
+            m_timerflags &= ~040;  // Clear external int
+            return res;
+        }
     case 0177660:  // Keyboard status register
         return m_Port177660;
 
@@ -593,11 +554,11 @@ WORD CMotherboard::GetPortView(WORD address)
 {
     switch (address) {
     case 0177706:  // System Timer counter start value -- регистр установки таймера
-        return m_Port177706;
+        return m_timerreload;
     case 0177710:  // System Timer Counter -- регистр счетчика таймера
-        return m_Port177710;
+        return m_timer;
     case 0177712:  // System Timer Manage -- регистр управления таймера
-        return m_Port177712;
+        return m_timerflags;
 
     case 0177660:  // Keyboard status register
         return m_Port177660;
@@ -640,19 +601,17 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 {
     switch (address)
     {
-    //TODO: 0177700, 0177702, 0177704 -- Unknown
-    
-    case 0177706:  // System Timer counter start value -- регистр установки таймера
-        m_Port177706 = word;
-        //TODO
+    case 0177700: case 0177702: case 0177704:  // Unknown something
         break;
-    case 0177710:  // System Timer Counter -- регистр счетчика таймера
-        m_Port177710 = word;
+    
+    case 0177706:  // System Timer reload value -- регистр установки таймера
+        SetTimerReload(word);
+        break;
+    case 0177710:  // System Timer Counter -- регистр реверсивного счетчика таймера
         //TODO
         break;
     case 0177712:  // System Timer Manage -- регистр управления таймера
-        m_Port177712 = word;
-        //TODO
+        SetTimerState(word);
         break;
 
     case 0177714:  // Parallel port register
@@ -682,8 +641,12 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         m_Port177664 = word & 01377;
         break;
 
-    //TODO: 0177130 -- регистр управления КНГМД
-    //TODO: 0177132 -- регистр данных КНГМД
+    case 0177130:  // Регистр управления КНГМД
+        //TODO
+        break;
+    case 0177132:  // Регистр данных КНГМД
+        //TODO
+        break;
 
 	default:
 		m_pCPU->MemoryError();
@@ -890,81 +853,20 @@ WORD CMotherboard::GetKeyboardRegister(void)
 
 void CMotherboard::DoSound(void)
 {
-/*		int freq_per[6];
-	int freq_out[6];
-	int freq_enable[6];*/
-	int global;
+    //TODO
 
-
-	freq_out[0]=(m_timer>>3)&1; //8000
-	if(m_multiply>=4)
-		freq_out[0]=0;
-
-	freq_out[1]=(m_timer>>6)&1;//1000
-
-	freq_out[2]=(m_timer>>7)&1;//500
-	freq_out[3]=(m_timer>>8)&1;//250
-	freq_out[4]=(m_timer>>10)&1;//60
-	
-
-	global=0;
-	global= !(freq_out[0]&freq_enable[0]) & ! (freq_out[1]&freq_enable[1]) & !(freq_out[2]&freq_enable[2]) & !(freq_out[3]&freq_enable[3]) & !(freq_out[4]&freq_enable[4]);
-	if(freq_enable[5]==0)
-		global=0;
-	else
-	{
-		if( (!freq_enable[0]) && (!freq_enable[1]) && (!freq_enable[2]) && (!freq_enable[3]) && (!freq_enable[4]))
-			global=1;
-	}
-
-//	global=(freq_out[0]);
-//	global=(freq_out[4]);
-	//global|=(freq_out[2]&freq_enable[2]);
-//	global|=(freq_out[3]&freq_enable[3]);
-//	global|=(freq_out[4]&freq_enable[4]);
-//	global&=freq_enable[5];
-
-    if (m_SoundGenCallback != NULL)
-    {
-	    if (global)
-		    (*m_SoundGenCallback)(0x7fff,0x7fff);
-	    else
-		    (*m_SoundGenCallback)(0x0000,0x0000);
-    }
+    //if (m_SoundGenCallback != NULL)
+    //{
+	   // if (global)
+		  //  (*m_SoundGenCallback)(0x7fff,0x7fff);
+	   // else
+		  //  (*m_SoundGenCallback)(0x0000,0x0000);
+    //}
 }
 
 void CMotherboard::SetSound(WORD val)
 {
-	if(val&(1<<7))
-		freq_enable[5]=1;
-	else
-		freq_enable[5]=0;
-//12 11 10 9 8
-	
-	if(val&(1<<12))
-		freq_enable[0]=1;
-	else
-		freq_enable[0]=0;
-
-	if(val&(1<<11))
-		freq_enable[1]=1;
-	else
-		freq_enable[1]=0;
-
-	if(val&(1<<10))
-		freq_enable[2]=1;
-	else
-		freq_enable[2]=0;
-
-	if(val&(1<<9))
-		freq_enable[3]=1;
-	else
-		freq_enable[3]=0;
-
-	if(val&(1<<8))
-		freq_enable[4]=1;
-	else
-		freq_enable[4]=0;
+    //TODO
 }
 
 void CMotherboard::SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate)
