@@ -142,7 +142,6 @@ private:  // Access to I/O ports
 public:  // Saving/loading emulator status
     //void        SaveToImage(BYTE* pImage);
     //void        LoadFromImage(const BYTE* pImage);
-	void		SetSound(WORD val);
 private:  // Ports: implementation
     WORD        m_Port177660;       // Keyboard status register
     WORD        m_Port177662rd;     // Keyboard register

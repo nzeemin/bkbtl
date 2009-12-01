@@ -250,6 +250,7 @@ void CMotherboard::DebugTicks()
 BOOL CMotherboard::SystemFrame()
 {
     const int frameProcTicks = 6;
+    const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
 
 	int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
 	if (m_TapeReadCallback != NULL)
@@ -270,7 +271,7 @@ BOOL CMotherboard::SystemFrame()
             TimerTick();  // System timer tick
         }
 
-        for (int procticks = 0; procticks < frameProcTicks; procticks++)  // CPU - 8 times
+        for (int procticks = 0; procticks < frameProcTicks; procticks++)  // CPU ticks
         {
             if (m_pCPU->GetPC() == m_CPUbp)
                 return FALSE;  // Breakpoint
@@ -281,6 +282,9 @@ BOOL CMotherboard::SystemFrame()
         //{
         //    m_pFloppyCtl->Periodic();
         //}
+
+		if (frameticks % audioticks == 0)  // AUDIO tick
+			DoSound();
 
 		if (m_TapeReadCallback != NULL && frameticks % frameTapeTicks == 0)
 		{
@@ -614,7 +618,7 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         SetTimerState(word);
         break;
 
-    case 0177714:  // Parallel port register
+    case 0177714:  // Parallel port register: printer and Covox
         //TODO
         break;
 
@@ -853,20 +857,15 @@ WORD CMotherboard::GetKeyboardRegister(void)
 
 void CMotherboard::DoSound(void)
 {
-    //TODO
+    if (m_SoundGenCallback == NULL)
+        return;
 
-    //if (m_SoundGenCallback != NULL)
-    //{
-	   // if (global)
-		  //  (*m_SoundGenCallback)(0x7fff,0x7fff);
-	   // else
-		  //  (*m_SoundGenCallback)(0x0000,0x0000);
-    //}
-}
+    BOOL bSoundBit = (m_Port177716tap & 0100) != 0;
 
-void CMotherboard::SetSound(WORD val)
-{
-    //TODO
+    if (bSoundBit)
+	    (*m_SoundGenCallback)(0x1fff,0x1fff);
+    else
+	    (*m_SoundGenCallback)(0x0000,0x0000);
 }
 
 void CMotherboard::SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate)

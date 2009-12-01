@@ -3,7 +3,7 @@
 
 #pragma once
 
-#define BUFSIZE	((SAMPLERATE/25)*4)
+#define BUFSIZE	((SOUNDSAMPLERATE / 25) * 4)
 #define BLOCK_COUNT	8
 #define BLOCK_SIZE  BUFSIZE
 
