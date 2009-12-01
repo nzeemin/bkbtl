@@ -109,7 +109,7 @@ BOOL MainWindow_InitToolbar()
     addbitmap.nID = IDB_TOOLBAR;
     SendMessage(m_hwndToolbar, TB_ADDBITMAP, 2, (LPARAM) &addbitmap);
 
-    TBBUTTON buttons[4];
+    TBBUTTON buttons[6];
     ZeroMemory(buttons, sizeof(buttons));
     for (int i = 0; i < sizeof(buttons) / sizeof(TBBUTTON); i++)
     {
@@ -129,6 +129,11 @@ BOOL MainWindow_InitToolbar()
     buttons[3].iBitmap = ToolbarImageColorScreen;
     buttons[3].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
     buttons[3].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Color"));
+    buttons[4].fsStyle = BTNS_SEP;
+    buttons[5].idCommand = ID_EMULATOR_SOUND;
+    buttons[5].iBitmap = 8;
+    buttons[5].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
+    buttons[5].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Sound"));
 
     SendMessage(m_hwndToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons); 
 
@@ -524,11 +529,10 @@ void MainWindow_UpdateMenu()
 
     // Emulator menu options
     CheckMenuItem(hMenu, ID_EMULATOR_AUTOSTART, (Settings_GetAutostart() ? MF_CHECKED : MF_UNCHECKED));
-    CheckMenuItem(hMenu, ID_EMULATOR_REALSPEED, (Settings_GetRealSpeed() ? MF_CHECKED : MF_UNCHECKED));
+    //CheckMenuItem(hMenu, ID_EMULATOR_REALSPEED, (Settings_GetRealSpeed() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_SOUND, (Settings_GetSound() ? MF_CHECKED : MF_UNCHECKED));
     MainWindow_SetToolbarImage(ID_EMULATOR_SOUND, (Settings_GetSound() ? ToolbarImageSoundOn : ToolbarImageSoundOff));
-    EnableMenuItem(hMenu, ID_CONF_BK0010BASIC, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
-    EnableMenuItem(hMenu, ID_CONF_BK0010FOCAL, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
+    EnableMenuItem(hMenu, ID_EMULATOR_STEP, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
 
     UINT configcmd = 0;
     switch (g_nEmulatorConfiguration)

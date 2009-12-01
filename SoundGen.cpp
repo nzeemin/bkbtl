@@ -72,7 +72,7 @@ void SoundGen_Initialize()
 	waveFreeBlockCount = BLOCK_COUNT;
     waveCurrentBlock   = 0;
     
-	wfx.nSamplesPerSec  = SAMPLERATE;  
+	wfx.nSamplesPerSec  = SOUNDSAMPLERATE;  
     wfx.wBitsPerSample  = 16;     
     wfx.nChannels       = 2;      
     wfx.cbSize          = 0;      

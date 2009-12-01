@@ -112,7 +112,7 @@ BEGIN
         MENUITEM "Step\tF8",                    ID_EMULATOR_STEP
         MENUITEM "Reset",                       ID_EMULATOR_RESET
         MENUITEM SEPARATOR
-        MENUITEM "Sound",                       ID_EMULATOR_SOUND, INACTIVE
+        MENUITEM "Sound",                       ID_EMULATOR_SOUND
         MENUITEM "Autostart",                   ID_EMULATOR_AUTOSTART
         MENUITEM SEPARATOR
         MENUITEM "BK 0010(01) BASIC",           ID_CONF_BK0010BASIC
