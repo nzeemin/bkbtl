@@ -537,10 +537,12 @@ void MainWindow_UpdateMenu()
     UINT configcmd = 0;
     switch (g_nEmulatorConfiguration)
     {
+    case BK_CONF_BK0010_MONIT: configcmd = ID_CONF_BK0010MONIT; break;
     case BK_CONF_BK0010_BASIC: configcmd = ID_CONF_BK0010BASIC; break;
     case BK_CONF_BK0010_FOCAL: configcmd = ID_CONF_BK0010FOCAL; break;
+    case BK_CONF_BK0010_FDD:   configcmd = ID_CONF_BK0010FDD; break;
     }
-    CheckMenuRadioItem(hMenu, ID_CONF_BK0010BASIC, ID_CONF_BK0010FOCAL, configcmd, MF_BYCOMMAND);
+    CheckMenuRadioItem(hMenu, ID_CONF_BK0010MONIT, ID_CONF_BK0010FDD, configcmd, MF_BYCOMMAND);
 
     // Emulator|FloppyX
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY0, (g_pBoard->IsFloppyImageAttached(0) ? MF_CHECKED : MF_UNCHECKED));
@@ -644,11 +646,17 @@ bool MainWindow_DoCommand(int commandId)
     case ID_FILE_LOADBIN:
         MainWindow_DoFileLoadBin();
         break;
+    case ID_CONF_BK0010MONIT:
+        MainWindow_DoEmulatorConf(BK_CONF_BK0010_MONIT);
+        break;
     case ID_CONF_BK0010BASIC:
         MainWindow_DoEmulatorConf(BK_CONF_BK0010_BASIC);
         break;
     case ID_CONF_BK0010FOCAL:
         MainWindow_DoEmulatorConf(BK_CONF_BK0010_FOCAL);
+        break;
+    case ID_CONF_BK0010FDD:
+        MainWindow_DoEmulatorConf(BK_CONF_BK0010_FDD);
         break;
     default:
         return false;

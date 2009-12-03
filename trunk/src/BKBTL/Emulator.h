@@ -7,26 +7,6 @@
 
 //////////////////////////////////////////////////////////////////////
 
-// Machine configurations
-enum BKConfiguration
-{
-    // Configuration options
-    BK_COPT_BK0010 = 0,
-    BK_COPT_BK0011 = 1,
-    BK_COPT_ROM_BASIC = 2,
-    BK_COPT_ROM_FOCAL = 4,
-
-    // Configurations BK-0010(01)
-    BK_CONF_BK0010_MONIT = BK_COPT_BK0010,                      // БК-0010(01), только Монитор
-    BK_CONF_BK0010_BASIC = BK_COPT_BK0010 | BK_COPT_ROM_BASIC,  // БК-0010(01) и BASIC-86
-    BK_CONF_BK0010_FOCAL = BK_COPT_BK0010 | BK_COPT_ROM_FOCAL,  // БК-0010(01) и Фокал + тесты
-    // Configurations BK-0011M
-    //TODO
-};
-
-
-//////////////////////////////////////////////////////////////////////
-
 
 extern CMotherboard* g_pBoard;
 extern BKConfiguration g_nEmulatorConfiguration;  // Current configuration

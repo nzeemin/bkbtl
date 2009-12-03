@@ -39,6 +39,8 @@ const LPCTSTR FILENAME_BKROM_TESTS      = _T("tests.bin");
 const LPCTSTR FILENAME_BKROM_BASIC10_1  = _T("basic10_1.bin");
 const LPCTSTR FILENAME_BKROM_BASIC10_2  = _T("basic10_2.bin");
 const LPCTSTR FILENAME_BKROM_BASIC10_3  = _T("basic10_3.bin");
+const LPCTSTR FILENAME_BKROM_DISK_327   = _T("disk_327.bin");
+
 
 BOOL Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, DWORD bytesToRead)
 {
@@ -106,6 +108,7 @@ void Emulator_Done()
 BOOL Emulator_InitConfiguration(BKConfiguration configuration)
 {
     BYTE buffer[8192];
+
     // Load Monitor ROM file - in all configurations
     if (!Emulator_LoadRomFile(FILENAME_BKROM_MONIT10, buffer, 8192))
     {
@@ -113,7 +116,13 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
         return FALSE;
     }
     g_pBoard->LoadROM(0, buffer);
-    if (configuration == BK_CONF_BK0010_BASIC)
+
+    ZeroMemory(buffer, 8192);
+    g_pBoard->LoadROM(1, buffer);
+    g_pBoard->LoadROM(2, buffer);
+    g_pBoard->LoadROM(3, buffer);
+
+    if (configuration & BK_COPT_ROM_BASIC)
     {
         // Load BASIC ROM 1 file
         if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_1, buffer, 8192))
@@ -137,7 +146,7 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
         }
         g_pBoard->LoadROM(3, buffer);
     }
-    else if (configuration == BK_CONF_BK0010_FOCAL)
+    else if (configuration & BK_COPT_ROM_FOCAL)
     {
         // Load Focal ROM file
         if (!Emulator_LoadRomFile(FILENAME_BKROM_FOCAL, buffer, 8192))
@@ -153,6 +162,17 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
         if (!Emulator_LoadRomFile(FILENAME_BKROM_TESTS, buffer, 8064))
         {
             AlertWarning(_T("Failed to load Tests ROM file."));
+            return FALSE;
+        }
+        g_pBoard->LoadROM(3, buffer);
+    }
+
+    if (configuration & BK_COPT_FDD)
+    {
+        // Load disk driver ROM file
+        if (!Emulator_LoadRomFile(FILENAME_BKROM_DISK_327, buffer, 4096))
+        {
+            AlertWarning(_T("Failed to load DISK 327 ROM file."));
             return FALSE;
         }
         g_pBoard->LoadROM(3, buffer);
