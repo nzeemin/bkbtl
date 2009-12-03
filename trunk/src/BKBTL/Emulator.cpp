@@ -180,6 +180,7 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
 
     g_nEmulatorConfiguration = configuration;
 
+    g_pBoard->SetConfiguration(configuration);
     g_pBoard->Reset();
 
     m_nUptimeFrameCount = 0;

@@ -18,8 +18,10 @@ CMotherboard::CMotherboard ()
 	m_nTapeReadSampleRate = 0;
     m_SoundGenCallback = NULL;
 
+    SetConfiguration(BK_CONF_BK0010_MONIT);  // Default configuration
+
     // Allocate memory for RAM and ROM
-    m_pRAM = (BYTE*) ::LocalAlloc(LPTR, 65536);
+    m_pRAM = (BYTE*) ::LocalAlloc(LPTR, 128 * 1024);
     m_pROM = (BYTE*) ::LocalAlloc(LPTR, 32768);
 
     Reset();
@@ -36,12 +38,21 @@ CMotherboard::~CMotherboard ()
     ::LocalFree(m_pROM);
 }
 
+void CMotherboard::SetConfiguration(WORD conf)
+{
+    m_Configuration = conf;
+
+    // Define memory map
+    m_MemoryMap = 0xf0;  // By default, 000000-077777 is RAM, 100000-177777 is ROM
+    if (m_Configuration & BK_COPT_FDD)  // FDD with 16KB extra memory
+        m_MemoryMap = 0xf0 - 32 - 64;  // 16KB extra memory mapped to 120000-157777
+}
+
 void CMotherboard::Reset () 
 {
     m_pCPU->Stop();
 
     //m_pFloppyCtl->Reset();
-
 
     // Reset ports
     m_Port177660 = 0100;
@@ -207,28 +218,11 @@ void CMotherboard::SetTimerReload(WORD val)	 // Sets timer reload value
 }
 void CMotherboard::SetTimerState(WORD val) // Sets timer state
 {
-    // 753   200 40 10
     if ((val & 1) && ((m_timerflags & 1) == 0))
         m_timer = m_timerreload & 07777;
 
     m_timerflags &= 0250;  // Clear everything but bits 7,5,3
     m_timerflags |= (val & (~0250));  // Preserve bits 753
-
-   // switch((m_timerflags >> 1) & 3)
-   // {
-   //     case 0: //2uS
-			//m_multiply=8;
-   //         break;
-   //     case 1: //4uS
-			//m_multiply=4;
-   //         break;
-   //     case 2: //8uS
-			//m_multiply=2;
-   //         break;
-   //     case 3:
-			//m_multiply=1;
-   //         break;
-   // }
 }
 
 void CMotherboard::DebugTicks()
@@ -481,20 +475,23 @@ void CMotherboard::SetByte(WORD address, BOOL okHaltMode, BYTE byte)
 
 int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, WORD* pOffset)
 {
-    if (address < 0100000)  // RAM
+    if (address >= 0177000)  // Port
     {
-        *pOffset = address;
-        return ADDRTYPE_RAM;
+	    *pOffset = address;
+        return ADDRTYPE_IO;
     }
-    else if (address < 0177000)  // ROM
+
+    int block = (address >> 13) & 7;  // RAM/ROM block number
+    BOOL blockbit = (m_MemoryMap >> block) & 1;  // 1 - ROM, 0 - RAM
+    if (blockbit)  // ROM
     {
         *pOffset = address - 0100000;
         return ADDRTYPE_ROM;
     }
-    else 
-	{
-	    *pOffset = address;
-        return ADDRTYPE_IO;
+    else  // RAM
+    {
+        *pOffset = address;
+        return ADDRTYPE_RAM;
     }
 }
 
