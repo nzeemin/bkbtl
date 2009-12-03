@@ -89,17 +89,19 @@ class CFloppyController;
 
 class CMotherboard  // BK computer
 {
-public:  // Construct / destruct
-    CMotherboard();
-    ~CMotherboard();
 private:  // Devices
     CProcessor*     m_pCPU;  // CPU device
     //CFloppyController*  m_pFloppyCtl;  // FDD control
+private:  // Memory
+    WORD        m_Configuration;  // See BK_COPT_Xxx flag constants
+    BYTE        m_MemoryMap;  // Memory map, every bit defines how 8KB mapped: 0 - RAM, 1 - ROM
+    BYTE*       m_pRAM;  // RAM, 128 KB
+    BYTE*       m_pROM;  // ROM, 32 KB
+public:  // Construct / destruct
+    CMotherboard();
+    ~CMotherboard();
 public:  // Getting devices
     CProcessor*     GetCPU() { return m_pCPU; }
-private:  // Memory
-    BYTE*       m_pRAM;  // RAM, 64 KB
-    BYTE*       m_pROM;  // ROM, 32 KB
 public:  // Memory access
     WORD        GetRAMWord(WORD offset);
     BYTE        GetRAMByte(WORD offset);
@@ -111,12 +113,13 @@ public:  // Debug
     void        DebugTicks();  // One Debug PPU tick -- use for debug step or debug breakpoint
     void        SetCPUBreakpoint(WORD bp) { m_CPUbp = bp; } // Set CPU breakpoint
 public:  // System control
+    void        SetConfiguration(WORD conf);
     void        Reset();  // Reset computer
     void        LoadROM(int bank, const BYTE* pBuffer);  // Load 8 KB ROM image from the biffer
     void        LoadRAM(const BYTE* pBuffer);  // Load 32 KB RAM image from the biffer
     void        Tick50();           // Tick 50 Hz - goes to CPU EVNT line
 	void		TimerTick();		// Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
-
+public:
     void        ExecuteCPU();  // Execute one CPU instruction
     void        ExecutePPU();  // Execute one PPU instruction
     BOOL        SystemFrame();  // Do one frame -- use for normal run
