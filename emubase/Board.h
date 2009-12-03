@@ -10,6 +10,32 @@ class CProcessor;
 
 //////////////////////////////////////////////////////////////////////
 
+// Machine configurations
+enum BKConfiguration
+{
+    // Configuration options
+    BK_COPT_BK0010 = 0,
+    BK_COPT_BK0011 = 1,
+    BK_COPT_ROM_BASIC = 2,
+    BK_COPT_ROM_FOCAL = 4,
+    BK_COPT_FDD = 16,
+
+    // Configurations BK-0010(01)
+    BK_CONF_BK0010_MONIT =  // БК-0010(01), только Монитор
+        BK_COPT_BK0010,
+    BK_CONF_BK0010_BASIC =  // БК-0010(01) и BASIC-86
+        BK_COPT_BK0010 | BK_COPT_ROM_BASIC,
+    BK_CONF_BK0010_FOCAL =  // БК-0010(01) и Фокал + тесты
+        BK_COPT_BK0010 | BK_COPT_ROM_FOCAL,
+    BK_CONF_BK0010_FDD   =  // БК-0010(01) и блок КНГМД с 16 КБ ОЗУ
+        BK_COPT_BK0010 | BK_COPT_FDD,
+    // Configurations BK-0011M
+    //TODO
+};
+
+
+//////////////////////////////////////////////////////////////////////
+
 
 // TranslateAddress result code
 #define ADDRTYPE_RAM     0  // RAM
