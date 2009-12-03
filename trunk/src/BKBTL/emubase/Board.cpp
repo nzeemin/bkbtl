@@ -18,11 +18,11 @@ CMotherboard::CMotherboard ()
 	m_nTapeReadSampleRate = 0;
     m_SoundGenCallback = NULL;
 
-    SetConfiguration(BK_CONF_BK0010_MONIT);  // Default configuration
-
     // Allocate memory for RAM and ROM
     m_pRAM = (BYTE*) ::LocalAlloc(LPTR, 128 * 1024);
-    m_pROM = (BYTE*) ::LocalAlloc(LPTR, 32768);
+    m_pROM = (BYTE*) ::LocalAlloc(LPTR, 32 * 1024);
+
+    SetConfiguration(BK_CONF_BK0010_MONIT);  // Default configuration
 
     Reset();
 }
@@ -46,6 +46,10 @@ void CMotherboard::SetConfiguration(WORD conf)
     m_MemoryMap = 0xf0;  // By default, 000000-077777 is RAM, 100000-177777 is ROM
     if (m_Configuration & BK_COPT_FDD)  // FDD with 16KB extra memory
         m_MemoryMap = 0xf0 - 32 - 64;  // 16KB extra memory mapped to 120000-157777
+
+    // Clean RAM/ROM
+    ::ZeroMemory(m_pRAM, 128 * 1024);
+    ::ZeroMemory(m_pROM, 32 * 1024);
 }
 
 void CMotherboard::Reset () 

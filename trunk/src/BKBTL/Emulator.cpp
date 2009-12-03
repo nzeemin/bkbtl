@@ -33,13 +33,13 @@ WORD g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
 //////////////////////////////////////////////////////////////////////
 
 
-const LPCTSTR FILENAME_BKROM_MONIT10    = _T("monit10.bin");
-const LPCTSTR FILENAME_BKROM_FOCAL      = _T("focal.bin");
-const LPCTSTR FILENAME_BKROM_TESTS      = _T("tests.bin");
-const LPCTSTR FILENAME_BKROM_BASIC10_1  = _T("basic10_1.bin");
-const LPCTSTR FILENAME_BKROM_BASIC10_2  = _T("basic10_2.bin");
-const LPCTSTR FILENAME_BKROM_BASIC10_3  = _T("basic10_3.bin");
-const LPCTSTR FILENAME_BKROM_DISK_327   = _T("disk_327.bin");
+const LPCTSTR FILENAME_BKROM_MONIT10    = _T("monit10.rom");
+const LPCTSTR FILENAME_BKROM_FOCAL      = _T("focal.rom");
+const LPCTSTR FILENAME_BKROM_TESTS      = _T("tests.rom");
+const LPCTSTR FILENAME_BKROM_BASIC10_1  = _T("basic10_1.rom");
+const LPCTSTR FILENAME_BKROM_BASIC10_2  = _T("basic10_2.rom");
+const LPCTSTR FILENAME_BKROM_BASIC10_3  = _T("basic10_3.rom");
+const LPCTSTR FILENAME_BKROM_DISK_327   = _T("disk_327.rom");
 
 
 BOOL Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, DWORD bytesToRead)
@@ -107,6 +107,8 @@ void Emulator_Done()
 
 BOOL Emulator_InitConfiguration(BKConfiguration configuration)
 {
+    g_pBoard->SetConfiguration(configuration);
+
     BYTE buffer[8192];
 
     // Load Monitor ROM file - in all configurations
@@ -116,11 +118,6 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
         return FALSE;
     }
     g_pBoard->LoadROM(0, buffer);
-
-    ZeroMemory(buffer, 8192);
-    g_pBoard->LoadROM(1, buffer);
-    g_pBoard->LoadROM(2, buffer);
-    g_pBoard->LoadROM(3, buffer);
 
     if (configuration & BK_COPT_ROM_BASIC)
     {
@@ -180,7 +177,6 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
 
     g_nEmulatorConfiguration = configuration;
 
-    g_pBoard->SetConfiguration(configuration);
     g_pBoard->Reset();
 
     m_nUptimeFrameCount = 0;
