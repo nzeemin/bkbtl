@@ -329,11 +329,11 @@ void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2)
         return;
     }
 
+    m_Port177716 &= ~0100;  // Set "Key pressed" flag in system register
+    m_Port177716 |= 4;  // Set "ready" flag
+
     if ((m_Port177660 & 0200) == 0)
     {
-        m_Port177716 &= ~0100;  // Set "Key pressed" flag in system register
-        m_Port177716 |= 4;  // Set "ready" flag
-
         m_Port177662rd = scancode & 0177;
         m_Port177660 |= 0200;  // "Key ready" flag in keyboard state register
         if ((m_Port177660 & 0100) == 0100)  // Keyboard interrupt enabled
@@ -535,7 +535,7 @@ WORD CMotherboard::GetPortWord(WORD address)
     case 0177664:  // Scroll register
         return m_Port177664;
 
-    case 0177714:  // Parallel port register
+    case 0177714:  // Parallel port register: printer, joystick
         return 0;  //TODO
 
     case 0177716:  // System register
