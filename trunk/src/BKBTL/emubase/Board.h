@@ -21,8 +21,6 @@ enum BKConfiguration
     BK_COPT_FDD = 16,
 
     // Configurations BK-0010(01)
-    BK_CONF_BK0010_MONIT =  // БК-0010(01), только Монитор
-        BK_COPT_BK0010,
     BK_CONF_BK0010_BASIC =  // БК-0010(01) и BASIC-86
         BK_COPT_BK0010 | BK_COPT_ROM_BASIC,
     BK_CONF_BK0010_FOCAL =  // БК-0010(01) и Фокал + тесты

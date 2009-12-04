@@ -304,17 +304,10 @@ void CProcessor::Start ()
     //m_VIRQrq = FALSE;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 
- //   // "Turn On" interrupt processing
- //   WORD startvec = m_pMemoryController->GetSelRegister() & 0177400;
- //   WORD pc = GetWord(startvec);
- //   SetPC( pc );
- //   WORD psw = GetWord(startvec + 2);
- //   SetPSW( psw );
-	//if (m_haltpin)
-	//	m_psw |= 0400;
-    
-    //TODO: Make sure we implemented start process correctly
-    SetPC(0100000);
+    // "Turn On" interrupt processing
+    WORD pc = m_pBoard->GetSelRegister() & 0177400;
+    SetPC(pc);
+    SetPSW(0340);
 }
 void CProcessor::Stop ()
 {
