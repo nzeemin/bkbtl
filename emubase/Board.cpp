@@ -22,7 +22,7 @@ CMotherboard::CMotherboard ()
     m_pRAM = (BYTE*) ::LocalAlloc(LPTR, 128 * 1024);
     m_pROM = (BYTE*) ::LocalAlloc(LPTR, 32 * 1024);
 
-    SetConfiguration(BK_CONF_BK0010_MONIT);  // Default configuration
+    SetConfiguration(BK_CONF_BK0010_BASIC);  // Default configuration
 
     Reset();
 }
@@ -63,7 +63,7 @@ void CMotherboard::Reset ()
     m_Port177662rd = 0;
     m_Port177662wr = 047400;
     m_Port177664 = 0;
-    m_Port177716 = 0140200;
+    m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0200;
     m_Port177716mem = m_Port177716tap = 0;
     m_timer = m_timerreload = m_timerflags = m_timerdivider = 0;
 
@@ -158,35 +158,36 @@ void CMotherboard::ExecuteCPU()
     m_pCPU->Execute();
 }
 
-void CMotherboard::TimerTick() // Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
+void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32uS (BK-0011), 23437.5 Hz = 42.67 uS (BK-0010)
 {
-    if ((m_timerflags & 1) == 0)  // Timer is off, nothing to do
+    if ((m_timerflags & 1) == 1)  // Timer is off, nothing to do
         return;
 
 	int flag = 0;
     m_timerdivider++;
-    switch((m_timerflags >> 1) & 3)
+    
+    switch((m_timerflags >> 6) & 3)
     {
-        case 0: // 32uS
+        case 0:  // 32 мкс
             flag = 1;
             m_timerdivider = 0;
             break;
-        case 1: // 64uS
-            if (m_timerdivider >= 2)
+        case 1:  // 32 * 16 = 512 мкс
+            if (m_timerdivider >= 16)
             {
                 flag = 1;
                 m_timerdivider = 0;
             }
             break;
-        case 2: // 128uS
+        case 2: // 32 * 4 = 128 мкс
             if (m_timerdivider >= 4)
             {
                 flag = 1;
                 m_timerdivider = 0;
             }
             break;
-        case 3:  // 256 uS
-            if (m_timerdivider >= 8)
+        case 3:  // 32 * 16 * 4 = 2048 мкс
+            if (m_timerdivider >= 64)
             {
                 flag = 1;
                 m_timerdivider = 0;
@@ -206,11 +207,6 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz, 32uS -- dividers are wit
             m_timerflags |= 010;  // Overflow
         m_timerflags |= 0200;  // 0
         m_timer = m_timerreload & 07777; // Reload it
-
-        //if((m_timerflags & 0100) && (m_timerflags & 0200))
-        //{
-        //    //m_pPPU->InterruptVIRQ(2, 0304); 
-        //}
     }
 }
 
@@ -241,13 +237,12 @@ void CMotherboard::DebugTicks()
 Каждый фрейм равен 1/25 секунды = 40 мс = 20000 тиков, 1 тик = 2 мкс.
 
 * 2150 тиков системного таймера - на каждый 16-й тик;
-* 2 сигнала EVNT, в 0-й и 10000-й тик фрейма
-* 160000 тиков ЦП - 8 раз за один тик (для 4 МГц), либо 6 раз за тик (для 3 МГц)
-* 1666 тиков чтения с магнитофона - каждый 12-й тик (25 * 1666 = 41666 Гц)
+* 2 сигнала IRQ2, в 0-й и 10000-й тик фрейма
+* 160000 тиков ЦП - 6 раз за тик (БК-0010, 3 МГц), либо 8 раз за один тик (БК-0011, 4 МГц)
 */
 BOOL CMotherboard::SystemFrame()
 {
-    const int frameProcTicks = 6;
+    int frameProcTicks = (m_Configuration & BK_COPT_BK0011) ? 8 : 6;
     const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
 
 	int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
@@ -257,23 +252,27 @@ BOOL CMotherboard::SystemFrame()
         frameTapeTicks = 20000 / tapeSamplesPerFrame;
     }
 
+    int timerTicks = 0;
+
     for (int frameticks = 0; frameticks < 20000; frameticks++)
     {
-        if (frameticks % 10000 == 0)  // EVNT
-        {
-            Tick50();  // 1/50 timer event
-        }
-
-        if (frameticks % 16 == 0)
-        {
-            TimerTick();  // System timer tick
-        }
-
         for (int procticks = 0; procticks < frameProcTicks; procticks++)  // CPU ticks
         {
             if (m_pCPU->GetPC() == m_CPUbp)
                 return FALSE;  // Breakpoint
             m_pCPU->Execute();
+
+            timerTicks++;
+            if (timerTicks >= 128)
+            {
+                TimerTick();  // System timer tick: 31250 Hz = 32uS (BK-0011), 23437.5 Hz = 42.67 uS (BK-0010)
+                timerTicks = 0;
+            }
+        }
+
+        if (frameticks % 10000 == 0)
+        {
+            Tick50();  // 1/50 timer event
         }
 
         //if (frameticks % 32 == 0)  // FDD tick
