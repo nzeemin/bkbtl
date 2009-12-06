@@ -90,7 +90,7 @@ class CMotherboard  // BK computer
 {
 private:  // Devices
     CProcessor*     m_pCPU;  // CPU device
-    //CFloppyController*  m_pFloppyCtl;  // FDD control
+    CFloppyController*  m_pFloppyCtl;  // FDD control
 private:  // Memory
     WORD        m_Configuration;  // See BK_COPT_Xxx flag constants
     BYTE        m_MemoryMap;  // Memory map, every bit defines how 8KB mapped: 0 - RAM, 1 - ROM
@@ -130,10 +130,6 @@ public:  // Floppy
     void        DetachFloppyImage(int slot);
     BOOL        IsFloppyImageAttached(int slot);
     BOOL        IsFloppyReadOnly(int slot);
-	WORD		GetFloppyState();
-	WORD		GetFloppyData();
-	void		SetFloppyState(WORD val);
-	void		SetFloppyData(WORD val);
 public:  // Callbacks
 	void		SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate);
 	void		SetSoundGenCallback(SOUNDGENCALLBACK callback);

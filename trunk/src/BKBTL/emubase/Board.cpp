@@ -12,7 +12,7 @@ CMotherboard::CMotherboard ()
 {
     // Create devices
     m_pCPU = new CProcessor(this);
-    //m_pFloppyCtl = new CFloppyController();
+    m_pFloppyCtl = NULL;
 
 	m_TapeReadCallback = NULL;
 	m_nTapeReadSampleRate = 0;
@@ -31,7 +31,8 @@ CMotherboard::~CMotherboard ()
 {
     // Delete devices
     delete m_pCPU;
-    //delete m_pFloppyCtl;
+    if (m_pFloppyCtl != NULL)
+        delete m_pFloppyCtl;
 
     // Free memory
     ::LocalFree(m_pRAM);
@@ -50,13 +51,23 @@ void CMotherboard::SetConfiguration(WORD conf)
     // Clean RAM/ROM
     ::ZeroMemory(m_pRAM, 128 * 1024);
     ::ZeroMemory(m_pROM, 32 * 1024);
+
+    if (m_pFloppyCtl == NULL && (conf & BK_COPT_FDD) != 0)
+    {
+        m_pFloppyCtl = new CFloppyController();
+    }
+    if (m_pFloppyCtl != NULL && (conf & BK_COPT_FDD) == 0)
+    {
+        delete m_pFloppyCtl;  m_pFloppyCtl = NULL;
+    }
 }
 
 void CMotherboard::Reset () 
 {
     m_pCPU->Stop();
 
-    //m_pFloppyCtl->Reset();
+    if (m_pFloppyCtl != NULL)
+        m_pFloppyCtl->Reset();
 
     // Reset ports
     m_Port177660 = 0100;
@@ -86,29 +97,34 @@ void CMotherboard::LoadRAM(const BYTE* pBuffer)  // Load 64 KB RAM image from th
 
 BOOL CMotherboard::IsFloppyImageAttached(int slot)
 {
-    //ASSERT(slot >= 0 && slot < 4);
-    //return m_pFloppyCtl->IsAttached(slot);
-    return FALSE;  //STUB
+    ASSERT(slot >= 0 && slot < 4);
+    if (m_pFloppyCtl == NULL)
+        return FALSE;
+    return m_pFloppyCtl->IsAttached(slot);
 }
 
 BOOL CMotherboard::IsFloppyReadOnly(int slot)
 {
-    //ASSERT(slot >= 0 && slot < 4);
-    //return m_pFloppyCtl->IsReadOnly(slot);
-    return FALSE;  //STUB
+    ASSERT(slot >= 0 && slot < 4);
+    if (m_pFloppyCtl == NULL)
+        return FALSE;
+    return m_pFloppyCtl->IsReadOnly(slot);
 }
 
 BOOL CMotherboard::AttachFloppyImage(int slot, LPCTSTR sFileName)
 {
-    //ASSERT(slot >= 0 && slot < 4);
-    //return m_pFloppyCtl->AttachImage(slot, sFileName);
-    return FALSE;  //STUB
+    ASSERT(slot >= 0 && slot < 4);
+    if (m_pFloppyCtl == NULL)
+        return FALSE;
+    return m_pFloppyCtl->AttachImage(slot, sFileName);
 }
 
 void CMotherboard::DetachFloppyImage(int slot)
 {
-    //ASSERT(slot >= 0 && slot < 4);
-    //m_pFloppyCtl->DetachImage(slot);
+    ASSERT(slot >= 0 && slot < 4);
+    if (m_pFloppyCtl == NULL)
+        return;
+    m_pFloppyCtl->DetachImage(slot);
 }
 
 
@@ -229,7 +245,8 @@ void CMotherboard::DebugTicks()
 {
 	m_pCPU->SetInternalTick(0);
 	m_pCPU->Execute();
-	//m_pFloppyCtl->Periodic();
+    if (m_pFloppyCtl != NULL)
+	    m_pFloppyCtl->Periodic();
 }
 
 
@@ -277,7 +294,8 @@ BOOL CMotherboard::SystemFrame()
 
         if ((m_Configuration & BK_COPT_FDD) && (frameticks % 32 == 0))  // FDD tick
         {
-        //    m_pFloppyCtl->Periodic();
+            if (m_pFloppyCtl != NULL)
+                m_pFloppyCtl->Periodic();
         }
 
 		if (frameticks % audioticks == 0)  // AUDIO tick
@@ -554,8 +572,9 @@ WORD CMotherboard::GetPortWord(WORD address)
 		    m_pCPU->MemoryError();
 		    return 0;
         }
-        //TODO
-        return 0;  //STUB
+        if (m_pFloppyCtl != NULL)
+            return m_pFloppyCtl->GetState();
+        return 0;
 
     case 0177132:
         if ((m_Configuration & BK_COPT_FDD) == 0)
@@ -563,8 +582,9 @@ WORD CMotherboard::GetPortWord(WORD address)
 		    m_pCPU->MemoryError();
 		    return 0;
         }
-        //TODO
-        return 0;  //STUB
+        if (m_pFloppyCtl != NULL)
+            return m_pFloppyCtl->GetData();
+        return 0;
 
 	default: 
 		m_pCPU->MemoryError();
@@ -675,10 +695,12 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         break;
 
     case 0177130:  // Регистр управления КНГМД
-        //TODO
+        if (m_pFloppyCtl != NULL)
+            m_pFloppyCtl->SetCommand(word);
         break;
     case 0177132:  // Регистр данных КНГМД
-        //TODO
+        if (m_pFloppyCtl != NULL)
+            m_pFloppyCtl->WriteData(word);
         break;
 
 	default:
@@ -841,35 +863,6 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 //	
 //	}
 //}
-
-
-WORD	CMotherboard::GetFloppyState()
-{
-	//return m_pFloppyCtl->GetState();
-    return 0;  //STUB
-}
-WORD	CMotherboard::GetFloppyData()
-{
-	//return m_pFloppyCtl->GetData();
-    return 0;  //STUB
-}
-void	CMotherboard::SetFloppyState(WORD val)
-{
-	//if(val&02000)
-	//{
-	//	m_currentdrive=(val&3)^3;
-	//}
-	////m_currentdrive=0;
-	//m_pFloppyCtl[m_currentdrive]->SetCommand(val&~3); // it should not get select :)
-    
-    //STUB
-    //m_pFloppyCtl->SetCommand(val);
-}
-void	CMotherboard::SetFloppyData(WORD val)
-{
-    //STUB
-    //m_pFloppyCtl->WriteData(val);
-}
 
 
 //////////////////////////////////////////////////////////////////////
