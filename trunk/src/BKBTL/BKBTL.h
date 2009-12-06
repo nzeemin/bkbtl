@@ -95,6 +95,8 @@ void Settings_SetRealSpeed(BOOL flag);
 BOOL Settings_GetRealSpeed();
 void Settings_SetSound(BOOL flag);
 BOOL Settings_GetSound();
+void Settings_SetNumPadJoystick(BOOL flag);
+BOOL Settings_GetNumPadJoystick();
 void Settings_SetToolbar(BOOL flag);
 BOOL Settings_GetToolbar();
 void Settings_SetKeyboard(BOOL flag);

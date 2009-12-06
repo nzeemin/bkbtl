@@ -395,9 +395,9 @@ void ScreenView_ScanKeyboard()
             if ((newstate & 128) != (oldstate & 128))  // Key state changed - key pressed or released
             {
                 BYTE pcscan = (BYTE) scan;
-#if !defined(PRODUCT)
-                DebugPrintFormat(_T("Key PC: 0x%0x 0x%0x 0x%0x\r\n"), scan, keys[VK_SHIFT], keys[VK_CONTROL]);
-#endif
+//#if !defined(PRODUCT)
+//                DebugPrintFormat(_T("Key PC: 0x%0x 0x%0x 0x%0x\r\n"), scan, keys[VK_SHIFT], keys[VK_CONTROL]);
+//#endif
                 BYTE bkscan = pTable[pcscan];
                 if (bkscan != 0)
                 {
@@ -427,10 +427,13 @@ void ScreenView_ProcessKeyboard()
         BOOL ctrl = ((keyevent & 0x4000) != 0);
         BYTE bkscan = LOBYTE(keyevent);
 
-#if !defined(PRODUCT)
-        TCHAR bufoct[7];  PrintOctalValue(bufoct, bkscan);
-        DebugPrintFormat(_T("KeyEvent: %s %d %d\r\n"), bufoct, pressed, ctrl);
-#endif
+        if (((bkscan & 0xf8) == 0210) && !Settings_GetNumPadJoystick())  // Skip joystick events if NumPad joystick is off
+            return;
+
+//#if !defined(PRODUCT)
+//        TCHAR bufoct[7];  PrintOctalValue(bufoct, bkscan);
+//        DebugPrintFormat(_T("KeyEvent: %s %d %d\r\n"), bufoct, pressed, ctrl);
+//#endif
 
         g_pBoard->KeyboardEvent(bkscan, pressed, ctrl);
     }

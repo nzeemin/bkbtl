@@ -17,6 +17,8 @@ BOOL m_Settings_RealSpeed = FALSE;
 BOOL m_Settings_RealSpeed_Valid = FALSE;
 BOOL m_Settings_Sound = FALSE;
 BOOL m_Settings_Sound_Valid = FALSE;
+BOOL m_Settings_NumPadJoystick = FALSE;
+BOOL m_Settings_NumPadJoystick_Valid = FALSE;
 BOOL m_Settings_Keyboard = FALSE;
 BOOL m_Settings_Keyboard_Valid = FALSE;
 BOOL m_Settings_Tape = FALSE;
@@ -219,6 +221,24 @@ BOOL Settings_GetSound()
         m_Settings_Sound_Valid = TRUE;
     }
     return m_Settings_Sound;
+}
+
+void Settings_SetNumPadJoystick(BOOL flag)
+{
+    m_Settings_NumPadJoystick = flag;
+    m_Settings_NumPadJoystick_Valid = TRUE;
+    Settings_SaveDwordValue(_T("NumPadJoystick"), (DWORD) flag);
+}
+BOOL Settings_GetNumPadJoystick()
+{
+    if (!m_Settings_NumPadJoystick_Valid)
+    {
+        DWORD dwValue = (DWORD) FALSE;
+        Settings_LoadDwordValue(_T("NumPadJoystick"), &dwValue);
+        m_Settings_NumPadJoystick = (BOOL) dwValue;
+        m_Settings_NumPadJoystick_Valid = TRUE;
+    }
+    return m_Settings_NumPadJoystick;
 }
 
 void Settings_SetKeyboard(BOOL flag)
