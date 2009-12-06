@@ -275,10 +275,10 @@ BOOL CMotherboard::SystemFrame()
             Tick50();  // 1/50 timer event
         }
 
-        //if (frameticks % 32 == 0)  // FDD tick
-        //{
+        if ((m_Configuration & BK_COPT_FDD) && (frameticks % 32 == 0))  // FDD tick
+        {
         //    m_pFloppyCtl->Periodic();
-        //}
+        }
 
 		if (frameticks % audioticks == 0)  // AUDIO tick
 			DoSound();
@@ -478,7 +478,10 @@ void CMotherboard::SetByte(WORD address, BOOL okHaltMode, BYTE byte)
 
 int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, WORD* pOffset)
 {
-    if (address >= 0177000)  // Port
+    // При подключенном блоке дисковода, его ПЗУ занимает адреса 160000-167776, при этом адреса 170000-177776 остаются под порты.
+    // Без подключенного дисковода, порты занимают адреса 177600-177776.
+    WORD portStartAddr = (m_Configuration & BK_COPT_FDD) ? 0177000 : 0177600;
+    if (address >= portStartAddr)  // Port
     {
 	    *pOffset = address;
         return ADDRTYPE_IO;
@@ -545,6 +548,24 @@ WORD CMotherboard::GetPortWord(WORD address)
         return value;
     }
 
+    case 0177130:
+        if ((m_Configuration & BK_COPT_FDD) == 0)
+        {
+		    m_pCPU->MemoryError();
+		    return 0;
+        }
+        //TODO
+        return 0;  //STUB
+
+    case 0177132:
+        if ((m_Configuration & BK_COPT_FDD) == 0)
+        {
+		    m_pCPU->MemoryError();
+		    return 0;
+        }
+        //TODO
+        return 0;  //STUB
+
 	default: 
 		m_pCPU->MemoryError();
 		return 0;
@@ -577,6 +598,14 @@ WORD CMotherboard::GetPortView(WORD address)
 
     case 0177716:  // System register
         return m_Port177716;
+
+    case 0177130:
+        //TODO
+        return 0;  //STUB
+
+    case 0177132:
+        //TODO
+        return 0;  //STUB
 
     default:
         return 0;
