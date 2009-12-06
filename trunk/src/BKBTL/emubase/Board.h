@@ -28,6 +28,8 @@ enum BKConfiguration
     BK_CONF_BK0010_FDD   =  // มส-0010(01) ่ แ๋๎๊ สอรฬฤ ๑ 16 สม ฮวำ
         BK_COPT_BK0010 | BK_COPT_FDD,
     // Configurations BK-0011M
+    BK_CONF_BK0011       =  // มส-0011ฬ แๅ็ แ๋๎๊เ สอรฬฤ
+        BK_COPT_BK0011,
     BK_CONF_BK0011_FDD   =  // มส-0011ฬ ่ แ๋๎๊ สอรฬฤ
         BK_COPT_BK0011 | BK_COPT_FDD,
 };

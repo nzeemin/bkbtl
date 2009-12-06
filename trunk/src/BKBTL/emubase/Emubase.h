@@ -54,7 +54,6 @@ int DisassembleInstruction(WORD* pMemory, WORD addr, TCHAR* sInstr, TCHAR* sArg)
 struct CFloppyDrive
 {
     HANDLE hFile;
-    BOOL okNetRT11Image;  // TRUE - .rtd image, FALSE - .dsk image
     BOOL okReadOnly;    // Write protection flag
 	WORD track;         // Track number: from 0 to 79
 	WORD side;          // Disk side: 0 or 1
