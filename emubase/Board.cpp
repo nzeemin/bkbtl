@@ -74,6 +74,7 @@ void CMotherboard::Reset ()
     m_Port177662rd = 0;
     m_Port177662wr = 047400;
     m_Port177664 = 0;
+    m_Port177714in = m_Port177714out = 0;
     m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0200;
     m_Port177716mem = m_Port177716tap = 0;
     m_timer = m_timerreload = m_timerflags = m_timerdivider = 0;
@@ -328,6 +329,31 @@ BOOL CMotherboard::SystemFrame()
 // Key pressed or released
 void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2)
 {
+    if ((scancode & 0xf8) == 0210)  // События от джойстика
+    {
+        //TODO: Check if joystick enabled
+
+        WORD mask;
+        switch (scancode)
+        {
+        case BK_KEY_JOYSTICK_BUTTON1: mask = 0x01; break;
+        case BK_KEY_JOYSTICK_BUTTON2: mask = 0x02; break;
+        case BK_KEY_JOYSTICK_BUTTON3: mask = 0x04; break;
+        case BK_KEY_JOYSTICK_BUTTON4: mask = 0x08; break;
+        case BK_KEY_JOYSTICK_RIGHT:   mask = 0x10; break;
+        case BK_KEY_JOYSTICK_DOWN:    mask = 0x20; break;
+        case BK_KEY_JOYSTICK_LEFT:    mask = 0x40; break;
+        case BK_KEY_JOYSTICK_UP:      mask = 0x80; break;
+        }
+
+        if (okPressed)
+            m_Port177714in |= mask;
+        else
+            m_Port177714in &= ~mask;
+
+        return;
+    }
+
     if (scancode == BK_KEY_STOP)
     {
         if (okPressed)
@@ -589,7 +615,7 @@ WORD CMotherboard::GetPortWord(WORD address)
         return m_Port177664;
 
     case 0177714:  // Parallel port register: printer, joystick
-        return 0;  //TODO
+        return m_Port177714in;
 
     case 0177716:  // System register
     {

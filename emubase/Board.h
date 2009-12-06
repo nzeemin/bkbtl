@@ -69,10 +69,21 @@ enum BKConfiguration
 #define BK_KEY_UPPER        0205
 #define BK_KEY_REPEAT       0206
 
+// События от джойстика - передавать в метод KeyboardEvent
+#define BK_KEY_JOYSTICK_BUTTON1 0210
+#define BK_KEY_JOYSTICK_BUTTON2 0211
+#define BK_KEY_JOYSTICK_BUTTON3 0212
+#define BK_KEY_JOYSTICK_BUTTON4 0213
+#define BK_KEY_JOYSTICK_RIGHT   0214
+#define BK_KEY_JOYSTICK_DOWN    0215
+#define BK_KEY_JOYSTICK_LEFT    0216
+#define BK_KEY_JOYSTICK_UP      0217
 
+// Состояния клавиатуры БК - возвращаются из метода GetKeyboardRegister
 #define KEYB_RUS		0x01
 #define KEYB_LAT		0x02
 #define KEYB_LOWERREG	0x10
+
 
 // Tape emulator callback used to read a tape recorded data.
 // Input:
@@ -173,6 +184,8 @@ private:  // Ports: implementation
     WORD        m_Port177662rd;     // Keyboard register
     WORD        m_Port177662wr;     // Palette register
     WORD        m_Port177664;       // Scroll register
+    WORD        m_Port177714in;     // Parallel port, input register
+    WORD        m_Port177714out;    // Parallel port, output register
     WORD        m_Port177716;       // System register (read only)
     WORD        m_Port177716mem;    // System register (memory)
     WORD        m_Port177716tap;    // System register (tape)
