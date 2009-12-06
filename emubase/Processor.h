@@ -68,10 +68,10 @@ protected:
     CMotherboard* m_pBoard;
 
 public:  // Register control
-    WORD        GetPSW() { return m_psw; }
-    WORD        GetCPSW() { return m_savepsw; }
+    WORD        GetPSW() const { return m_psw; }
+    WORD        GetCPSW() const { return m_savepsw; }
     void        SetPSW(WORD word) { m_psw = word; }
-    WORD        GetReg(int regno) { return m_R[regno]; }
+    WORD        GetReg(int regno) const { return m_R[regno]; }
     void        SetReg(int regno, WORD word) { m_R[regno] = word; }
     WORD        GetSP() const { return m_R[6]; }
     void        SetSP(WORD word) { m_R[6] = word; }
@@ -94,7 +94,7 @@ public:  // Processor state
     // "Processor stopped" flag
     BOOL        IsStopped() const { return m_okStopped; }
     // HALT flag (TRUE - HALT mode, FALSE - USER mode)
-    BOOL        IsHaltMode() 
+    BOOL        IsHaltMode() const 
 	{ 
 			BOOL mode = ((m_psw & 0x100) != 0); 
 			if (mode)

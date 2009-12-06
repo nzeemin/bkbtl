@@ -23,16 +23,21 @@ HWND m_hwndDebugViewer = (HWND) INVALID_HANDLE_VALUE;
 WORD m_wDebugCpuR[9];  // Old register values - R0..R7, PSW
 BOOL m_okDebugCpuRChanged[9];  // Register change flags
 
-void DoDrawDebugView(HDC hdc);
+void DebugView_DoDraw(HDC hdc);
 BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM lParam);
-void DrawProcessor(HDC hdc, CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged);
-void DrawMemoryForRegister(HDC hdc, int reg, CProcessor* pProc, int x, int y);
-void DrawPorts(HDC hdc, CMotherboard* pBoard, int x, int y);
+void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged);
+void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, int x, int y);
+void DebugView_DrawPorts(HDC hdc, CMotherboard* pBoard, int x, int y);
 void DebugView_UpdateWindowText();
 
 
 //////////////////////////////////////////////////////////////////////
 
+BOOL DebugView_IsRegisterChanged(int regno)
+{
+    ASSERT(regno >= 0 && regno <= 8);
+    return m_okDebugCpuRChanged[regno];
+}
 
 void DebugView_RegisterClass()
 {
@@ -103,7 +108,7 @@ LRESULT CALLBACK DebugViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, 
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
 
-            DoDrawDebugView(hdc);  // Draw memory dump
+            DebugView_DoDraw(hdc);  // Draw memory dump
 
             EndPaint(hWnd, &ps);
         }
@@ -161,7 +166,7 @@ void DebugView_OnUpdate()
 //////////////////////////////////////////////////////////////////////
 // Draw functions
 
-void DoDrawDebugView(HDC hdc)
+void DebugView_DoDraw(HDC hdc)
 {
     ASSERT(g_pBoard != NULL);
 
@@ -179,12 +184,12 @@ void DoDrawDebugView(HDC hdc)
 
     TextOut(hdc, cxChar * 1, 2 + 1 * cyLine, _T("CPU"), 3);
 
-	DrawProcessor(hdc, pDebugPU, cxChar * 6, 2 + 1 * cyLine, arrR, arrRChanged);
+	DebugView_DrawProcessor(hdc, pDebugPU, cxChar * 6, 2 + 1 * cyLine, arrR, arrRChanged);
 
     // Draw stack for the current processor
-    DrawMemoryForRegister(hdc, 6, pDebugPU, 35 * cxChar, 2 + 0 * cyLine);
+    DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, 35 * cxChar, 2 + 0 * cyLine);
 
-    DrawPorts(hdc, g_pBoard, 57 * cxChar, 2 + 0 * cyLine);
+    DebugView_DrawPorts(hdc, g_pBoard, 57 * cxChar, 2 + 0 * cyLine);
 
     SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
@@ -192,7 +197,7 @@ void DoDrawDebugView(HDC hdc)
     DeleteObject(hFont);
 }
 
-void DrawRectangle(HDC hdc, int x1, int y1, int x2, int y2)
+void DebugView_DrawRectangle(HDC hdc, int x1, int y1, int x2, int y2)
 {
     HGDIOBJ hOldBrush = ::SelectObject(hdc, ::GetSysColorBrush(COLOR_BTNSHADOW));
     PatBlt(hdc, x1, y1, x2 - x1, 1, PATCOPY);
@@ -202,12 +207,12 @@ void DrawRectangle(HDC hdc, int x1, int y1, int x2, int y2)
     ::SelectObject(hdc, hOldBrush);
 }
 
-void DrawProcessor(HDC hdc, CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged)
+void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
     COLORREF colorText = GetSysColor(COLOR_WINDOWTEXT);
 
-    DrawRectangle(hdc, x - cxChar, y - 8, x + cxChar + 26 * cxChar, y + 8 + cyLine * 14);
+    DebugView_DrawRectangle(hdc, x - cxChar, y - 8, x + cxChar + 26 * cxChar, y + 8 + cyLine * 14);
 
     // Registers
     for (int r = 0; r < 8; r++) {
@@ -255,7 +260,7 @@ void DrawProcessor(HDC hdc, CProcessor* pProc, int x, int y, WORD* arrR, BOOL* a
 
 }
 
-void DrawMemoryForRegister(HDC hdc, int reg, CProcessor* pProc, int x, int y)
+void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, int x, int y)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
     COLORREF colorText = GetSysColor(COLOR_WINDOWTEXT);
@@ -296,7 +301,7 @@ void DrawMemoryForRegister(HDC hdc, int reg, CProcessor* pProc, int x, int y)
     }
 }
 
-void DrawPorts(HDC hdc, CMotherboard* pBoard, int x, int y)
+void DebugView_DrawPorts(HDC hdc, CMotherboard* pBoard, int x, int y)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
 

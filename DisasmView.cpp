@@ -13,7 +13,8 @@
 //////////////////////////////////////////////////////////////////////
 
 // Colors
-#define COLOR_BLUE  RGB(0,0,255)
+#define COLOR_RED       RGB(255,0,0)
+#define COLOR_BLUE      RGB(0,0,255)
 #define COLOR_SUBTITLE  RGB(0,128,0)
 #define COLOR_VALUE     RGB(128,128,128)
 
@@ -26,8 +27,8 @@ HWND m_hwndDisasmViewer = (HWND) INVALID_HANDLE_VALUE;
 WORD m_wDisasmBaseAddr = 0;
 WORD m_wDisasmNextBaseAddr = 0;
 
-void DoDrawDisasmView(HDC hdc);
-void DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x, int y);
+void DisasmView_DoDraw(HDC hdc);
+void DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x, int y);
 BOOL DisasmView_OnKeyDown(WPARAM vkey, LPARAM lParam);
 void DisasmView_SetBaseAddr(WORD base);
 void DisasmView_DoSubtitles();
@@ -126,7 +127,7 @@ LRESULT CALLBACK DisasmViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
 
-            DoDrawDisasmView(hdc);  // Draw memory dump
+            DisasmView_DoDraw(hdc);
 
             EndPaint(hWnd, &ps);
         }
@@ -391,7 +392,7 @@ void DisasmView_SetBaseAddr(WORD base)
 //////////////////////////////////////////////////////////////////////
 // Draw functions
 
-void DoDrawDisasmView(HDC hdc)
+void DisasmView_DoDraw(HDC hdc)
 {
     ASSERT(g_pBoard != NULL);
 
@@ -406,7 +407,7 @@ void DoDrawDisasmView(HDC hdc)
 
     // Draw disasseble for the current processor
     WORD prevPC = g_wEmulatorPrevCpuPC;
-    DrawDisassemble(hdc, pDisasmPU, m_wDisasmBaseAddr, prevPC, 0, 2 + 0 * cyLine);
+    DisasmView_DrawDisassemble(hdc, pDisasmPU, m_wDisasmBaseAddr, prevPC, 0, 2 + 0 * cyLine);
 
 	SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
@@ -427,7 +428,7 @@ DisasmSubtitleItem* DisasmView_FindSubtitle(WORD address, int typemask)
     return NULL;
 }
 
-void DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x, int y)
+void DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x, int y)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
     COLORREF colorText = GetSysColor(COLOR_WINDOWTEXT);
@@ -479,7 +480,13 @@ void DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x
         if (address == current)
             TextOut(hdc, x + 1 * cxChar, y, _T("  >"), 3);
         if (address == proccurrent)
-            TextOut(hdc, x + 1 * cxChar, y, _T("PC>>"), 4);
+        {
+            BOOL okPCchanged = DebugView_IsRegisterChanged(7);
+            if (okPCchanged) ::SetTextColor(hdc, COLOR_RED);
+            TextOut(hdc, x + 1 * cxChar, y, _T("PC"), 2);
+            ::SetTextColor(hdc, colorText);
+            TextOut(hdc, x + 3 * cxChar, y, _T(">>"), 2);
+        }
         else if (address == previous)
         {
             ::SetTextColor(hdc, COLOR_BLUE);
