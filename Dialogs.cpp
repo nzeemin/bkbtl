@@ -139,7 +139,7 @@ BOOL ShowSaveDialog(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strFilter, TCHAR* 
     ofn.hInstance = g_hInst;
     ofn.lpstrTitle = strTitle;
     ofn.lpstrFilter = strFilter;
-    ofn.Flags = OFN_FILEMUSTEXIST;
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
     ofn.lpstrFile = bufFileName;
     ofn.nMaxFile = MAX_PATH;
 
@@ -157,7 +157,7 @@ BOOL ShowOpenDialog(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strFilter, TCHAR* 
     ofn.hInstance = g_hInst;
     ofn.lpstrTitle = strTitle;
     ofn.lpstrFilter = strFilter;
-    ofn.Flags = OFN_FILEMUSTEXIST;
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
     ofn.lpstrFile = bufFileName;
     ofn.nMaxFile = MAX_PATH;
 

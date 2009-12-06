@@ -490,7 +490,7 @@ void DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD prev
         else if (address == previous)
         {
             ::SetTextColor(hdc, COLOR_BLUE);
-            TextOut(hdc, x + 1 * cxChar, y, _T("  > "), 4);
+            TextOut(hdc, x + 1 * cxChar, y, _T("  >"), 3);
         }
 
         BOOL okData = FALSE;

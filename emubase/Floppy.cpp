@@ -21,7 +21,7 @@ static BOOL DecodeTrackData(BYTE* pRaw, BYTE* pDest);
 CFloppyDrive::CFloppyDrive()
 {
     hFile = INVALID_HANDLE_VALUE;
-    okNetRT11Image = okReadOnly = FALSE;
+    okReadOnly = FALSE;
     datatrack = dataside = 0;
     dataptr = 0;
 }
@@ -78,12 +78,6 @@ BOOL CFloppyController::AttachImage(int drive, LPCTSTR sFileName)
     if (m_drivedata[drive].hFile != INVALID_HANDLE_VALUE)
         DetachImage(drive);
 
-    // Определяем, это .dsk-образ или .rtd-образ - по расширению файла
-    m_drivedata[drive].okNetRT11Image = FALSE;
-    LPCTSTR sFileNameExt = wcsrchr(sFileName, _T('.'));
-    if (sFileNameExt != NULL && _wcsicmp(sFileNameExt, _T(".rtd")) == 0)
-        m_drivedata[drive].okNetRT11Image = TRUE;
-
     // Check read-only file attribute
     DWORD dwFileAttrs = ::GetFileAttributes(sFileName);
     m_drivedata[drive].okReadOnly = (dwFileAttrs & FILE_ATTRIBUTE_READONLY) != 0;
@@ -122,7 +116,7 @@ void CFloppyController::DetachImage(int drive)
 
     ::CloseHandle(m_drivedata[drive].hFile);
     m_drivedata[drive].hFile = INVALID_HANDLE_VALUE;
-    m_drivedata[drive].okNetRT11Image = m_drivedata[drive].okReadOnly = FALSE;
+    m_drivedata[drive].okReadOnly = FALSE;
     m_drivedata[drive].Reset();
 }
 
@@ -385,7 +379,6 @@ void CFloppyController::PrepareTrack()
 
     // Track has 10 sectors, 512 bytes each; offset of the file is === ((Track<<1)+SIDE)*5120
     long foffset = ((m_track * 2) + (m_side)) * 5120;
-    if (m_pDrive->okNetRT11Image) foffset += 256;  // Skip .RTD image header
     //wsprintf(buffer,_T("floppy file offset %d  for trk %d side %d\r\n"),foffset,m_track,m_side);
     //DebugPrint(buffer);
 
@@ -436,7 +429,6 @@ void CFloppyController::FlushChanges()
     {
         // Track has 10 sectors, 512 bytes each; offset of the file is === ((Track<<1)+SIDE)*5120
         long foffset = ((m_pDrive->datatrack * 2) + (m_pDrive->dataside)) * 5120;
-        if (m_pDrive->okNetRT11Image) foffset += 256;  // Skip .RTD image header
 
         // Check file length
         DWORD currentFileSize = ::GetFileSize(m_pDrive->hFile, NULL);

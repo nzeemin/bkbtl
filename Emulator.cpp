@@ -40,6 +40,8 @@ const LPCTSTR FILENAME_BKROM_BASIC10_1  = _T("basic10_1.rom");
 const LPCTSTR FILENAME_BKROM_BASIC10_2  = _T("basic10_2.rom");
 const LPCTSTR FILENAME_BKROM_BASIC10_3  = _T("basic10_3.rom");
 const LPCTSTR FILENAME_BKROM_DISK_327   = _T("disk_327.rom");
+const LPCTSTR FILENAME_BKROM_BK11M_BOS  = _T("b11m_bos.rom");
+const LPCTSTR FILENAME_BKROM_BK11M_EXT  = _T("b11m_ext.rom");
 
 
 BOOL Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, DWORD bytesToRead)
@@ -47,7 +49,7 @@ BOOL Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, DWORD bytesToRead)
     HANDLE hRomFile = CreateFile(strFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hRomFile == INVALID_HANDLE_VALUE)
-        return false;
+        return FALSE;
 
     ASSERT(bytesToRead <= 8192);
     ZeroMemory(buffer, 8192);
@@ -57,7 +59,7 @@ BOOL Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, DWORD bytesToRead)
     if (dwBytesRead != bytesToRead)
     {
         CloseHandle(hRomFile);
-        return false;
+        return FALSE;
     }
 
     CloseHandle(hRomFile);
@@ -164,9 +166,28 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
         g_pBoard->LoadROM(3, buffer);
     }
 
+    if (configuration & BK_COPT_BK0011)
+    {
+        // Load BK0011M EXT
+        if (!Emulator_LoadRomFile(FILENAME_BKROM_BK11M_EXT, buffer, 8192))
+        {
+            AlertWarning(_T("Failed to load BK11M EXT ROM file."));
+            return FALSE;
+        }
+        g_pBoard->LoadROM(1, buffer);
+        // Load BK0011M BOS
+        if (!Emulator_LoadRomFile(FILENAME_BKROM_BK11M_BOS, buffer, 8192))
+        {
+            AlertWarning(_T("Failed to load BK11M BOS ROM file."));
+            return FALSE;
+        }
+        g_pBoard->LoadROM(2, buffer);
+    }
+
     if (configuration & BK_COPT_FDD)
     {
         // Load disk driver ROM file
+        ZeroMemory(buffer, 8192);
         if (!Emulator_LoadRomFile(FILENAME_BKROM_DISK_327, buffer, 4096))
         {
             AlertWarning(_T("Failed to load DISK 327 ROM file."));

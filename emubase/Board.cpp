@@ -505,18 +505,50 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
         return ADDRTYPE_IO;
     }
 
-    int block = (address >> 13) & 7;  // RAM/ROM block number
-    BOOL blockbit = (m_MemoryMap >> block) & 1;  // 1 - ROM, 0 - RAM
-    if (blockbit)  // ROM
+    int memoryBlock = (address >> 13) & 7;  // RAM/ROM block number 0..7
+    BOOL okRom = FALSE;
+    if (m_Configuration & BK_COPT_BK0011)  // БК-0011, управление памятью через регистр 177716
     {
-        *pOffset = address - 0100000;
-        return ADDRTYPE_ROM;
+        switch ((memoryBlock >> 1) & 3)  // 0..3
+        {
+        case 0:  // 000000-037776
+            okRom = FALSE;
+            break;
+        case 1:  // 040000-077777, окно 0, страница ОЗУ 0..7
+            okRom = FALSE;
+            memoryBlock = (m_Port177716mem >> 12) & 7;
+            //address =
+            //TODO
+            break;
+        case 2:  // 100000-137776, окно 1, страница ОЗУ 0..7 или ПЗУ 8..11
+            if (m_Port177716mem & 15)  // Включено ПЗУ 0..3
+            {
+                okRom = TRUE;
+                address -= 0100000;  //TODO
+                //TODO
+            }
+            else  // Включено ОЗУ
+            {
+                okRom = FALSE;
+                memoryBlock = (m_Port177716mem >> 8) & 7;
+                //TODO
+            }
+            break;
+        case 3:  // 140000-177776
+            okRom = TRUE;
+            address -= 0100000;
+            break;
+        }
     }
-    else  // RAM
+    else  // БК-0010, нет управления памятью
     {
-        *pOffset = address;
-        return ADDRTYPE_RAM;
+        okRom = (m_MemoryMap >> memoryBlock) & 1;  // 1 - ROM, 0 - RAM
+        if (okRom)
+            address -= 0100000;
     }
+
+    *pOffset = address;
+    return (okRom) ? ADDRTYPE_ROM : ADDRTYPE_RAM;
 }
 
 BYTE CMotherboard::GetPortByte(WORD address)
@@ -573,7 +605,13 @@ WORD CMotherboard::GetPortWord(WORD address)
 		    return 0;
         }
         if (m_pFloppyCtl != NULL)
-            return m_pFloppyCtl->GetState();
+        {
+            WORD state = m_pFloppyCtl->GetState();
+//#if !defined(PRODUCT)
+//            DebugPrintFormat(_T("FDD GetState %o\n"), state);
+//#endif
+            return state;
+        }
         return 0;
 
     case 0177132:
