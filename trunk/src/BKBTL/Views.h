@@ -65,7 +65,7 @@ void CreateDebugView(HWND hwndParent, int x, int y, int width, int height);
 LRESULT CALLBACK DebugViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK DebugViewViewerWndProc(HWND, UINT, WPARAM, LPARAM);
 void DebugView_OnUpdate();
-void DebugView_SetCurrentProc(BOOL okCPU);
+BOOL DebugView_IsRegisterChanged(int regno);
 
 
 //////////////////////////////////////////////////////////////////////
