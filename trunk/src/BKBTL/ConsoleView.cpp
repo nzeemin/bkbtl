@@ -286,7 +286,7 @@ void PrintMemoryDump(CProcessor* pProc, WORD address, int lines)
     }
 }
 // Print disassembled instructions
-void PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr)
+void PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okShort)
 {
     BOOL okHaltMode = pProc->IsHaltMode();
 
@@ -308,8 +308,11 @@ void PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr)
 
         if (length > 0)
         {
-            wsprintf(buffer, _T("  %s  %s\r\n"), bufaddr, bufvalue);
-            ConsoleView_Print(buffer);
+            if (!okShort)
+            {
+                wsprintf(buffer, _T("  %s  %s\r\n"), bufaddr, bufvalue);
+                ConsoleView_Print(buffer);
+            }
         }
         else
         {
@@ -320,7 +323,10 @@ void PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr)
             length = DisassembleInstruction(memory + index, address, instr, args);
             if (index + length > nWindowSize)
                 break;
-            wsprintf(buffer, _T("  %s  %s  %-7s %s\r\n"), bufaddr, bufvalue, instr, args);
+            if (okShort)
+                wsprintf(buffer, _T("  %s  %-7s %s\r\n"), bufaddr, instr, args);
+            else
+                wsprintf(buffer, _T("  %s  %s  %-7s %s\r\n"), bufaddr, bufvalue, instr, args);
             ConsoleView_Print(buffer);
         }
         length--;
@@ -439,7 +445,7 @@ void DoConsoleCommand()
             ConsoleView_Print(MESSAGE_UNKNOWN_COMMAND);
         break;
     case _T('s'):  // Step - execute one instruction
-        PrintDisassemble(pProc, pProc->GetPC(), TRUE);
+        PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
         //pProc->Execute();
 		
 		g_pBoard->DebugTicks();
@@ -447,20 +453,24 @@ void DoConsoleCommand()
         okUpdateAllViews = TRUE;
         break;
     case _T('d'):  // Disassemble
-        if (command[1] == 0)  // "d" - disassemble at current address
-            PrintDisassemble(pProc, pProc->GetPC(), FALSE);
-        else if (command[1] >= _T('0') && command[1] <= _T('7'))  // "dXXXXXX" - disassemble at address XXXXXX
+    case _T('D'):  // Disassemble, short format
         {
-            WORD value;
-            if (! ParseOctalValue(command + 1, &value))
-                ConsoleView_Print(MESSAGE_WRONG_VALUE);
-            else
+            BOOL okShort = (command[0] == _T('D'));
+            if (command[1] == 0)  // "d" - disassemble at current address
+                PrintDisassemble(pProc, pProc->GetPC(), FALSE, okShort);
+            else if (command[1] >= _T('0') && command[1] <= _T('7'))  // "dXXXXXX" - disassemble at address XXXXXX
             {
-                PrintDisassemble(pProc, value, FALSE);
+                WORD value;
+                if (! ParseOctalValue(command + 1, &value))
+                    ConsoleView_Print(MESSAGE_WRONG_VALUE);
+                else
+                {
+                    PrintDisassemble(pProc, value, FALSE, okShort);
+                }
             }
+            else
+                ConsoleView_Print(MESSAGE_UNKNOWN_COMMAND);
         }
-        else
-            ConsoleView_Print(MESSAGE_UNKNOWN_COMMAND);
         break;
 	case _T('u'):
 		SaveMemoryDump(pProc);

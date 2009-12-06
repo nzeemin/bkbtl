@@ -364,7 +364,7 @@ void CProcessor::Execute()
             BOOL intrMode;  // TRUE = HALT mode interrupt, FALSE = USER mode interrupt
             if (m_HALTrq)  // HALT command
             {
-                intrVector = 0170;  intrMode = TRUE;
+                intrVector = 0004;  intrMode = TRUE;
                 m_HALTrq = FALSE;
             }
             else if (m_IOT_rq)  // IOT command
