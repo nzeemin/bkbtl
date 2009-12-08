@@ -18,6 +18,7 @@ BOOL g_okEmulatorRunning = FALSE;
 WORD m_wEmulatorCPUBreakpoint = 0177777;
 
 BOOL m_okEmulatorSound = FALSE;
+BOOL m_okEmulatorCovox = FALSE;
 
 long m_nFrameCount = 0;
 DWORD m_dwTickCount = 0;
@@ -28,6 +29,9 @@ BYTE* g_pEmulatorRam;  // RAM values - for change tracking
 BYTE* g_pEmulatorChangedRam;  // RAM change flags
 WORD g_wEmulatorCpuPC = 0177777;      // Current PC value
 WORD g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
+
+
+void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -84,7 +88,7 @@ BOOL Emulator_Init()
     if (m_okEmulatorSound)
     {
 	    SoundGen_Initialize();
-        g_pBoard->SetSoundGenCallback(SoundGen_FeedDAC);
+        g_pBoard->SetSoundGenCallback(Emulator_SoundGenCallback);
     }
 
     return TRUE;
@@ -263,7 +267,7 @@ void Emulator_SetSound(BOOL soundOnOff)
         if (soundOnOff)
         {
             SoundGen_Initialize();
-            g_pBoard->SetSoundGenCallback(SoundGen_FeedDAC);
+            g_pBoard->SetSoundGenCallback(Emulator_SoundGenCallback);
         }
         else
         {
@@ -273,6 +277,11 @@ void Emulator_SetSound(BOOL soundOnOff)
     }
 
     m_okEmulatorSound = soundOnOff;
+}
+
+void Emulator_SetCovox(BOOL covoxOnOff)
+{
+    m_okEmulatorCovox = covoxOnOff;
 }
 
 int Emulator_SystemFrame()
@@ -317,6 +326,20 @@ int Emulator_SystemFrame()
 	}
 
     return 1;
+}
+
+void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R)
+{
+    if (m_okEmulatorCovox)
+    {
+        // Get lower byte from printer port output register
+        unsigned short data = g_pBoard->GetPrinterOutPort() & 0xff;
+        // Merge with channel data
+        L += (data << 7);
+        R += (data << 7);
+    }
+
+    SoundGen_FeedDAC(L, R);
 }
 
 // Update cached values after Run or Step

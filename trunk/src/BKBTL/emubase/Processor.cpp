@@ -278,7 +278,7 @@ CProcessor::CProcessor (CMotherboard* pBoard)
     ASSERT(pBoard != NULL);
     m_pBoard = pBoard;
     ZeroMemory(m_R, sizeof(m_R));
-	m_psw = 0400;  // Start value of PSW is 340
+	m_psw = 0340;
     m_savepc = m_savepsw = 0;
     m_okStopped = TRUE;
     m_internalTick = 0;
@@ -294,7 +294,6 @@ CProcessor::CProcessor (CMotherboard* pBoard)
 void CProcessor::Start ()
 {
     m_okStopped = FALSE;
-    m_internalTick = 0;
 
 	m_userspace = FALSE;
 	m_stepmode = FALSE;
@@ -308,6 +307,7 @@ void CProcessor::Start ()
     WORD pc = m_pBoard->GetSelRegister() & 0177400;
     SetPC(pc);
     SetPSW(0340);
+    m_internalTick = 1000000;  // Количество тактов на включение процессора (значение с потолка)
 }
 void CProcessor::Stop ()
 {
@@ -316,7 +316,7 @@ void CProcessor::Stop ()
 	m_userspace = FALSE;
 	m_stepmode = FALSE;
 	m_waitmode = FALSE;
-	m_psw = 0400;  // Start value of PSW is 340
+	m_psw = 0340;
     m_savepc = m_savepsw = 0;
     m_internalTick = 0;
 	m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_EVNTrq = FALSE;

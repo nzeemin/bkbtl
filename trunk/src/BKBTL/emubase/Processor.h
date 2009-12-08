@@ -29,7 +29,7 @@ protected:  // Statics
     static void RegisterMethodRef(WORD start, WORD end, CProcessor::ExecuteMethodRef methodref);
 
 protected:  // Processor state
-    WORD        m_internalTick;     // How many ticks waiting to the end of current instruction
+    int         m_internalTick;     // How many ticks waiting to the end of current instruction
     WORD        m_psw;              // Processor Status Word (PSW)
     WORD        m_R[8];             // Registers (R0..R5, R6=SP, R7=PC)
     BOOL        m_okStopped;        // "Processor stopped" flag

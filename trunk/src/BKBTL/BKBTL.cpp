@@ -150,6 +150,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     Emulator_SetSound(Settings_GetSound());
     if (!Emulator_InitConfiguration((BKConfiguration)Settings_GetConfiguration()))
         return FALSE;
+    Emulator_SetCovox(Settings_GetCovox());
 
     // Create main window    
     g_hwnd = CreateWindow(g_szWindowClass, g_szTitle,

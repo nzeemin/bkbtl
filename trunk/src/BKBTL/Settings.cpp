@@ -17,6 +17,8 @@ BOOL m_Settings_RealSpeed = FALSE;
 BOOL m_Settings_RealSpeed_Valid = FALSE;
 BOOL m_Settings_Sound = FALSE;
 BOOL m_Settings_Sound_Valid = FALSE;
+BOOL m_Settings_Covox = FALSE;
+BOOL m_Settings_Covox_Valid = FALSE;
 BOOL m_Settings_NumPadJoystick = FALSE;
 BOOL m_Settings_NumPadJoystick_Valid = FALSE;
 BOOL m_Settings_Keyboard = FALSE;
@@ -221,6 +223,24 @@ BOOL Settings_GetSound()
         m_Settings_Sound_Valid = TRUE;
     }
     return m_Settings_Sound;
+}
+
+void Settings_SetCovox(BOOL flag)
+{
+    m_Settings_Covox = flag;
+    m_Settings_Covox_Valid = TRUE;
+    Settings_SaveDwordValue(_T("Covox"), (DWORD) flag);
+}
+BOOL Settings_GetCovox()
+{
+    if (!m_Settings_Covox_Valid)
+    {
+        DWORD dwValue = (DWORD) FALSE;
+        Settings_LoadDwordValue(_T("Covox"), &dwValue);
+        m_Settings_Covox = (BOOL) dwValue;
+        m_Settings_Covox_Valid = TRUE;
+    }
+    return m_Settings_Covox;
 }
 
 void Settings_SetNumPadJoystick(BOOL flag)

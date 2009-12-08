@@ -43,6 +43,7 @@ void MainWindow_DoEmulatorAutostart();
 void MainWindow_DoEmulatorReset();
 void MainWindow_DoEmulatorRealSpeed();
 void MainWindow_DoEmulatorSound();
+void MainWindow_DoEmulatorCovox();
 void MainWindow_DoEmulatorNumPadJoystick();
 void MainWindow_DoFileSaveState();
 void MainWindow_DoFileLoadState();
@@ -532,6 +533,7 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_EMULATOR_AUTOSTART, (Settings_GetAutostart() ? MF_CHECKED : MF_UNCHECKED));
     //CheckMenuItem(hMenu, ID_EMULATOR_REALSPEED, (Settings_GetRealSpeed() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_SOUND, (Settings_GetSound() ? MF_CHECKED : MF_UNCHECKED));
+    CheckMenuItem(hMenu, ID_EMULATOR_COVOX, (Settings_GetCovox() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_NUMPADJOYSTICK, (Settings_GetNumPadJoystick() ? MF_CHECKED : MF_UNCHECKED));
     MainWindow_SetToolbarImage(ID_EMULATOR_SOUND, (Settings_GetSound() ? ToolbarImageSoundOn : ToolbarImageSoundOff));
     EnableMenuItem(hMenu, ID_EMULATOR_STEP, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
@@ -624,6 +626,9 @@ bool MainWindow_DoCommand(int commandId)
         break;
     case ID_EMULATOR_SOUND:
         MainWindow_DoEmulatorSound();
+        break;
+    case ID_EMULATOR_COVOX:
+        MainWindow_DoEmulatorCovox();
         break;
     case ID_EMULATOR_NUMPADJOYSTICK:
         MainWindow_DoEmulatorNumPadJoystick();
@@ -755,6 +760,14 @@ void MainWindow_DoEmulatorSound()
     Settings_SetSound(!Settings_GetSound());
 
     Emulator_SetSound(Settings_GetSound());
+
+    MainWindow_UpdateMenu();
+}
+void MainWindow_DoEmulatorCovox()
+{
+    Settings_SetCovox(!Settings_GetCovox());
+
+    Emulator_SetCovox(Settings_GetCovox());
 
     MainWindow_UpdateMenu();
 }
