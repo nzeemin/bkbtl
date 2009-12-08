@@ -133,11 +133,11 @@ public:  // System control
 	void		TimerTick();		// Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
 public:
     void        ExecuteCPU();  // Execute one CPU instruction
-    void        ExecutePPU();  // Execute one PPU instruction
     BOOL        SystemFrame();  // Do one frame -- use for normal run
     void        KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2);  // Key pressed or released
 	WORD        GetKeyboardRegister(void);
     void        TapeInput(BOOL inputBit);  // Tape input bit received
+    WORD        GetPrinterOutPort() const { return m_Port177714out; }
 public:  // Floppy    
     BOOL        AttachFloppyImage(int slot, LPCTSTR sFileName);
     void        DetachFloppyImage(int slot);
@@ -172,10 +172,10 @@ private:
     //   pOffset - result - offset in memory plane
     int TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, WORD* pOffset);
 private:  // Access to I/O ports
-    WORD GetPortWord(WORD address);
-    void SetPortWord(WORD address, WORD word);
-    BYTE GetPortByte(WORD address);
-    void SetPortByte(WORD address, BYTE byte);
+    WORD        GetPortWord(WORD address);
+    void        SetPortWord(WORD address, WORD word);
+    BYTE        GetPortByte(WORD address);
+    void        SetPortByte(WORD address, BYTE byte);
 public:  // Saving/loading emulator status
     //void        SaveToImage(BYTE* pImage);
     //void        LoadFromImage(const BYTE* pImage);
@@ -203,7 +203,7 @@ private:
 	int			m_nTapeReadSampleRate;
     SOUNDGENCALLBACK m_SoundGenCallback;
 private:
-	void DoSound(void);
+	void        DoSound(void);
 };
 
 

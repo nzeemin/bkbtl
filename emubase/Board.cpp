@@ -732,7 +732,7 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         break;
 
     case 0177714:  // Parallel port register: printer and Covox
-        //TODO
+        m_Port177714out = word;
         break;
 
     case 0177716:  // System register - memory management, tape management
