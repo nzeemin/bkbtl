@@ -116,7 +116,9 @@ BEGIN
         MENUITEM "Sound",                       ID_EMULATOR_SOUND
         MENUITEM "Covox",                       ID_EMULATOR_COVOX
         MENUITEM "NumPad Joystick",             ID_EMULATOR_NUMPADJOYSTICK
-        MENUITEM SEPARATOR
+    END
+    POPUP "&Configuration"
+    BEGIN
         MENUITEM "BK 0010.01 BASIC",            ID_CONF_BK0010BASIC
         MENUITEM "BK 0010.01 FOCAL",            ID_CONF_BK0010FOCAL
         MENUITEM "BK 0010.01 FDD",              ID_CONF_BK0010FDD
