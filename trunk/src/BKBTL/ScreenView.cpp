@@ -10,6 +10,8 @@
 
 //////////////////////////////////////////////////////////////////////
 
+#define COLOR_BK_BACKGROUND RGB(115,115,115)
+
 
 HWND g_hwndScreen = NULL;  // Screen View window handle
 
@@ -149,7 +151,7 @@ void CreateScreenView(HWND hwndParent, int x, int y, int cxWidth)
     int cyBorder = ::GetSystemMetrics(SM_CYBORDER);
     int xLeft = x;
     int yTop = y;
-    int cyScreenHeight = BK_SCREEN_HEIGHT * m_ScreenHeightMode;
+    int cyScreenHeight = 4 + BK_SCREEN_HEIGHT * m_ScreenHeightMode + 4;
     int cyHeight = cyScreenHeight;
 
     g_hwndScreen = CreateWindow(
@@ -229,15 +231,21 @@ void ScreenView_OnDraw(HDC hdc)
     if (m_ScreenHeightMode > 1) dyDst = BK_SCREEN_HEIGHT * m_ScreenHeightMode;
 
     DrawDibDraw(m_hdd, hdc,
-        x, 0, -1, dyDst,
+        x, 4, -1, dyDst,
         &m_bmpinfo.bmiHeader, m_bits, 0,0,
         m_cxScreenWidth, m_cyScreenHeight,
         0);
 
-    HGDIOBJ hOldBrush = ::SelectObject(hdc, ::GetSysColorBrush(COLOR_BTNFACE));
+    // Empty border
+    HBRUSH hBrush = ::CreateSolidBrush(COLOR_BK_BACKGROUND);
+    //HGDIOBJ hOldBrush = ::SelectObject(hdc, ::GetSysColorBrush(COLOR__BTNFACE));
+    HGDIOBJ hOldBrush = ::SelectObject(hdc, hBrush);
+    PatBlt(hdc, 0,0, rc.right,4, PATCOPY);
     PatBlt(hdc, 0,0, x,rc.bottom, PATCOPY);
     PatBlt(hdc, x + BK_SCREEN_WIDTH, 0, rc.right - x - BK_SCREEN_WIDTH, rc.bottom, PATCOPY);
+    PatBlt(hdc, 0,rc.bottom, rc.right,-4, PATCOPY);
     ::SelectObject(hdc, hOldBrush);
+    ::DeleteObject(hBrush);
 }
 
 void ScreenView_RedrawScreen()
