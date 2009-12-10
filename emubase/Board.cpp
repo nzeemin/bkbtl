@@ -14,8 +14,8 @@ CMotherboard::CMotherboard ()
     m_pCPU = new CProcessor(this);
     m_pFloppyCtl = NULL;
 
-	m_TapeReadCallback = NULL;
-	m_nTapeReadSampleRate = 0;
+    m_TapeReadCallback = NULL;
+    m_nTapeReadSampleRate = 0;
     m_SoundGenCallback = NULL;
 
     // Allocate memory for RAM and ROM
@@ -141,7 +141,7 @@ BYTE CMotherboard::GetRAMByte(WORD offset)
 }
 void CMotherboard::SetRAMWord(WORD offset, WORD word) 
 {
-	*((WORD*)(m_pRAM + offset)) = word;
+    *((WORD*)(m_pRAM + offset)) = word;
 }
 void CMotherboard::SetRAMByte(WORD offset, BYTE byte) 
 {
@@ -175,98 +175,102 @@ void CMotherboard::ExecuteCPU()
     m_pCPU->Execute();
 }
 
-void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32uS (BK-0011), 23437.5 Hz = 42.67 uS (BK-0010)
+void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437.5 Hz = 42.67 мкс (BK-0010)
 {
     if ((m_timerflags & 1) == 1)  // Timer is off, nothing to do
         return;
 
-	int flag = 0;
+    BOOL flag = FALSE;
     m_timerdivider++;
     
-    switch((m_timerflags >> 6) & 3)
+    switch ((m_timerflags >> 5) & 3)
     {
         case 0:  // 32 мкс
-            flag = 1;
+            flag = TRUE;
             m_timerdivider = 0;
             break;
         case 1:  // 32 * 16 = 512 мкс
             if (m_timerdivider >= 16)
             {
-                flag = 1;
+                flag = TRUE;
                 m_timerdivider = 0;
             }
             break;
         case 2: // 32 * 4 = 128 мкс
             if (m_timerdivider >= 4)
             {
-                flag = 1;
+                flag = TRUE;
                 m_timerdivider = 0;
             }
             break;
         case 3:  // 32 * 16 * 4 = 2048 мкс
             if (m_timerdivider >= 64)
             {
-                flag = 1;
+                flag = TRUE;
                 m_timerdivider = 0;
             }
             break;
     }
 
-    if (flag == 0)  // Nothing happened
+    if (!flag)  // Nothing happened
         return; 
 
     m_timer--;
-    m_timer &= 07777;  // 12 bit only
+    m_timer &= 077777;
 
     if (m_timer == 0)
     {
-        if(m_timerflags & 0200)
-            m_timerflags |= 010;  // Overflow
-        m_timerflags |= 0200;  // 0
-        m_timer = m_timerreload & 07777; // Reload it
+        //if (m_timerflags & 0200)
+        //    m_timerflags |= 010;  // Overflow
+        m_timerflags |= 0200;  // Set Ready bit
+        m_timer = m_timerreload & 077777;  // Reload timer
     }
 }
 
 void CMotherboard::SetTimerReload(WORD val)	 // Sets timer reload value
 {
-    m_timerreload = val & 07777;
-	if ((m_timerflags & 1) == 0)
-		m_timer=m_timerreload;
+    m_timerreload = val & 077777;
+    if ((m_timerflags & 1) == 0)
+        m_timer = m_timerreload;
 }
 void CMotherboard::SetTimerState(WORD val) // Sets timer state
 {
     if ((val & 1) && ((m_timerflags & 1) == 0))
-        m_timer = m_timerreload & 07777;
+        m_timer = m_timerreload & 077777;
 
-    m_timerflags &= 0250;  // Clear everything but bits 7,5,3
-    m_timerflags |= (val & (~0250));  // Preserve bits 753
+    //m_timerflags &= 0250;  // Clear everything but bits 7,5,3
+    //m_timerflags |= (val & (~0250));  // Preserve bits 753
+    m_timerflags = (val & 0x00ff);
 }
 
 void CMotherboard::DebugTicks()
 {
-	m_pCPU->SetInternalTick(0);
-	m_pCPU->Execute();
+    m_pCPU->SetInternalTick(0);
+    m_pCPU->Execute();
     if (m_pFloppyCtl != NULL)
-	    m_pFloppyCtl->Periodic();
+        m_pFloppyCtl->Periodic();
 }
 
 
 /*
  аждый фрейм равен 1/25 секунды = 40 мс = 20000 тиков, 1 тик = 2 мкс.
-
-* 2150 тиков системного таймера - на каждый 16-й тик;
-* 2 сигнала IRQ2, в 0-й и 10000-й тик фрейма
-* 160000 тиков ÷ѕ - 6 раз за тик (Ѕ -0010, 3 ћ√ц), либо 8 раз за один тик (Ѕ -0011, 4 ћ√ц)
+12 ћ√ц = 1 / 12000000 = 0.83(3) мкс
+¬ каждый фрейм происходит:
+* 120000 тиков ÷ѕ - 6 раз за тик (Ѕ -0010, 12ћ√ц / 4 = 3 ћ√ц, 3.3(3) мкс), либо
+* 160000 тиков ÷ѕ - 8 раз за тик (Ѕ -0011, 12ћ√ц / 3 = 4 ћ√ц, 2.5 мкс)
+* программируемый таймер - на каждый 128-й тик процессора; 42.6(6) мкс либо 32 мкс
+* 2 тика IRQ2 50 √ц, в 0-й и 10000-й тик фрейма
+* 68571 тиков AY-3-891x: 1.714275 ћ√ц (12ћ√ц / 7 = 1.714 ћ√ц, 5.83(3) мкс)
 */
 BOOL CMotherboard::SystemFrame()
 {
     int frameProcTicks = (m_Configuration & BK_COPT_BK0011) ? 8 : 6;
     const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
 
-	int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
-	if (m_TapeReadCallback != NULL)
+    int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
+    if (m_TapeReadCallback != NULL)
     {
-		tapeSamplesPerFrame = m_nTapeReadSampleRate / 25;
+        tapeSamplesPerFrame = m_nTapeReadSampleRate / 25;
         frameTapeTicks = 20000 / tapeSamplesPerFrame;
     }
 
@@ -299,28 +303,28 @@ BOOL CMotherboard::SystemFrame()
                 m_pFloppyCtl->Periodic();
         }
 
-		if (frameticks % audioticks == 0)  // AUDIO tick
-			DoSound();
+        if (frameticks % audioticks == 0)  // AUDIO tick
+            DoSound();
 
-		if (m_TapeReadCallback != NULL && frameticks % frameTapeTicks == 0)
-		{
-			int tapeSamplesToRead = 0;
-			const int readsTotal = 20000 / frameTapeTicks;
-			while (true)
-			{
-				tapeSamplesToRead++;
-				tapeReadError += readsTotal;
-				if (2 * tapeReadError >= tapeSamplesPerFrame)
-				{
-					tapeReadError -= tapeSamplesPerFrame;
-					break;
-				}
-			}
+        if (m_TapeReadCallback != NULL && frameticks % frameTapeTicks == 0)
+        {
+            int tapeSamplesToRead = 0;
+            const int readsTotal = 20000 / frameTapeTicks;
+            while (true)
+            {
+                tapeSamplesToRead++;
+                tapeReadError += readsTotal;
+                if (2 * tapeReadError >= tapeSamplesPerFrame)
+                {
+                    tapeReadError -= tapeSamplesPerFrame;
+                    break;
+                }
+            }
 
-			// Reading the tape
-			BOOL tapeBit = (*m_TapeReadCallback)(tapeSamplesToRead);
-			TapeInput(tapeBit);
-		}
+            // Reading the tape
+            BOOL tapeBit = (*m_TapeReadCallback)(tapeSamplesToRead);
+            TapeInput(tapeBit);
+        }
     }
 
     return TRUE;
@@ -482,7 +486,7 @@ void CMotherboard::SetWord(WORD address, BOOL okHaltMode, WORD word)
     case ADDRTYPE_RAM:
         SetRAMWord(offset & 0177776, word);
         return;
-	case ADDRTYPE_ROM:
+    case ADDRTYPE_ROM:
         // Nothing to do: writing to ROM
         return;
     case ADDRTYPE_IO:
@@ -527,7 +531,7 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
     WORD portStartAddr = (m_Configuration & BK_COPT_FDD) ? 0177000 : 0177600;
     if (address >= portStartAddr)  // Port
     {
-	    *pOffset = address;
+        *pOffset = address;
         return ADDRTYPE_IO;
     }
 
@@ -579,10 +583,10 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
 
 BYTE CMotherboard::GetPortByte(WORD address)
 {
-	if (address & 1)
-		return GetPortWord(address & 0xfffe) >> 8;
+    if (address & 1)
+        return GetPortWord(address & 0xfffe) >> 8;
 
-	return (BYTE) GetPortWord(address);
+    return (BYTE) GetPortWord(address);
 }
 
 WORD CMotherboard::GetPortWord(WORD address)
@@ -600,8 +604,8 @@ WORD CMotherboard::GetPortWord(WORD address)
     case 0177712:  // System Timer Manage -- регистр управлени€ таймера
         {
             WORD res = m_timerflags;
-            m_timerflags &= ~010;  // Clear overflow
-            m_timerflags &= ~040;  // Clear external int
+            //m_timerflags &= ~010;  // Clear overflow
+            //m_timerflags &= ~040;  // Clear external int
             return res;
         }
     case 0177660:  // Keyboard status register
@@ -627,8 +631,8 @@ WORD CMotherboard::GetPortWord(WORD address)
     case 0177130:
         if ((m_Configuration & BK_COPT_FDD) == 0)
         {
-		    m_pCPU->MemoryError();
-		    return 0;
+            m_pCPU->MemoryError();
+            return 0;
         }
         if (m_pFloppyCtl != NULL)
         {
@@ -643,16 +647,16 @@ WORD CMotherboard::GetPortWord(WORD address)
     case 0177132:
         if ((m_Configuration & BK_COPT_FDD) == 0)
         {
-		    m_pCPU->MemoryError();
-		    return 0;
+            m_pCPU->MemoryError();
+            return 0;
         }
         if (m_pFloppyCtl != NULL)
             return m_pFloppyCtl->GetData();
         return 0;
 
-	default: 
-		m_pCPU->MemoryError();
-		return 0;
+    default: 
+        m_pCPU->MemoryError();
+        return 0;
     }
 
     return 0; 
@@ -698,20 +702,20 @@ WORD CMotherboard::GetPortView(WORD address)
 
 void CMotherboard::SetPortByte(WORD address, BYTE byte)
 {
-	WORD word;
-	if (address & 1)
-	{
-		word = GetPortWord(address & 0xfffe);
-		word &= 0xff;
-		word |= byte << 8;
-		SetPortWord(address & 0xfffe, word);
-	}
-	else
-	{
-		word = GetPortWord(address);
-		word &= 0xff00;
-		SetPortWord(address, word | byte);
-	}
+    WORD word;
+    if (address & 1)
+    {
+        word = GetPortWord(address & 0xfffe);
+        word &= 0xff;
+        word |= byte << 8;
+        SetPortWord(address & 0xfffe, word);
+    }
+    else
+    {
+        word = GetPortWord(address);
+        word &= 0xff00;
+        SetPortWord(address, word | byte);
+    }
 }
 
 void CMotherboard::SetPortWord(WORD address, WORD word)
@@ -767,9 +771,9 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
             m_pFloppyCtl->WriteData(word);
         break;
 
-	default:
-		m_pCPU->MemoryError();
-		break;
+    default:
+        m_pCPU->MemoryError();
+        break;
     }
 }
 
@@ -933,7 +937,7 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 
 WORD CMotherboard::GetKeyboardRegister(void)
 {
-	WORD res = 0;
+    WORD res = 0;
 
     WORD mem000042 = GetRAMWord(000042);
     res |= (mem000042 & 0100000) == 0 ? KEYB_LAT : KEYB_RUS;
@@ -949,35 +953,35 @@ void CMotherboard::DoSound(void)
     BOOL bSoundBit = (m_Port177716tap & 0100) != 0;
 
     if (bSoundBit)
-	    (*m_SoundGenCallback)(0x1fff,0x1fff);
+        (*m_SoundGenCallback)(0x1fff,0x1fff);
     else
-	    (*m_SoundGenCallback)(0x0000,0x0000);
+        (*m_SoundGenCallback)(0x0000,0x0000);
 }
 
 void CMotherboard::SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate)
 {
-	if (callback == NULL)  // Reset callback
-	{
-		m_TapeReadCallback = NULL;
-		m_nTapeReadSampleRate = 0;
-	}
-	else
-	{
-		m_TapeReadCallback = callback;
-		m_nTapeReadSampleRate = sampleRate;
-	}
+    if (callback == NULL)  // Reset callback
+    {
+        m_TapeReadCallback = NULL;
+        m_nTapeReadSampleRate = 0;
+    }
+    else
+    {
+        m_TapeReadCallback = callback;
+        m_nTapeReadSampleRate = sampleRate;
+    }
 }
 
 void CMotherboard::SetSoundGenCallback(SOUNDGENCALLBACK callback)
 {
-	if (callback == NULL)  // Reset callback
-	{
-		m_SoundGenCallback = NULL;
-	}
-	else
-	{
-		m_SoundGenCallback = callback;
-	}
+    if (callback == NULL)  // Reset callback
+    {
+        m_SoundGenCallback = NULL;
+    }
+    else
+    {
+        m_SoundGenCallback = callback;
+    }
 }
 
 
