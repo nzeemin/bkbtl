@@ -103,6 +103,8 @@ public:
     BOOL IsEngineOn() { return (m_flags & FLOPPY_CMD_ENGINESTART) != 0; }
 	WORD GetData(void);         // Reading port 177132 - data
 	WORD GetState(void);        // Reading port 177130 - device status
+    WORD GetDataView() const { return m_datareg; }  // Get port 177132 value for debugger
+	WORD GetStateView() const { return m_status; }  // Get port 177130 value for debugger
 	void SetCommand(WORD cmd);  // Writing to port 177130 - commands
 	void WriteData(WORD Data);  // Writing to port 177132 - data
 	void Periodic();            // Rotate disk; call it each 64 us - 15625 times per second

@@ -91,6 +91,7 @@ void CMotherboard::LoadROM(int bank, const BYTE* pBuffer)  // Load 8 KB ROM imag
 
 void CMotherboard::LoadRAM(const BYTE* pBuffer)  // Load 64 KB RAM image from the buffer
 {
+    ASSERT(pBuffer != NULL);
     ::CopyMemory(m_pRAM, pBuffer, 65536);
 }
 
@@ -692,18 +693,19 @@ WORD CMotherboard::GetPortView(WORD address)
         return m_Port177664;
 
     case 0177714:  // Parallel port register
-        return 0;  //TODO
+        return m_Port177714in;
 
     case 0177716:  // System register
         return m_Port177716;
 
     case 0177130:
-        //TODO
-        return 0;  //STUB
-
+        if (m_pFloppyCtl != NULL)
+            return m_pFloppyCtl->GetStateView();
+        return 0;
     case 0177132:
-        //TODO
-        return 0;  //STUB
+        if (m_pFloppyCtl != NULL)
+            return m_pFloppyCtl->GetDataView();
+        return 0;
 
     default:
         return 0;
