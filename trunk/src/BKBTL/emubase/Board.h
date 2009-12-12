@@ -92,6 +92,11 @@ enum BKConfiguration
 //   result     Bit to put in tape input port.
 typedef BOOL (CALLBACK* TAPEREADCALLBACK)(UINT samples);
 
+// Tape emulator callback used to write a data to tape.
+// Input:
+//   value      Sample value to write.
+typedef void (CALLBACK* TAPEWRITECALLBACK)(int value, UINT samples);
+
 // Sound generator callback function type
 typedef void (CALLBACK* SOUNDGENCALLBACK)(unsigned short L, unsigned short R);
 
@@ -145,6 +150,7 @@ public:  // Floppy
     BOOL        IsFloppyReadOnly(int slot);
 public:  // Callbacks
 	void		SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate);
+    void        SetTapeWriteCallback(TAPEWRITECALLBACK callback, int sampleRate);
 	void		SetSoundGenCallback(SOUNDGENCALLBACK callback);
 public:  // Memory
     // Read command for execution
@@ -200,7 +206,8 @@ private:
     WORD        m_CPUbp;  // CPU breakpoint address
 private:
     TAPEREADCALLBACK m_TapeReadCallback;
-	int			m_nTapeReadSampleRate;
+    TAPEWRITECALLBACK m_TapeWriteCallback;
+	int			m_nTapeSampleRate;
     SOUNDGENCALLBACK m_SoundGenCallback;
 private:
 	void        DoSound(void);
