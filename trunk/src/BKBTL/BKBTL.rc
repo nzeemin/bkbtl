@@ -98,8 +98,6 @@ BEGIN
         MENUITEM "Toolbar",                     ID_VIEW_TOOLBAR
         MENUITEM "Keyboard",                    ID_VIEW_KEYBOARD
         MENUITEM "Tape",                        32803
-        MENUITEM "Debug",                       ID_VIEW_DEBUG
-        MENUITEM "Memory Map",                  ID_VIEW_MEMORYMAP
         MENUITEM SEPARATOR
         MENUITEM "Color Screen",                ID_VIEW_RGBSCREEN
         MENUITEM SEPARATOR
@@ -131,6 +129,11 @@ BEGIN
         MENUITEM "Floppy B:",                   ID_EMULATOR_FLOPPY1, INACTIVE
         MENUITEM "Floppy C:",                   ID_EMULATOR_FLOPPY2, INACTIVE
         MENUITEM "Floppy D:",                   ID_EMULATOR_FLOPPY3, INACTIVE
+    END
+    POPUP "Debug"
+    BEGIN
+        MENUITEM "Debug Views",                 ID_VIEW_DEBUG
+        MENUITEM "Memory Map",                  ID_VIEW_MEMORYMAP
     END
     POPUP "&Help"
     BEGIN
