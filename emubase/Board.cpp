@@ -15,7 +15,8 @@ CMotherboard::CMotherboard ()
     m_pFloppyCtl = NULL;
 
     m_TapeReadCallback = NULL;
-    m_nTapeReadSampleRate = 0;
+    m_TapeWriteCallback = NULL;
+    m_nTapeSampleRate = 0;
     m_SoundGenCallback = NULL;
 
     // Allocate memory for RAM and ROM
@@ -268,9 +269,9 @@ BOOL CMotherboard::SystemFrame()
     const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
 
     int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
-    if (m_TapeReadCallback != NULL)
+    if (m_TapeReadCallback != NULL || m_TapeWriteCallback != NULL)
     {
-        tapeSamplesPerFrame = m_nTapeReadSampleRate / 25;
+        tapeSamplesPerFrame = m_nTapeSampleRate / 25;
         frameTapeTicks = 20000 / tapeSamplesPerFrame;
     }
 
@@ -306,15 +307,15 @@ BOOL CMotherboard::SystemFrame()
         if (frameticks % audioticks == 0)  // AUDIO tick
             DoSound();
 
-        if (m_TapeReadCallback != NULL && frameticks % frameTapeTicks == 0)
+        if ((m_TapeReadCallback != NULL || m_TapeWriteCallback != NULL) && frameticks % frameTapeTicks == 0)
         {
-            int tapeSamplesToRead = 0;
+            int tapeSamples = 0;
             const int readsTotal = 20000 / frameTapeTicks;
             while (true)
             {
-                tapeSamplesToRead++;
+                tapeSamples++;
                 tapeReadError += readsTotal;
-                if (2 * tapeReadError >= tapeSamplesPerFrame)
+                if (2 * tapeReadError >= tapeSamples)
                 {
                     tapeReadError -= tapeSamplesPerFrame;
                     break;
@@ -322,8 +323,17 @@ BOOL CMotherboard::SystemFrame()
             }
 
             // Reading the tape
-            BOOL tapeBit = (*m_TapeReadCallback)(tapeSamplesToRead);
-            TapeInput(tapeBit);
+            if (m_TapeReadCallback != NULL)
+            {
+                BOOL tapeBit = (*m_TapeReadCallback)(tapeSamples);
+                TapeInput(tapeBit);
+            }
+            else if (m_TapeWriteCallback != NULL)
+            {
+                int value = (m_Port177716tap & 4) << 2 | (m_Port177716tap & 0140);  // now data on bits 4,5,6
+                value = value << 24;
+                (*m_TapeWriteCallback)(value, tapeSamples);
+            }
         }
     }
 
@@ -963,12 +973,28 @@ void CMotherboard::SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate
     if (callback == NULL)  // Reset callback
     {
         m_TapeReadCallback = NULL;
-        m_nTapeReadSampleRate = 0;
+        m_nTapeSampleRate = 0;
     }
     else
     {
         m_TapeReadCallback = callback;
-        m_nTapeReadSampleRate = sampleRate;
+        m_nTapeSampleRate = sampleRate;
+        m_TapeWriteCallback = NULL;
+    }
+}
+
+void CMotherboard::SetTapeWriteCallback(TAPEWRITECALLBACK callback, int sampleRate)
+{
+    if (callback == NULL)  // Reset callback
+    {
+        m_TapeWriteCallback = NULL;
+        m_nTapeSampleRate = 0;
+    }
+    else
+    {
+        m_TapeWriteCallback = callback;
+        m_nTapeSampleRate = sampleRate;
+        m_TapeReadCallback = NULL;
     }
 }
 
