@@ -230,6 +230,17 @@ void MemoryMapView_OnDraw(HDC hdc)
         0);
 }
 
+void MemoryMapView_RedrawMap()
+{
+    if (g_hwndMemoryMap == (HWND)INVALID_HANDLE_VALUE) return;
+
+    MemoryMapView_PrepareBitmap();
+
+    HDC hdc = GetDC(g_hwndMemoryMap);
+    MemoryMapView_OnDraw(hdc);
+    ::ReleaseDC(g_hwndMemoryMap, hdc);
+}
+
 void MemoryMapView_PrepareBitmap()
 {
     for (int y = 0; y < 256; y += 1)
@@ -240,6 +251,7 @@ void MemoryMapView_PrepareBitmap()
             WORD address = (WORD)(x + y * 256);
             BOOL valid;
             WORD value = g_pBoard->GetWordView(address, FALSE, FALSE, &valid);
+            //WORD wChanged = Emulator_GetChangeRamStatus(address);
             COLORREF color1, color2;
             if (valid)
             {
