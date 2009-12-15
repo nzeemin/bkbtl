@@ -458,6 +458,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\TeletypeView.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\ToolWindow.cpp"
 			>
 		</File>

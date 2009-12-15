@@ -32,7 +32,8 @@ LRESULT CALLBACK MainWindow_WndProc(HWND, UINT, WPARAM, LPARAM);
 void MainWindow_AdjustWindowLayout();
 bool MainWindow_DoCommand(int commandId);
 void MainWindow_DoViewDebug();
-void MainWindow_DoMemoryMap();
+void MainWindow_DoDebugMemoryMap();
+void MainWindow_DoDebugTeletype();
 void MainWindow_DoViewToolbar();
 void MainWindow_DoViewKeyboard();
 void MainWindow_DoViewTape();
@@ -502,6 +503,19 @@ void MainWindow_ShowHideMemoryMap()
     }
 }
 
+void MainWindow_ShowHideTeletype()
+{
+    if (g_hwndTeletype == INVALID_HANDLE_VALUE)
+    {
+        RECT rcScreen;  ::GetWindowRect(g_hwndScreen, &rcScreen);
+        CreateTeletypeView(rcScreen.right, rcScreen.bottom, 400, 300);
+    }
+    else
+    {
+        ::SetFocus(g_hwndTeletype);
+    }
+}
+
 void MainWindow_UpdateMenu()
 {
     // Get main menu
@@ -588,7 +602,10 @@ bool MainWindow_DoCommand(int commandId)
         MainWindow_DoViewDebug();
         break;
     case ID_VIEW_MEMORYMAP:
-        MainWindow_DoMemoryMap();
+        MainWindow_DoDebugMemoryMap();
+        break;
+    case ID_DEBUG_TELETYPE:
+        MainWindow_DoDebugTeletype();
         break;
     case ID_VIEW_TOOLBAR:
         MainWindow_DoViewToolbar();
@@ -685,9 +702,13 @@ void MainWindow_DoViewDebug()
     Settings_SetDebug(!Settings_GetDebug());
     MainWindow_ShowHideDebug();
 }
-void MainWindow_DoMemoryMap()
+void MainWindow_DoDebugMemoryMap()
 {
     MainWindow_ShowHideMemoryMap();
+}
+void MainWindow_DoDebugTeletype()
+{
+    MainWindow_ShowHideTeletype();
 }
 void MainWindow_DoViewToolbar()
 {

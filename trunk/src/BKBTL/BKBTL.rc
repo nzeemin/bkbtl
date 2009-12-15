@@ -134,6 +134,7 @@ BEGIN
     BEGIN
         MENUITEM "Debug Views",                 ID_VIEW_DEBUG
         MENUITEM "Memory Map",                  ID_VIEW_MEMORYMAP
+        MENUITEM "Teletype",                    ID_DEBUG_TELETYPE
     END
     POPUP "&Help"
     BEGIN
