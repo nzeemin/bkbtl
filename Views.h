@@ -6,14 +6,15 @@
 //////////////////////////////////////////////////////////////////////
 
 
-const LPCTSTR CLASSNAME_SCREENVIEW  = _T("BKBTLSCREEN");
-const LPCTSTR CLASSNAME_KEYBOARDVIEW = _T("BKBTLKEYBOARD");
-const LPCTSTR CLASSNAME_DEBUGVIEW   = _T("BKBTLDEBUG");
-const LPCTSTR CLASSNAME_DISASMVIEW  = _T("BKBTLDISASM");
-const LPCTSTR CLASSNAME_MEMORYVIEW  = _T("BKBTLMEMORY");
-const LPCTSTR CLASSNAME_MEMORYMAPVIEW  = _T("BKBTLMEMORYMAP");
-const LPCTSTR CLASSNAME_CONSOLEVIEW = _T("BKBTLCONSOLE");
-const LPCTSTR CLASSNAME_TAPEVIEW    = _T("BKBTLTAPE");
+const LPCTSTR CLASSNAME_SCREENVIEW      = _T("BKBTLSCREEN");
+const LPCTSTR CLASSNAME_KEYBOARDVIEW    = _T("BKBTLKEYBOARD");
+const LPCTSTR CLASSNAME_DEBUGVIEW       = _T("BKBTLDEBUG");
+const LPCTSTR CLASSNAME_DISASMVIEW      = _T("BKBTLDISASM");
+const LPCTSTR CLASSNAME_MEMORYVIEW      = _T("BKBTLMEMORY");
+const LPCTSTR CLASSNAME_MEMORYMAPVIEW   = _T("BKBTLMEMORYMAP");
+const LPCTSTR CLASSNAME_TELETYPEVIEW    = _T("BKBTLTELETYPE");
+const LPCTSTR CLASSNAME_CONSOLEVIEW     = _T("BKBTLCONSOLE");
+const LPCTSTR CLASSNAME_TAPEVIEW        = _T("BKBTLTAPE");
 
 
 //////////////////////////////////////////////////////////////////////
@@ -102,6 +103,16 @@ void CreateMemoryMapView(int x, int y);
 LRESULT CALLBACK MemoryMapViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MemoryMapViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void MemoryMapView_RedrawMap();
+
+
+//////////////////////////////////////////////////////////////////////
+// TeletypeView
+
+extern HWND g_hwndTeletype;  // Teletype View window handle
+void TeletypeView_RegisterClass();
+void CreateTeletypeView(int x, int y, int width, int height);
+LRESULT CALLBACK TeletypeViewWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK TeletypeViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 
 //////////////////////////////////////////////////////////////////////

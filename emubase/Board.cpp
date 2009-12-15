@@ -78,7 +78,8 @@ void CMotherboard::Reset ()
     m_Port177714in = m_Port177714out = 0;
     m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0200;
     m_Port177716mem = m_Port177716tap = 0;
-    m_timer = m_timerreload = m_timerflags = m_timerdivider = 0;
+    m_timer = m_timerreload = m_timerdivider = 0;
+    m_timerflags = 0177400;
 
     m_pCPU->Start();
 }
@@ -225,6 +226,7 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437
         //if (m_timerflags & 0200)
         //    m_timerflags |= 010;  // Overflow
         m_timerflags |= 0200;  // Set Ready bit
+        //TODO: if m_timerflags bit 3 set then stop counting
         m_timer = m_timerreload & 077777;  // Reload timer
     }
 }
@@ -242,7 +244,7 @@ void CMotherboard::SetTimerState(WORD val) // Sets timer state
 
     //m_timerflags &= 0250;  // Clear everything but bits 7,5,3
     //m_timerflags |= (val & (~0250));  // Preserve bits 753
-    m_timerflags = (val & 0x00ff);
+    m_timerflags = 0177400 | (val & 0x00ff);
 }
 
 void CMotherboard::DebugTicks()
@@ -676,7 +678,8 @@ WORD CMotherboard::GetPortWord(WORD address)
 // Read word from port for debugger
 WORD CMotherboard::GetPortView(WORD address)
 {
-    switch (address) {
+    switch (address)
+    {
     case 0177706:  // System Timer counter start value -- регистр установки таймера
         return m_timerreload;
     case 0177710:  // System Timer Counter -- регистр счетчика таймера
@@ -698,11 +701,11 @@ WORD CMotherboard::GetPortView(WORD address)
     case 0177716:  // System register
         return m_Port177716;
 
-    case 0177130:
+    case 0177130:  // Floppy state
         if (m_pFloppyCtl != NULL)
             return m_pFloppyCtl->GetStateView();
         return 0;
-    case 0177132:
+    case 0177132:  // Floppy data
         if (m_pFloppyCtl != NULL)
             return m_pFloppyCtl->GetDataView();
         return 0;
