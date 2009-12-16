@@ -100,6 +100,9 @@ typedef void (CALLBACK* TAPEWRITECALLBACK)(int value, UINT samples);
 // Sound generator callback function type
 typedef void (CALLBACK* SOUNDGENCALLBACK)(unsigned short L, unsigned short R);
 
+// Teletype callback function type - board calls it if symbol ready to transmit
+typedef void (CALLBACK* TELETYPECALLBACK)(BYTE value);
+
 class CFloppyController;
 
 //////////////////////////////////////////////////////////////////////
@@ -133,7 +136,7 @@ public:  // System control
     void        SetConfiguration(WORD conf);
     void        Reset();  // Reset computer
     void        LoadROM(int bank, const BYTE* pBuffer);  // Load 8 KB ROM image from the biffer
-    void        LoadRAM(const BYTE* pBuffer);  // Load 32 KB RAM image from the biffer
+    void        LoadRAM(int startbank, const BYTE* pBuffer, int length);  // Load data into the RAM
     void        Tick50();           // Tick 50 Hz - goes to CPU EVNT line
 	void		TimerTick();		// Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
 public:
@@ -152,6 +155,7 @@ public:  // Callbacks
 	void		SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate);
     void        SetTapeWriteCallback(TAPEWRITECALLBACK callback, int sampleRate);
 	void		SetSoundGenCallback(SOUNDGENCALLBACK callback);
+	void		SetTeletypeCallback(TELETYPECALLBACK callback);
 public:  // Memory
     // Read command for execution
     WORD GetWordExec(WORD address, BOOL okHaltMode) { return GetWord(address, okHaltMode, TRUE); }
@@ -186,6 +190,10 @@ public:  // Saving/loading emulator status
     //void        SaveToImage(BYTE* pImage);
     //void        LoadFromImage(const BYTE* pImage);
 private:  // Ports: implementation
+    //WORD        m_Port177560;       // Serial port input state register
+    //WORD        m_Port177562;       // Serial port input data register
+    WORD        m_Port177564;       // Serial port output state register
+    WORD        m_Port177566;       // Serial port output data register
     WORD        m_Port177660;       // Keyboard status register
     WORD        m_Port177662rd;     // Keyboard register
     WORD        m_Port177662wr;     // Palette register
@@ -209,6 +217,7 @@ private:
     TAPEWRITECALLBACK m_TapeWriteCallback;
 	int			m_nTapeSampleRate;
     SOUNDGENCALLBACK m_SoundGenCallback;
+    TELETYPECALLBACK m_TeletypeCallback;
 private:
 	void        DoSound(void);
 };

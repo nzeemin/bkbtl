@@ -32,6 +32,7 @@ WORD g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
 
 
 void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R);
+void CALLBACK Emulator_TeletypeCallback(BYTE symbol);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -90,6 +91,8 @@ BOOL Emulator_Init()
 	    SoundGen_Initialize();
         g_pBoard->SetSoundGenCallback(Emulator_SoundGenCallback);
     }
+
+    g_pBoard->SetTeletypeCallback(Emulator_TeletypeCallback);
 
     return TRUE;
 }
@@ -203,6 +206,18 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
     g_nEmulatorConfiguration = configuration;
 
     g_pBoard->Reset();
+
+#if 0  //DEBUG: CPU and memory tests
+    Emulator_LoadRomFile(_T("791401"), buffer, 8192);
+    g_pBoard->LoadRAM(0, buffer, 8192);
+    //Emulator_LoadRomFile(_T("791404"), buffer, 6144);
+    //g_pBoard->LoadRAM(0, buffer, 6144);
+    //Emulator_LoadRomFile(_T("791323"), buffer, 4096);
+    //g_pBoard->LoadRAM(0, buffer, 4096);
+
+    g_pBoard->GetCPU()->SetPC(0200);  //DEBUG
+    g_pBoard->GetCPU()->SetPSW(0000);  //DEBUG
+#endif
 
     m_nUptimeFrameCount = 0;
     m_dwEmulatorUptime = 0;
@@ -372,6 +387,23 @@ void Emulator_OnUpdate()
 WORD Emulator_GetChangeRamStatus(WORD address)
 {
     return *((WORD*)(g_pEmulatorChangedRam + address));
+}
+
+void CALLBACK Emulator_TeletypeCallback(BYTE symbol)
+{
+    if (g_hwndTeletype != (HWND) INVALID_HANDLE_VALUE)
+    {
+        if (symbol >= 32 || symbol == 13 || symbol == 10)
+        {
+            TeletypeView_OutputSymbol((TCHAR)symbol);
+        }
+        else
+        {
+            TCHAR buffer[32];
+            _snwprintf_s(buffer, 32, _T("<%02x>"), symbol);
+            TeletypeView_Output(buffer);
+        }
+    }
 }
 
 

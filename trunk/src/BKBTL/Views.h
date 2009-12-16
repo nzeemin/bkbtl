@@ -113,6 +113,8 @@ void TeletypeView_RegisterClass();
 void CreateTeletypeView(int x, int y, int width, int height);
 LRESULT CALLBACK TeletypeViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK TeletypeViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+void TeletypeView_OutputSymbol(TCHAR symbol);
+void TeletypeView_Output(LPCTSTR message);
 
 
 //////////////////////////////////////////////////////////////////////

@@ -84,7 +84,25 @@ LRESULT CALLBACK TeletypeViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     return (LRESULT)FALSE;
 }
 
+void TeletypeView_Output(LPCTSTR message)
+{
+    // Put selection to the end of text
+    SendMessage(m_hwndTeletypeLog, EM_SETSEL, 0x100000, 0x100000);
+    // Insert the message
+    SendMessage(m_hwndTeletypeLog, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) message);
+    // Scroll to caret
+    SendMessage(m_hwndTeletypeLog, EM_SCROLLCARET, 0, 0);
+}
 
+void TeletypeView_OutputSymbol(TCHAR symbol)
+{
+    if (m_hwndTeletypeLog == NULL) return;
 
+    TCHAR message[2];
+    message[0] = symbol;
+    message[1] = 0;
+
+    TeletypeView_Output(message);
+}
 
 //////////////////////////////////////////////////////////////////////
