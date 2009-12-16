@@ -71,6 +71,8 @@ void CMotherboard::Reset ()
         m_pFloppyCtl->Reset();
 
     // Reset ports
+    m_Port177564 = 0200;
+    m_Port177566 = 0;
     m_Port177660 = 0100;
     m_Port177662rd = 0;
     m_Port177662wr = 047400;
@@ -90,10 +92,13 @@ void CMotherboard::LoadROM(int bank, const BYTE* pBuffer)  // Load 8 KB ROM imag
     ::CopyMemory(m_pROM + 8192 * bank, pBuffer, 8192);
 }
 
-void CMotherboard::LoadRAM(const BYTE* pBuffer)  // Load 64 KB RAM image from the buffer
+void CMotherboard::LoadRAM(int startbank, const BYTE* pBuffer, int length)
 {
     ASSERT(pBuffer != NULL);
-    ::CopyMemory(m_pRAM, pBuffer, 65536);
+    ASSERT(startbank >= 0 && startbank < 15);
+    int address = 8192 * startbank;
+    ASSERT(address + length <= 128 * 1024);
+    ::CopyMemory(m_pRAM + address, pBuffer, length);
 }
 
 
@@ -606,6 +611,11 @@ WORD CMotherboard::GetPortWord(WORD address)
 {
     switch (address)
     {
+    case 0177564:  // Serial port status register
+        return m_Port177564;
+    case 0177566:  // Serial port interrupt vector
+        return 060;
+
     case 0177706:  // System Timer counter start value -- регистр установки таймера
         return m_timerreload;
     case 0177710:  // System Timer Counter -- регистр счетчика таймера
@@ -623,7 +633,6 @@ WORD CMotherboard::GetPortWord(WORD address)
         }
     case 0177660:  // Keyboard status register
         return m_Port177660;
-
     case 0177662:  // Keyboard register
         m_Port177660 &= ~0200;  // Reset "Ready" bit
         return m_Port177662rd;
@@ -680,6 +689,11 @@ WORD CMotherboard::GetPortView(WORD address)
 {
     switch (address)
     {
+    case 0177564:  // Serial port status register
+        return m_Port177564;
+    case 0177566:  // Serial port interrupt vector
+        return 060;
+
     case 0177706:  // System Timer counter start value -- регистр установки таймера
         return m_timerreload;
     case 0177710:  // System Timer Counter -- регистр счетчика таймера
@@ -733,10 +747,40 @@ void CMotherboard::SetPortByte(WORD address, BYTE byte)
     }
 }
 
+void DebugPrintFormat(LPCTSTR pszFormat, ...);  //DEBUG
 void CMotherboard::SetPortWord(WORD address, WORD word)
 {
     switch (address)
     {
+    case 0177564:  // Serial port output status register
+#if !defined(PRODUCT)
+        DebugPrintFormat(_T("177564 write '%06o'\r\n"), word);
+#endif
+        if ((word & 0200) == 0)
+        {
+            if (m_TeletypeCallback != NULL)
+            {
+                (*m_TeletypeCallback)(m_Port177566 & 0xff);
+                if (m_Port177564 & 0100)
+                {
+                     m_pCPU->InterruptVIRQ(1, 064);
+                }
+            }
+        }
+        m_Port177564 = (word | 0200);
+        break;
+    case 0177566:  // Serial port output data
+//#if !defined(PRODUCT)
+//        DebugPrintFormat(_T("177566 write '%c'\r\n"), (BYTE)word);
+//#endif
+        if (m_TeletypeCallback != NULL)  //STUB
+        {
+            (*m_TeletypeCallback)(m_Port177566 & 0xff);
+        }
+
+        m_Port177566 = word;
+        break;
+
     case 0177700: case 0177702: case 0177704:  // Unknown something
         break;
     
@@ -779,7 +823,19 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 
     case 0177130:  // Регистр управления КНГМД
         if (m_pFloppyCtl != NULL)
+        {
+            WORD drivebits = (word & 3);
+            switch (drivebits)  // Конвертируем биты выбора дисковода в формат, принятый у CFloppyDrive
+            {
+            case 0: drivebits = 00000; break;
+            case 1: drivebits = 02007; break;
+            case 2: drivebits = 02006; break;
+            case 3: drivebits = 02005; break;
+            }
+            word = (word & ~02007) | drivebits;
+
             m_pFloppyCtl->SetCommand(word);
+        }
         break;
     case 0177132:  // Регистр данных КНГМД
         if (m_pFloppyCtl != NULL)
@@ -1012,6 +1068,18 @@ void CMotherboard::SetSoundGenCallback(SOUNDGENCALLBACK callback)
     else
     {
         m_SoundGenCallback = callback;
+    }
+}
+
+void CMotherboard::SetTeletypeCallback(TELETYPECALLBACK callback)
+{
+    if (callback == NULL)  // Reset callback
+    {
+        m_TeletypeCallback = NULL;
+    }
+    else
+    {
+        m_TeletypeCallback = callback;
     }
 }
 

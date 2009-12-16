@@ -508,7 +508,7 @@ void MainWindow_ShowHideTeletype()
     if (g_hwndTeletype == INVALID_HANDLE_VALUE)
     {
         RECT rcScreen;  ::GetWindowRect(g_hwndScreen, &rcScreen);
-        CreateTeletypeView(rcScreen.right, rcScreen.bottom, 400, 300);
+        CreateTeletypeView(rcScreen.right, rcScreen.bottom, 460, 320);
     }
     else
     {
