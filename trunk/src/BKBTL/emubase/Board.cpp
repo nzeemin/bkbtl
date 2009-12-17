@@ -21,7 +21,7 @@ CMotherboard::CMotherboard ()
 
     // Allocate memory for RAM and ROM
     m_pRAM = (BYTE*) ::LocalAlloc(LPTR, 128 * 1024);
-    m_pROM = (BYTE*) ::LocalAlloc(LPTR, 32 * 1024);
+    m_pROM = (BYTE*) ::LocalAlloc(LPTR, 64 * 1024);
 
     SetConfiguration(BK_CONF_BK0010_BASIC);  // Default configuration
 
@@ -46,12 +46,15 @@ void CMotherboard::SetConfiguration(WORD conf)
 
     // Define memory map
     m_MemoryMap = 0xf0;  // By default, 000000-077777 is RAM, 100000-177777 is ROM
+    m_MemoryMapOnOff = 0xff;  // By default, all 8K blocks are valid
     if (m_Configuration & BK_COPT_FDD)  // FDD with 16KB extra memory
         m_MemoryMap = 0xf0 - 32 - 64;  // 16KB extra memory mapped to 120000-157777
+    if ((m_Configuration & (BK_COPT_BK0010 | BK_COPT_ROM_FOCAL)) == (BK_COPT_BK0010 | BK_COPT_ROM_FOCAL))
+        m_MemoryMapOnOff = 0xbf;
 
     // Clean RAM/ROM
     ::ZeroMemory(m_pRAM, 128 * 1024);
-    ::ZeroMemory(m_pROM, 32 * 1024);
+    ::ZeroMemory(m_pROM, 64 * 1024);
 
     if (m_pFloppyCtl == NULL && (conf & BK_COPT_FDD) != 0)
     {
@@ -560,11 +563,26 @@ void CMotherboard::SetByte(WORD address, BOOL okHaltMode, BYTE byte)
     ASSERT(FALSE);  // If we are here - then addrtype has invalid value
 }
 
+// Calculates video buffer start address, for screen drawing procedure
+const BYTE* CMotherboard::GetVideoBuffer()
+{
+    if (m_Configuration & BK_COPT_BK0011)
+    {
+        DWORD offset = (m_Port177662wr & 0100000) ? 6 : 5;
+        offset *= 040000;
+        return (m_pRAM + offset);
+    }
+    else
+    {
+        return (m_pRAM + 040000);
+    }
+}
+
 int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, WORD* pOffset)
 {
     // При подключенном блоке дисковода, его ПЗУ занимает адреса 160000-167776, при этом адреса 170000-177776 остаются под порты.
     // Без подключенного дисковода, порты занимают адреса 177600-177776.
-    WORD portStartAddr = (m_Configuration & BK_COPT_FDD) ? 0177000 : 0177600;
+    WORD portStartAddr = (m_Configuration & BK_COPT_FDD) ? 0170000 : 0177600;
     if (address >= portStartAddr)  // Port
     {
         *pOffset = address;
@@ -572,11 +590,10 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
     }
 
     int addrType = 0;
-    BOOL okRom = FALSE;
-    int memoryRamChunk = 0;  // Number of 16K RAM chunk, 0..7
     if (m_Configuration & BK_COPT_BK0011)  // БК-0011, управление памятью через регистр 177716
     {
         const int memoryBlockMap[8] = { 1, 5, 2, 3, 4, 7, 0, 6 };
+        int memoryRamChunk = 0;  // Number of 16K RAM chunk, 0..7
         int memoryBank = (address >> 14) & 3;
         switch (memoryBank)
         {
@@ -588,12 +605,21 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
             addrType = ADDRTYPE_RAM | memoryRamChunk;
             address &= 37777;
             break;
-        case 2:  // 100000-137776, окно 1, страница ОЗУ 0..7 или ПЗУ 8..11
-            if (m_Port177716mem & 15)  // Включено ПЗУ 0..3
+        case 2:  // 100000-137776, окно 1, страница ОЗУ 0..7 или ПЗУ
+            if (m_Port177716mem & 0x1b)  // Включено ПЗУ 0..3
             {
                 addrType = ADDRTYPE_ROM;
-                address -= 0100000;  //TODO
-                //TODO
+                address -= 0100000;
+                int memoryRomChunk = 0;
+                if (m_Port177716mem & 1)
+                    memoryRomChunk = 0;
+                else if (m_Port177716mem & 2)
+                    memoryRomChunk = 1;
+                else if (m_Port177716mem & 8)
+                    memoryRomChunk = 2;
+                else if (m_Port177716mem & 16)
+                    memoryRomChunk = 3;
+                address = memoryRomChunk * 040000;
             }
             else  // Включено ОЗУ 0..7
             {
@@ -614,7 +640,10 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
     else  // БК-0010, нет управления памятью
     {
         int memoryBlock = (address >> 13) & 7;  // 8K block number 0..7
-        okRom = (m_MemoryMap >> memoryBlock) & 1;  // 1 - ROM, 0 - RAM
+        BOOL okValid = (m_MemoryMapOnOff >> memoryBlock) & 1;  // 1 - OK, 0 - deny
+        if (!okValid)
+            return ADDRTYPE_DENY;
+        BOOL okRom = (m_MemoryMap >> memoryBlock) & 1;  // 1 - ROM, 0 - RAM
         if (okRom)
             address -= 0100000;
         
@@ -771,15 +800,15 @@ void CMotherboard::SetPortByte(WORD address, BYTE byte)
     }
 }
 
-void DebugPrintFormat(LPCTSTR pszFormat, ...);  //DEBUG
+//void DebugPrintFormat(LPCTSTR pszFormat, ...);  //DEBUG
 void CMotherboard::SetPortWord(WORD address, WORD word)
 {
     switch (address)
     {
     case 0177564:  // Serial port output status register
-#if !defined(PRODUCT)
-        DebugPrintFormat(_T("177564 write '%06o'\r\n"), word);
-#endif
+//#if !defined(PRODUCT)
+//        DebugPrintFormat(_T("177564 write '%06o'\r\n"), word);
+//#endif
         if ((word & 0200) == 0)
         {
             if (m_TeletypeCallback != NULL)
@@ -823,7 +852,7 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         break;
 
     case 0177716:  // System register - memory management, tape management
-        if ((word & 04000) != 0)
+        if (word & 04000)
         {
             m_Port177716mem = word;
         }

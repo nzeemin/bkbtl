@@ -342,10 +342,6 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\BK.bmp"
-			>
-		</File>
-		<File
 			RelativePath=".\BKBTL.cpp"
 			>
 		</File>

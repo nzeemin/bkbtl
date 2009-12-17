@@ -269,21 +269,24 @@ void ScreenView_PrepareScreen()
 
     // Get palette
     DWORD* pPalette;
-    if ((g_nEmulatorConfiguration & BK_COPT_BK0011) == 0)
+    //if ((g_nEmulatorConfiguration & BK_COPT_BK0011) == 0)
         pPalette = (DWORD*)ScreenView_ColorPalette;
-    else
-        pPalette = (DWORD*)ScreenView_ColorPalettes[g_pBoard->GetPalette()];
+    //else
+    //    pPalette = (DWORD*)ScreenView_ColorPalettes[g_pBoard->GetPalette()];
+
+    const BYTE* pVideoBuffer = g_pBoard->GetVideoBuffer();
+    ASSERT(pVideoBuffer != NULL);
 
     // Render to bitmap
     int linesToShow = okSmallScreen ? 64 : 256;
     for (int y = 0; y < linesToShow; y++)
     {
         int yy = (y + scroll) & 0377;
-        WORD addressBits = 040000 + yy * 0100;
+        const WORD* pVideo = (WORD*)(pVideoBuffer + yy * 0100);
         DWORD* pBits = m_bits + (256 - 1 - y) * 512;
         for (int x = 0; x < 512 / 16; x++)
         {
-            WORD src = g_pBoard->GetRAMWord(addressBits);
+            WORD src = *pVideo;
 
             if (m_ScreenMode == BlackWhiteScreen)  // Black and white mode 512 x 256
             {
@@ -308,7 +311,7 @@ void ScreenView_PrepareScreen()
                 }
             }
 
-            addressBits += 2;
+            pVideo++;
         }
     }
 
