@@ -42,8 +42,7 @@ enum BKConfiguration
 #define ADDRTYPE_RAM     0  // RAM
 #define ADDRTYPE_ROM    32  // ROM
 #define ADDRTYPE_IO     64  // I/O port
-#define ADDRTYPE_NONE  128  // No data
-#define ADDRTYPE_DENY  192  // Access denied
+#define ADDRTYPE_DENY  128  // Access denied
 #define ADDRTYPE_MASK  224  // RAM type mask
 #define ADDRTYPE_RAMMASK 7  // RAM chunk number mask
 
@@ -116,9 +115,10 @@ private:  // Devices
     CFloppyController*  m_pFloppyCtl;  // FDD control
 private:  // Memory
     WORD        m_Configuration;  // See BK_COPT_Xxx flag constants
-    BYTE        m_MemoryMap;  // Memory map, every bit defines how 8KB mapped: 0 - RAM, 1 - ROM
-    BYTE*       m_pRAM;  // RAM, 128 KB
-    BYTE*       m_pROM;  // ROM, 32 KB
+    BYTE        m_MemoryMap;      // Memory map, every bit defines how 8KB mapped: 0 - RAM, 1 - ROM
+    BYTE        m_MemoryMapOnOff; // Memory map, every bit defines how 8KB: 0 - deny, 1 - OK
+    BYTE*       m_pRAM;  // RAM, 8 * 16 = 128 KB
+    BYTE*       m_pROM;  // ROM, 4 * 16 = 64 KB
 public:  // Construct / destruct
     CMotherboard();
     ~CMotherboard();
@@ -183,6 +183,8 @@ public:  // Memory
     WORD GetSelRegister() const { return m_Port177716; }
     // Get palette number 0..15 (BK0011 only)
     BYTE GetPalette() const { return (m_Port177662wr >> 8) & 0x0f; }
+    // Get video buffer address
+    const BYTE* GetVideoBuffer();
 private:
     // Determite memory type for given address - see ADDRTYPE_Xxx constants
     //   okHaltMode - processor mode (USER/HALT)

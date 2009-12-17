@@ -27,6 +27,8 @@ int m_nMemoryMap_scale = 2;
 
 void MemoryMapView_OnDraw(HDC hdc);
 BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM lParam);
+BOOL MemoryMapView_OnVScroll(WPARAM wParam, LPARAM lParam);
+BOOL MemoryMapView_OnHScroll(WPARAM wParam, LPARAM lParam);
 BOOL MemoryMapView_OnMouseWheel(WPARAM wParam, LPARAM lParam);
 void MemoryMapView_InitBitmap();
 void MemoryMapView_DoneBitmap();
@@ -166,6 +168,10 @@ LRESULT CALLBACK MemoryMapViewViewerWndProc(HWND hWnd, UINT message, WPARAM wPar
         break;
     case WM_KEYDOWN:
         return (LRESULT) MemoryMapView_OnKeyDown(wParam, lParam);
+    case WM_HSCROLL:
+        return (LRESULT) MemoryMapView_OnHScroll(wParam, lParam);
+    case WM_VSCROLL:
+        return (LRESULT) MemoryMapView_OnVScroll(wParam, lParam);
     case WM_MOUSEWHEEL:
         return (LRESULT) MemoryMapView_OnMouseWheel(wParam, lParam);
     default:
@@ -206,8 +212,11 @@ void MemoryMapView_Scroll(int dx, int dy)
     int newxpos = m_nMemoryMap_xpos + dx;
     int newypos = m_nMemoryMap_ypos + dy;
 
+    int maxpos = 256 * (m_nMemoryMap_scale - 2);  //INCORRECT
     if (newxpos < 0) newxpos = 0; 
+    if (newxpos > maxpos) newxpos = maxpos; 
     if (newypos < 0) newypos = 0; 
+    if (newypos > maxpos) newypos = maxpos; 
 
     m_nMemoryMap_xpos = newxpos;
     m_nMemoryMap_ypos = newypos;
@@ -242,6 +251,57 @@ BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM lParam)
     default:
         return TRUE;
     }
+    return FALSE;
+}
+
+BOOL MemoryMapView_OnHScroll(WPARAM wParam, LPARAM lParam)
+{
+    WORD scrollpos = HIWORD(wParam);
+    WORD scrollcmd = LOWORD(wParam);
+    switch (scrollcmd)
+    {
+    case SB_LINEDOWN:
+        MemoryMapView_Scroll(8, 0);
+        break;
+    case SB_LINEUP:
+        MemoryMapView_Scroll(-8, 0);
+        break;
+    case SB_PAGEDOWN:
+        MemoryMapView_Scroll(32, 0);  //TODO
+        break;
+    case SB_PAGEUP:
+        MemoryMapView_Scroll(32, 0);  //TODO
+        break;
+    //case SB_THUMBPOSITION:
+    //    MemoryMapView_ScrollTo(scrollpos * 16);
+    //    break;
+    }
+
+    return FALSE;
+}
+BOOL MemoryMapView_OnVScroll(WPARAM wParam, LPARAM lParam)
+{
+    WORD scrollpos = HIWORD(wParam);
+    WORD scrollcmd = LOWORD(wParam);
+    switch (scrollcmd)
+    {
+    case SB_LINEDOWN:
+        MemoryMapView_Scroll(0, 8);
+        break;
+    case SB_LINEUP:
+        MemoryMapView_Scroll(0, -8);
+        break;
+    case SB_PAGEDOWN:
+        MemoryMapView_Scroll(0, 32);  //TODO
+        break;
+    case SB_PAGEUP:
+        MemoryMapView_Scroll(0, -32);  //TODO
+        break;
+    //case SB_THUMBPOSITION:
+    //    MemoryMapView_ScrollTo(scrollpos * 16);
+    //    break;
+    }
+
     return FALSE;
 }
 
@@ -285,7 +345,7 @@ void MemoryMapView_PrepareBitmap()
             switch (addrtype & ADDRTYPE_MASK)
             {
             case ADDRTYPE_IO:
-                color1 = color2 = RGB(128,0,0);
+                color1 = color2 = RGB(128,0,128);
                 break;
             case ADDRTYPE_DENY:
                 color1 = color2 = RGB(0,0,128);

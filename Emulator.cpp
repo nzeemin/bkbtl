@@ -208,12 +208,12 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
     g_pBoard->Reset();
 
 #if 0  //DEBUG: CPU and memory tests
-    Emulator_LoadRomFile(_T("791401"), buffer, 8192);
-    g_pBoard->LoadRAM(0, buffer, 8192);
+    //Emulator_LoadRomFile(_T("791401"), buffer, 8192);
+    //g_pBoard->LoadRAM(0, buffer, 8192);
     //Emulator_LoadRomFile(_T("791404"), buffer, 6144);
     //g_pBoard->LoadRAM(0, buffer, 6144);
-    //Emulator_LoadRomFile(_T("791323"), buffer, 4096);
-    //g_pBoard->LoadRAM(0, buffer, 4096);
+    Emulator_LoadRomFile(_T("791323"), buffer, 4096);
+    g_pBoard->LoadRAM(0, buffer, 4096);
 
     g_pBoard->GetCPU()->SetPC(0200);  //DEBUG
     g_pBoard->GetCPU()->SetPSW(0000);  //DEBUG
