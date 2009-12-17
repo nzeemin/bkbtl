@@ -40,10 +40,12 @@ enum BKConfiguration
 
 // TranslateAddress result code
 #define ADDRTYPE_RAM     0  // RAM
-#define ADDRTYPE_ROM     8  // ROM
-#define ADDRTYPE_IO     16  // I/O port
+#define ADDRTYPE_ROM    32  // ROM
+#define ADDRTYPE_IO     64  // I/O port
 #define ADDRTYPE_NONE  128  // No data
-#define ADDRTYPE_DENY  255  // Access denied
+#define ADDRTYPE_DENY  192  // Access denied
+#define ADDRTYPE_MASK  224  // RAM type mask
+#define ADDRTYPE_RAMMASK 7  // RAM chunk number mask
 
 //floppy debug
 #define FLOPPY_FSM_WAITFORLSB	0
@@ -122,11 +124,15 @@ public:  // Construct / destruct
     ~CMotherboard();
 public:  // Getting devices
     CProcessor*     GetCPU() { return m_pCPU; }
-public:  // Memory access
+public:  // Memory access  //TODO: Make it private
     WORD        GetRAMWord(WORD offset);
+    WORD        GetRAMWord(BYTE chunk, WORD offset);
     BYTE        GetRAMByte(WORD offset);
+    BYTE        GetRAMByte(BYTE chunk, WORD offset);
     void        SetRAMWord(WORD offset, WORD word);
+    void        SetRAMWord(BYTE chunk, WORD offset, WORD word);
     void        SetRAMByte(WORD offset, BYTE byte);
+    void        SetRAMByte(BYTE chunk, WORD offset, BYTE byte);
     WORD        GetROMWord(WORD offset);
     BYTE        GetROMByte(WORD offset);
 public:  // Debug
@@ -170,11 +176,13 @@ public:  // Memory
     // Write byte
     void SetByte(WORD address, BOOL okHaltMode, BYTE byte);
     // Read word from memory for debugger
-    WORD GetWordView(WORD address, BOOL okHaltMode, BOOL okExec, BOOL* pValid);
+    WORD GetWordView(WORD address, BOOL okHaltMode, BOOL okExec, int* pValid);
     // Read word from port for debugger
     WORD GetPortView(WORD address);
     // Read SEL register
-    WORD GetSelRegister() { return m_Port177716; }
+    WORD GetSelRegister() const { return m_Port177716; }
+    // Get palette number 0..15 (BK0011 only)
+    BYTE GetPalette() const { return (m_Port177662wr >> 8) & 0x0f; }
 private:
     // Determite memory type for given address - see ADDRTYPE_Xxx constants
     //   okHaltMode - processor mode (USER/HALT)

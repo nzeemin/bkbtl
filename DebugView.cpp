@@ -271,9 +271,9 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     // Читаем из памяти процессора в буфер
     WORD memory[16];
     for (int idx = 0; idx < 16; idx++) {
-        BOOL okValidAddress;
+        int addrtype;
         memory[idx] = g_pBoard->GetWordView(
-                current + idx * 2 - 14, pProc->IsHaltMode(), okExec, &okValidAddress);
+                current + idx * 2 - 14, pProc->IsHaltMode(), okExec, &addrtype);
     }
 
     WORD address = current - 14;

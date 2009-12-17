@@ -143,17 +143,37 @@ WORD CMotherboard::GetRAMWord(WORD offset)
 {
     return *((WORD*)(m_pRAM + offset)); 
 }
+WORD CMotherboard::GetRAMWord(BYTE chunk, WORD offset)
+{
+    DWORD dwOffset = (((DWORD)chunk & 7) << 14) + offset;
+    return *((WORD*)(m_pRAM + dwOffset)); 
+}
 BYTE CMotherboard::GetRAMByte(WORD offset) 
 { 
     return m_pRAM[offset]; 
+}
+BYTE CMotherboard::GetRAMByte(BYTE chunk, WORD offset) 
+{ 
+    DWORD dwOffset = (((DWORD)chunk & 7) << 14) + offset;
+    return m_pRAM[dwOffset]; 
 }
 void CMotherboard::SetRAMWord(WORD offset, WORD word) 
 {
     *((WORD*)(m_pRAM + offset)) = word;
 }
+void CMotherboard::SetRAMWord(BYTE chunk, WORD offset, WORD word) 
+{
+    DWORD dwOffset = (((DWORD)chunk & 7) << 14) + offset;
+    *((WORD*)(m_pRAM + dwOffset)) = word;
+}
 void CMotherboard::SetRAMByte(WORD offset, BYTE byte) 
 {
     m_pRAM[offset] = byte; 
+}
+void CMotherboard::SetRAMByte(BYTE chunk, WORD offset, BYTE byte) 
+{
+    DWORD dwOffset = (((DWORD)chunk & 7) << 14) + offset;
+    m_pRAM[dwOffset] = byte; 
 }
 
 WORD CMotherboard::GetROMWord(WORD offset)
@@ -422,25 +442,23 @@ void CMotherboard::TapeInput(BOOL inputBit)
 // Motherboard: memory management
 
 // Read word from memory for debugger
-WORD CMotherboard::GetWordView(WORD address, BOOL okHaltMode, BOOL okExec, BOOL* pValid)
+WORD CMotherboard::GetWordView(WORD address, BOOL okHaltMode, BOOL okExec, int* pAddrType)
 {
     WORD offset;
     int addrtype = TranslateAddress(address, okHaltMode, okExec, &offset);
 
-    switch (addrtype)
+    *pAddrType = addrtype;
+
+    switch (addrtype & ADDRTYPE_MASK)
     {
     case ADDRTYPE_RAM:
-        *pValid = TRUE;
-        return GetRAMWord(offset);
+        return GetRAMWord(offset & 0177776);  //TODO: Use (addrtype & ADDRTYPE_RAMMASK) bits
     case ADDRTYPE_ROM:
-        *pValid = TRUE;
         return GetROMWord(offset);
     case ADDRTYPE_IO:
-        *pValid = FALSE;  // I/O port, not memory
-        return 0;
+        return 0;  // I/O port, not memory
     case ADDRTYPE_DENY:
-        *pValid = TRUE;  // This memory is inaccessible for reading
-        return 0;
+        return 0;  // This memory is inaccessible for reading
     }
 
     ASSERT(FALSE);  // If we are here - then addrtype has invalid value
@@ -452,17 +470,17 @@ WORD CMotherboard::GetWord(WORD address, BOOL okHaltMode, BOOL okExec)
     WORD offset;
     int addrtype = TranslateAddress(address, okHaltMode, okExec, &offset);
 
-    switch (addrtype)
+    switch (addrtype & ADDRTYPE_MASK)
     {
     case ADDRTYPE_RAM:
-        return GetRAMWord(offset & 0177776);
+        return GetRAMWord(addrtype & ADDRTYPE_RAMMASK, offset & 0177776);
     case ADDRTYPE_ROM:
         return GetROMWord(offset);
     case ADDRTYPE_IO:
         //TODO: What to do if okExec == TRUE ?
         return GetPortWord(address);
     case ADDRTYPE_DENY:
-        //TODO: Exception processing
+        m_pCPU->InterruptVIRQ(1, 4);
         return 0;
     }
 
@@ -475,17 +493,17 @@ BYTE CMotherboard::GetByte(WORD address, BOOL okHaltMode)
     WORD offset;
     int addrtype = TranslateAddress(address, okHaltMode, FALSE, &offset);
 
-    switch (addrtype)
+    switch (addrtype & ADDRTYPE_MASK)
     {
     case ADDRTYPE_RAM:
-        return GetRAMByte(offset);
+        return GetRAMByte(addrtype & ADDRTYPE_RAMMASK, offset);  //TODO: Use (addrtype & ADDRTYPE_RAMMASK) bits
     case ADDRTYPE_ROM:
         return GetROMByte(offset);
     case ADDRTYPE_IO:
         //TODO: What to do if okExec == TRUE ?
         return GetPortByte(address);
     case ADDRTYPE_DENY:
-        //TODO: Exception processing
+        m_pCPU->InterruptVIRQ(1, 4);
         return 0;
     }
 
@@ -499,19 +517,19 @@ void CMotherboard::SetWord(WORD address, BOOL okHaltMode, WORD word)
 
     int addrtype = TranslateAddress(address, okHaltMode, FALSE, &offset);
 
-    switch (addrtype)
+    switch (addrtype & ADDRTYPE_MASK)
     {
     case ADDRTYPE_RAM:
-        SetRAMWord(offset & 0177776, word);
+        SetRAMWord(addrtype & ADDRTYPE_RAMMASK, offset & 0177776, word);
         return;
-    case ADDRTYPE_ROM:
-        // Nothing to do: writing to ROM
+    case ADDRTYPE_ROM:  // Writing to ROM: exception
+        m_pCPU->InterruptVIRQ(1, 4);
         return;
     case ADDRTYPE_IO:
         SetPortWord(address, word);
         return;
     case ADDRTYPE_DENY:
-        //TODO: Exception processing
+        m_pCPU->InterruptVIRQ(1, 4);
         return;
     }
 
@@ -523,19 +541,19 @@ void CMotherboard::SetByte(WORD address, BOOL okHaltMode, BYTE byte)
     WORD offset;
     int addrtype = TranslateAddress(address, okHaltMode, FALSE, &offset);
 
-    switch (addrtype)
+    switch (addrtype & ADDRTYPE_MASK)
     {
     case ADDRTYPE_RAM:
-        SetRAMByte(offset, byte);
+        SetRAMByte(addrtype & ADDRTYPE_RAMMASK, offset, byte);
         return;
-    case ADDRTYPE_ROM:
-        // Nothing to do: writing to ROM
+    case ADDRTYPE_ROM:  // Writing to ROM: exception
+        m_pCPU->InterruptVIRQ(1, 4);
         return;
     case ADDRTYPE_IO:
         SetPortByte(address, byte);
         return;
     case ADDRTYPE_DENY:
-        //TODO: Exception processing
+        m_pCPU->InterruptVIRQ(1, 4);
         return;
     }
 
@@ -553,50 +571,56 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
         return ADDRTYPE_IO;
     }
 
-    int memoryBlock = (address >> 13) & 7;  // RAM/ROM block number 0..7
+    int addrType = 0;
     BOOL okRom = FALSE;
+    int memoryRamChunk = 0;  // Number of 16K RAM chunk, 0..7
     if (m_Configuration & BK_COPT_BK0011)  // БК-0011, управление памятью через регистр 177716
     {
-        switch ((memoryBlock >> 1) & 3)  // 0..3
+        const int memoryBlockMap[8] = { 1, 5, 2, 3, 4, 7, 0, 6 };
+        int memoryBank = (address >> 14) & 3;
+        switch (memoryBank)
         {
-        case 0:  // 000000-037776
-            okRom = FALSE;
+        case 0:  // 000000-037776: всегда страница ОЗУ 0
+            addrType = ADDRTYPE_RAM;
             break;
         case 1:  // 040000-077777, окно 0, страница ОЗУ 0..7
-            okRom = FALSE;
-            memoryBlock = (m_Port177716mem >> 12) & 7;
-            //address =
-            //TODO
+            memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 12) & 7];
+            addrType = ADDRTYPE_RAM | memoryRamChunk;
+            address &= 37777;
             break;
         case 2:  // 100000-137776, окно 1, страница ОЗУ 0..7 или ПЗУ 8..11
             if (m_Port177716mem & 15)  // Включено ПЗУ 0..3
             {
-                okRom = TRUE;
+                addrType = ADDRTYPE_ROM;
                 address -= 0100000;  //TODO
                 //TODO
             }
-            else  // Включено ОЗУ
+            else  // Включено ОЗУ 0..7
             {
-                okRom = FALSE;
-                memoryBlock = (m_Port177716mem >> 8) & 7;
-                //TODO
+                memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 8) & 7];
+                addrType = ADDRTYPE_RAM | memoryRamChunk;
+                address &= 37777;
             }
             break;
         case 3:  // 140000-177776
-            okRom = TRUE;
+            addrType = ADDRTYPE_ROM;
             address -= 0100000;
             break;
         }
+
+        *pOffset = address;
+        return addrType;
     }
     else  // БК-0010, нет управления памятью
     {
+        int memoryBlock = (address >> 13) & 7;  // 8K block number 0..7
         okRom = (m_MemoryMap >> memoryBlock) & 1;  // 1 - ROM, 0 - RAM
         if (okRom)
             address -= 0100000;
+        
+        *pOffset = address;
+        return (okRom) ? ADDRTYPE_ROM : ADDRTYPE_RAM;
     }
-
-    *pOffset = address;
-    return (okRom) ? ADDRTYPE_ROM : ADDRTYPE_RAM;
 }
 
 BYTE CMotherboard::GetPortByte(WORD address)
