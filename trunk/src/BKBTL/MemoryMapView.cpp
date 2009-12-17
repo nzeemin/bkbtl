@@ -32,6 +32,7 @@ void MemoryMapView_InitBitmap();
 void MemoryMapView_DoneBitmap();
 void MemoryMapView_PrepareBitmap();
 void MemoryMapView_Zoom(BOOL inout);
+void MemoryMapView_Scroll(int dx, int dy);
 void MemoryMapView_UpdateScrollPos();
 
 
@@ -200,6 +201,21 @@ void MemoryMapView_Zoom(BOOL inout)
     InvalidateRect(m_hwndMemoryMapViewer, NULL, FALSE);
     MemoryMapView_UpdateScrollPos();
 }
+void MemoryMapView_Scroll(int dx, int dy)
+{
+    int newxpos = m_nMemoryMap_xpos + dx;
+    int newypos = m_nMemoryMap_ypos + dy;
+
+    if (newxpos < 0) newxpos = 0; 
+    if (newypos < 0) newypos = 0; 
+
+    m_nMemoryMap_xpos = newxpos;
+    m_nMemoryMap_ypos = newypos;
+
+    InvalidateRect(m_hwndMemoryMapViewer, NULL, TRUE);
+
+    MemoryMapView_UpdateScrollPos();
+}
 
 BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM lParam)
 {
@@ -210,6 +226,18 @@ BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM lParam)
         break;
     case VK_OEM_PLUS:
         MemoryMapView_Zoom(TRUE);
+        break;
+    case VK_LEFT:
+        MemoryMapView_Scroll(-2, 0);
+        break;
+    case VK_RIGHT:
+        MemoryMapView_Scroll(2, 0);
+        break;
+    case VK_UP:
+        MemoryMapView_Scroll(0, -2);
+        break;
+    case VK_DOWN:
+        MemoryMapView_Scroll(0, 2);
         break;
     default:
         return TRUE;
@@ -224,7 +252,8 @@ void MemoryMapView_OnDraw(HDC hdc)
     MemoryMapView_PrepareBitmap();
 
     DrawDibDraw(m_hMemoryMapDrawDib, hdc,
-        0, 0, 256 * m_nMemoryMap_scale, 256 * m_nMemoryMap_scale,
+        -m_nMemoryMap_xpos * m_nMemoryMap_scale, -m_nMemoryMap_ypos * m_nMemoryMap_scale,
+        256 * m_nMemoryMap_scale, 256 * m_nMemoryMap_scale,
         &m_bmpinfoMemoryMap.bmiHeader, m_pMemoryMap_bits, 0,0,
         256, 256,
         0);
@@ -249,21 +278,30 @@ void MemoryMapView_PrepareBitmap()
         for (int x = 0; x < 256; x += 2)
         {
             WORD address = (WORD)(x + y * 256);
-            BOOL valid;
-            WORD value = g_pBoard->GetWordView(address, FALSE, FALSE, &valid);
-            //WORD wChanged = Emulator_GetChangeRamStatus(address);
+            int addrtype;
+            WORD value = g_pBoard->GetWordView(address, FALSE, FALSE, &addrtype);
             COLORREF color1, color2;
-            if (valid)
+            BYTE val;
+            switch (addrtype & ADDRTYPE_MASK)
             {
-                BYTE val;
+            case ADDRTYPE_IO:
+                color1 = color2 = RGB(128,0,0);
+                break;
+            case ADDRTYPE_DENY:
+                color1 = color2 = RGB(0,0,128);
+                break;
+            case ADDRTYPE_ROM:
+                val = (value & 0xff00) >> 8;
+                color1 = RGB(192, val, val);
+                val = value & 0x00ff;
+                color2 = RGB(192, val, val);
+                break;
+            case ADDRTYPE_RAM:
                 val = (value & 0xff00) >> 8;
                 color1 = RGB(val, val, val);
                 val = value & 0x00ff;
                 color2 = RGB(val, val, val);
-            }
-            else
-            {
-                color1 = color2 = RGB(128,0,0);
+                break;
             }
 
             *pBits = color1;
@@ -281,7 +319,7 @@ void MemoryMapView_UpdateScrollPos()
     siV.cbSize = sizeof(siV);
     siV.fMask = SIF_PAGE | SIF_POS | SIF_RANGE | SIF_DISABLENOSCROLL;
     siV.nPage = 256 * 2 / m_nMemoryMap_scale;
-    siV.nPos = m_nMemoryMap_xpos;  //TODO
+    siV.nPos = m_nMemoryMap_ypos;  //TODO
     siV.nMin = 0;
     siV.nMax = m_nMemoryMap_scale * 256 - 512;
     SetScrollInfo(m_hwndMemoryMapViewer, SB_VERT, &siV, TRUE);
@@ -291,7 +329,7 @@ void MemoryMapView_UpdateScrollPos()
     siH.cbSize = sizeof(siH);
     siH.fMask = SIF_PAGE | SIF_POS | SIF_RANGE | SIF_DISABLENOSCROLL;
     siH.nPage = 256 * 2 / m_nMemoryMap_scale;
-    siH.nPos = m_nMemoryMap_ypos;  //TODO
+    siH.nPos = m_nMemoryMap_xpos;  //TODO
     siH.nMin = 0;
     siH.nMax = m_nMemoryMap_scale * 256 - 512;
     SetScrollInfo(m_hwndMemoryMapViewer, SB_HORZ, &siH, TRUE);

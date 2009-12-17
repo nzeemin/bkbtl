@@ -171,7 +171,7 @@ void MemoryView_OnDraw(HDC hdc)
         for (int j = 0; j < 8; j++) {  // Draw words as octal value
             // Get word from memory
             WORD word = 0;
-            BOOL okValid = TRUE;
+            int addrtype;
             BOOL okHalt = FALSE;
             WORD wChanged = 0;
             //switch (m_Mode) {
@@ -189,12 +189,12 @@ void MemoryView_OnDraw(HDC hdc)
             //        break;
             //    case MEMMODE_CPU:
                     okHalt = g_pBoard->GetCPU()->IsHaltMode();
-                    word = g_pBoard->GetWordView(address, okHalt, FALSE, &okValid);
+                    word = g_pBoard->GetWordView(address, okHalt, FALSE, &addrtype);
                     wChanged = Emulator_GetChangeRamStatus(address);
             //        break;
             //}
 
-            if (okValid)
+            if ((addrtype & (ADDRTYPE_IO | ADDRTYPE_DENY)) == 0)
             {
                 ::SetTextColor(hdc, (wChanged != 0) ? RGB(255,0,0) : colorText);
                 DrawOctalValue(hdc, x, y, word);

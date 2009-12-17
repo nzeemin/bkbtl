@@ -267,6 +267,13 @@ void ScreenView_PrepareScreen()
     scroll &= 0377;
     scroll = (scroll >= 0330) ? scroll - 0330 : 050 + scroll;
 
+    // Get palette
+    DWORD* pPalette;
+    if ((g_nEmulatorConfiguration & BK_COPT_BK0011) == 0)
+        pPalette = (DWORD*)ScreenView_ColorPalette;
+    else
+        pPalette = (DWORD*)ScreenView_ColorPalettes[g_pBoard->GetPalette()];
+
     // Render to bitmap
     int linesToShow = okSmallScreen ? 64 : 256;
     for (int y = 0; y < linesToShow; y++)
@@ -292,8 +299,7 @@ void ScreenView_PrepareScreen()
             {
                 for (int bit = 0; bit < 16; bit += 2)
                 {
-                    //TODO: Use palette defined by port 177662
-                    DWORD color = ScreenView_ColorPalette[src & 3];
+                    DWORD color = pPalette[src & 3];
                     *pBits = color;
                     pBits++;
                     *pBits = color;

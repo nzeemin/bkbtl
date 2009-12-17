@@ -440,9 +440,9 @@ void DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD prev
     const int nWindowSize = 30;
     WORD memory[nWindowSize + 2];
     for (int idx = 0; idx < nWindowSize; idx++) {
-        BOOL okValidAddress;
+        int addrtype;
         memory[idx] = g_pBoard->GetWordView(
-                current + idx * 2 - 10, pProc->IsHaltMode(), TRUE, &okValidAddress);
+                current + idx * 2 - 10, pProc->IsHaltMode(), TRUE, &addrtype);
     }
 
     WORD address = current - 10;
