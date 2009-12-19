@@ -351,6 +351,10 @@ void CProcessor::Execute()
 
 	if (m_stepmode)
 		m_stepmode = FALSE;
+    else if (m_instruction == PI_RTT && (GetPSW() & PSW_T))
+    {
+        // Skip interrupt processing for RTT with T bit set
+    }
 	else  // Processing interrupts
 	{
         if (m_psw & 020)  // T-bit set
@@ -1046,20 +1050,19 @@ void CProcessor::ExecuteRESET ()  // Reset input/output devices
 void CProcessor::ExecuteRTT ()  // RTT - return from trace trap
 {
 	WORD new_psw;
-    SetReg(7, GetWord( GetSP() ) );  // Pop PC
+    SetPC( GetWord( GetSP() ) );  // Pop PC
     SetSP( GetSP() + 2 );
     
-	m_psw &= 0400;  // Store HALT
+	m_psw &= PSW_HALT;  // Store HALT
     new_psw = GetWord ( GetSP() );  // Pop PSW --- saving HALT
-	if(GetPC() < 0160000)
-		SetPSW((new_psw & 0377)|m_psw);  // Preserve HALT mode
+	if (GetPC() < 0160000)
+		SetPSW((new_psw & 0377) | m_psw);  // Preserve HALT mode
 	else
-		SetPSW(new_psw&0777); //load new mode
-
+		SetPSW(new_psw & 0777); // Load new mode
     SetSP( GetSP() + 2 );
 
-	m_psw|=PSW_T; // set the trap flag ???
-	m_internalTick=RTI_TIMING;
+	//m_psw |= PSW_T; // set the trap flag ???
+	m_internalTick = RTI_TIMING;
 }
 
 void CProcessor::ExecuteRTS ()  // RTS - return from subroutine - Возврат из процедуры
