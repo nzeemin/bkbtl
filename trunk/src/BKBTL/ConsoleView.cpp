@@ -286,7 +286,8 @@ void PrintMemoryDump(CProcessor* pProc, WORD address, int lines)
     }
 }
 // Print disassembled instructions
-void PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okShort)
+// Return value: number of words in the last instruction
+int PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okShort)
 {
     BOOL okHaltMode = pProc->IsHaltMode();
 
@@ -300,6 +301,7 @@ void PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okS
     TCHAR bufvalue[7];
     TCHAR buffer[64];
 
+    int lastLength = 0;
     int length = 0;
     for (int index = 0; index < nWindowSize; index++) {  // Рисуем строки
         PrintOctalValue(bufaddr, address);
@@ -321,6 +323,7 @@ void PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okS
             TCHAR instr[8];
             TCHAR args[32];
             length = DisassembleInstruction(memory + index, address, instr, args);
+            lastLength = length;
             if (index + length > nWindowSize)
                 break;
             if (okShort)
@@ -332,12 +335,21 @@ void PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okS
         length--;
         address += 2;
     }
+
+    return lastLength;
 }
 
-void ConsoleView_Step()
+void ConsoleView_StepInto()
 {
     // Put command to console prompt
     SendMessage(m_hwndConsoleEdit, WM_SETTEXT, 0, (LPARAM) _T("s"));
+    // Execute command
+    DoConsoleCommand();
+}
+void ConsoleView_StepOver()
+{
+    // Put command to console prompt
+    SendMessage(m_hwndConsoleEdit, WM_SETTEXT, 0, (LPARAM) _T("so"));
     // Execute command
     DoConsoleCommand();
 }
@@ -355,7 +367,8 @@ void ConsoleView_ShowHelp()
             _T("  r          Show register values\r\n") 
             _T("  rN         Show value of register N; N=0..7,ps\r\n") 
             _T("  rN XXXXXX  Set register N to value XXXXXX; N=0..7,ps\r\n") 
-            _T("  s          Step; executes one instruction (F8)\r\n") 
+            _T("  s          Step Into; executes one instruction\r\n") 
+            _T("  so         Step Over; executes and stops after the current instruction\r\n") 
             _T("  u          Save memory dump to file memdumpXPU.bin\r\n")
         );
 }
@@ -444,13 +457,24 @@ void DoConsoleCommand()
         else
             ConsoleView_Print(MESSAGE_UNKNOWN_COMMAND);
         break;
-    case _T('s'):  // Step - execute one instruction
-        PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
-        //pProc->Execute();
-		
-		g_pBoard->DebugTicks();
+    case _T('s'):  // Step
+        if (command[1] == 0)  // "s" - Step Into, execute one instruction
+        {
+            PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
 
-        okUpdateAllViews = TRUE;
+            //pProc->Execute();
+		    g_pBoard->DebugTicks();
+
+            okUpdateAllViews = TRUE;
+        }
+        else if (command[1] == _T('o'))  // "so" - Step Over
+        {
+            int instrLength = PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
+            WORD bpaddress = pProc->GetPC() + instrLength * 2;
+
+            Emulator_SetCPUBreakpoint(bpaddress);
+            Emulator_Start();
+        }
         break;
     case _T('d'):  // Disassemble
     case _T('D'):  // Disassemble, short format

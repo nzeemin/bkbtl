@@ -550,7 +550,7 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_EMULATOR_COVOX, (Settings_GetCovox() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_NUMPADJOYSTICK, (Settings_GetNumPadJoystick() ? MF_CHECKED : MF_UNCHECKED));
     MainWindow_SetToolbarImage(ID_EMULATOR_SOUND, (Settings_GetSound() ? ToolbarImageSoundOn : ToolbarImageSoundOff));
-    EnableMenuItem(hMenu, ID_EMULATOR_STEP, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
+    EnableMenuItem(hMenu, ID_DEBUG_STEPINTO, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
 
     UINT configcmd = 0;
     switch (g_nEmulatorConfiguration)
@@ -631,9 +631,13 @@ bool MainWindow_DoCommand(int commandId)
     case ID_EMULATOR_AUTOSTART:
         MainWindow_DoEmulatorAutostart();
         break;
-    case ID_EMULATOR_STEP:
+    case ID_DEBUG_STEPINTO:
         if (!g_okEmulatorRunning && Settings_GetDebug())
-            ConsoleView_Step();
+            ConsoleView_StepInto();
+        break;
+    case ID_DEBUG_STEPOVER:
+        if (!g_okEmulatorRunning && Settings_GetDebug())
+            ConsoleView_StepOver();
         break;
     case ID_EMULATOR_RESET:
         MainWindow_DoEmulatorReset();

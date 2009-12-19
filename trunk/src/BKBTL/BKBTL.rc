@@ -107,7 +107,6 @@ BEGIN
     POPUP "&Emulator"
     BEGIN
         MENUITEM "Run\tF5",                     ID_EMULATOR_RUN
-        MENUITEM "Step\tF8",                    ID_EMULATOR_STEP
         MENUITEM "Reset",                       ID_EMULATOR_RESET
         MENUITEM "Autostart",                   ID_EMULATOR_AUTOSTART
         MENUITEM SEPARATOR
@@ -135,6 +134,9 @@ BEGIN
         MENUITEM "Debug Views",                 ID_VIEW_DEBUG
         MENUITEM "Memory Map",                  ID_VIEW_MEMORYMAP
         MENUITEM "Teletype",                    ID_DEBUG_TELETYPE
+        MENUITEM SEPARATOR
+        MENUITEM "Step Into\tF8",               ID_DEBUG_STEPINTO
+        MENUITEM "Step Over\tShift+F8",         ID_DEBUG_STEPOVER
     END
     POPUP "&Help"
     BEGIN
@@ -150,8 +152,9 @@ END
 
 IDC_BKBTL ACCELERATORS 
 BEGIN
+    VK_F8,          ID_DEBUG_STEPINTO,      VIRTKEY, NOINVERT
     VK_F5,          ID_EMULATOR_RUN,        VIRTKEY, NOINVERT
-    VK_F8,          ID_EMULATOR_STEP,       VIRTKEY, NOINVERT
+    VK_F8,          ID_DEBUG_STEPOVER,      VIRTKEY, SHIFT, NOINVERT
 END
 
 
