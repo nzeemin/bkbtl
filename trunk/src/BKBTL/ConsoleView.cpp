@@ -102,8 +102,7 @@ void CreateConsoleView(HWND hwndParent, int x, int y, int width, int height)
     ShowWindow(g_hwndConsole, SW_SHOW);
     UpdateWindow(g_hwndConsole);
 
-    ConsoleView_Print(_T("BK Back to Life\r\n\r\n")
-            _T("Debug console. Type 'h' to show help.\r\n\r\n"));
+    ConsoleView_Print(_T("Use 'h' command to show help.\r\n\r\n"));
     PrintConsolePrompt();
     SetFocus(m_hwndConsoleEdit);
 }
