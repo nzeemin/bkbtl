@@ -361,8 +361,14 @@ BOOL CMotherboard::SystemFrame()
             }
             else if (m_TapeWriteCallback != NULL)
             {
-                int value = (m_Port177716tap & 4) << 2 | (m_Port177716tap & 0140);  // now data on bits 4,5,6
-                value = value << 24;
+                UINT value = 0;
+                switch (m_Port177716tap & 0140)
+                {
+                case 0000: value = 0;                break;
+                case 0040: value = UINT_MAX / 4;     break;
+                case 0100: value = UINT_MAX / 4 * 3; break;
+                case 0140: value = UINT_MAX;         break;
+                }
                 (*m_TapeWriteCallback)(value, tapeSamples);
             }
         }
