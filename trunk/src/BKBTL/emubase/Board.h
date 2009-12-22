@@ -145,12 +145,12 @@ public:  // System control
     void        LoadRAM(int startbank, const BYTE* pBuffer, int length);  // Load data into the RAM
     void        Tick50();           // Tick 50 Hz - goes to CPU EVNT line
 	void		TimerTick();		// Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
+    void        ResetDevices();     // INIT signal
 public:
     void        ExecuteCPU();  // Execute one CPU instruction
     BOOL        SystemFrame();  // Do one frame -- use for normal run
     void        KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2);  // Key pressed or released
 	WORD        GetKeyboardRegister(void);
-    void        TapeInput(BOOL inputBit);  // Tape input bit received
     WORD        GetPrinterOutPort() const { return m_Port177714out; }
 public:  // Floppy    
     BOOL        AttachFloppyImage(int slot, LPCTSTR sFileName);
@@ -185,6 +185,8 @@ public:  // Memory
     BYTE GetPalette() const { return (m_Port177662wr >> 8) & 0x0f; }
     // Get video buffer address
     const BYTE* GetVideoBuffer();
+private:
+    void        TapeInput(BOOL inputBit);  // Tape input bit received
 private:
     // Determite memory type for given address - see ADDRTYPE_Xxx constants
     //   okHaltMode - processor mode (USER/HALT)

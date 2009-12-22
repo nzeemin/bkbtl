@@ -300,7 +300,6 @@ void CProcessor::Start ()
 	m_waitmode = FALSE;
 	m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_EVNTrq = FALSE;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = FALSE;
-    //m_VIRQrq = FALSE;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 
     // "Turn On" interrupt processing
@@ -321,7 +320,6 @@ void CProcessor::Stop ()
     m_internalTick = 0;
 	m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_EVNTrq = FALSE;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = FALSE;
-    //m_VIRQrq = FALSE;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
     m_haltpin = FALSE;
 }
@@ -340,8 +338,12 @@ void CProcessor::Execute()
     m_RPLYrq = FALSE;
 	
 	if (!m_waitmode)
-		TranslateInstruction();  // Execute next instruction
-	//ASSERT(m_psw<0777);
+    {
+        FetchInstruction();  // Read next instruction from memory
+        if (!m_RPLYrq)
+		    TranslateInstruction();  // Execute next instruction
+	    //ASSERT(m_psw<0777);
+    }
 	
     if ((m_psw & 0600) != 0600)
     {
@@ -479,82 +481,6 @@ void CProcessor::Execute()
 		        m_psw = GetWord(intrVector + 2) & 0377;
             }
         }  // end while
-
-		//WORD intr = 0;
-		//if (m_traprq)
-		//{
-		//	if ((m_trap == INTERRUPT_4) && ((m_psw & 0400) != 0))
-		//		intr=0160004;
-		//	else
-		//		intr=m_trap;
-		//	m_traprq=0;
-		//}
-		//else
-		//if (m_TBITrq)
-		//{
-		//	intr = 014;
-		//}
-		//else
-		//if ((m_ACLOrq) && ((m_psw&0600)!=0600))
-		//{
-		//	m_ACLOrq = FALSE;
-		//	intr=024;
-		//}
-		//else
-		//if ((m_haltpin)&&((m_psw&0400)==0))
-		//{
-		//	intr=0160170;
-		//}
-		//else
-		//if ((m_EVNTrq)&&((m_psw&0200)==0))
-		//{
-		//	m_EVNTrq = FALSE;
-		//	intr=0100;
-		//}
-		//else
-		//if ((m_virqrq != 0)&&((m_psw&0200)==0))
-		//{
-		//	// intr=m_virq;
-		//	// m_virqrq=0;
-		// int irq;
-		// for (irq = 0; irq<=15; irq++)
-		//  {
-		//   if (m_virq[irq] != 0)
-		//    {
-		//     intr = m_virq[irq];
-		//	 m_virq[irq] = 0;
-		//	 m_virqrq--;
-		//	 break;
-		//    }
-		//  }
-  //       if (intr == 0) m_virqrq = 0;
-		//}
-		
-		//if(intr)
-		//{
-		//	m_waitmode=0;
-		//	if(intr>=0160000)
-		//	{
-		//		m_savepc=GetPC();
-		//		m_savepsw=GetPSW();
-  //              m_psw |= 0400;
-  //          }
-		//	else
-		//	{
-		//		SetSP(GetSP() - 2);
-		//		SetWord(GetSP(), m_psw);
-		//		SetSP(GetSP() - 2);
-		//		SetWord(GetSP(), GetPC());
-		//	}
-		//	SetPC(GetWord(intr));
-		//	if (intr >= 0160000)
-		//		m_psw = GetWord(intr + 2) & 0777;
-		//	else
-		//		m_psw = GetWord(intr + 2) & 0377;
-		//}
-
-        //m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_EVNTrq = FALSE;
-        //m_FIS_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = m_VIRQrq = FALSE;
 	}
 }
 
@@ -581,8 +507,6 @@ void CProcessor::InterruptVIRQ(int que, WORD interrupt)
 	// }
 	m_virqrq += 1;
 	m_virq[que] = interrupt;
-    //m_VIRQrq = TRUE;
-    //m_VIRQvector = interrupt;
 }
 void CProcessor::AssertHALT()
 {
@@ -837,7 +761,8 @@ WORD CProcessor::GetDstWordArgAsBranch ()
 
 //////////////////////////////////////////////////////////////////////
 
-void CProcessor::TranslateInstruction ()
+
+void CProcessor::FetchInstruction()
 {
     // Считываем очередную инструкцию
     WORD pc = GetPC();
@@ -845,15 +770,19 @@ void CProcessor::TranslateInstruction ()
 
     m_instruction = GetWordExec(pc);
     SetPC(GetPC() + 2);
-	
-    m_regdest  = GetDigit(m_instruction,0);
-    m_methdest = GetDigit(m_instruction,1);
-    m_regsrc   = GetDigit(m_instruction,2);
-    m_methsrc  = GetDigit(m_instruction,3);
+}
 
-    // Вызов метода, выполняющего обработку команды, по карте команд
+void CProcessor::TranslateInstruction ()
+{
+    // Prepare values to help decode the command
+    m_regdest  = GetDigit(m_instruction, 0);
+    m_methdest = GetDigit(m_instruction, 1);
+    m_regsrc   = GetDigit(m_instruction, 2);
+    m_methsrc  = GetDigit(m_instruction, 3);
+
+    // Find command implementation using the command map
     ExecuteMethodRef methodref = m_pExecuteMethodMap[m_instruction];
-    (this->*methodref)();  // Собственно переход к обработке команды
+    (this->*methodref)();  // Call command implementation method
 }
 
 void CProcessor::ExecuteUNKNOWN ()  // Нет такой инструкции - просто вызывается TRAP 10
@@ -1038,7 +967,9 @@ void CProcessor::ExecuteIOT ()  // IOT - I/O trap
 
 void CProcessor::ExecuteRESET ()  // Reset input/output devices
 {
-	m_internalTick=RESET_TIMING;
+    m_pBoard->ResetDevices();  // INIT signal
+
+	m_internalTick = RESET_TIMING;
 }
 
 void CProcessor::ExecuteRTT ()  // RTT - return from trace trap
@@ -1261,8 +1192,6 @@ void CProcessor::ExecuteJMP ()  // JMP - jump: PC = &d (a-mode > 0)
 {
     if (m_methdest == 0)  // Неправильный метод адресации
     {
-  //      m_traprq = 1;
-		//m_trap = 010;
         m_RPLYrq = TRUE;
 		m_internalTick = EMT_TIMING;
     }
@@ -2305,8 +2234,6 @@ void CProcessor::ExecuteJSR ()  // JSR - Jump subroutine: *--SP = R; R = PC; PC 
 	//int meth = GetDigit(m_instruction, DST + 1);
     if (m_methdest == 0) 
 	{  // Неправильный метод адресации
-		//m_traprq = 1;
-		//m_trap = 010;
         m_RPLYrq = TRUE;
 		m_internalTick=EMT_TIMING;
     }

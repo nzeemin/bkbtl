@@ -70,9 +70,6 @@ void CMotherboard::Reset ()
 {
     m_pCPU->Stop();
 
-    if (m_pFloppyCtl != NULL)
-        m_pFloppyCtl->Reset();
-
     // Reset ports
     m_Port177564 = 0200;
     m_Port177566 = 0;
@@ -85,6 +82,8 @@ void CMotherboard::Reset ()
     m_Port177716mem = m_Port177716tap = 0;
     m_timer = m_timerreload = m_timerdivider = 0;
     m_timerflags = 0177400;
+
+    ResetDevices();
 
     m_pCPU->Start();
 }
@@ -192,6 +191,15 @@ BYTE CMotherboard::GetROMByte(WORD offset)
 
 
 //////////////////////////////////////////////////////////////////////
+
+
+void CMotherboard::ResetDevices()
+{
+    if (m_pFloppyCtl != NULL)
+        m_pFloppyCtl->Reset();
+
+    //TODO: Reset ports
+}
 
 void CMotherboard::Tick50()  // 50 Hz timer
 {
