@@ -205,7 +205,7 @@ void CMotherboard::Tick50()  // 50 Hz timer
 {
     if ((m_Port177662wr & 040000) == 0)
     {
-        m_pCPU->TickEVNT();
+        m_pCPU->TickIRQ2();
     }
 }
 
@@ -727,7 +727,7 @@ WORD CMotherboard::GetPortWord(WORD address)
         {
             WORD state = m_pFloppyCtl->GetState();
 //#if !defined(PRODUCT)
-//            DebugPrintFormat(_T("FDD GetState %o\n"), state);
+//            DebugPrintFormat(_T("FDD GetState %06o\n"), state);
 //#endif
             return state;
         }
@@ -842,7 +842,7 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 //#endif
         if (m_TeletypeCallback != NULL)  //STUB
         {
-            (*m_TeletypeCallback)(m_Port177566 & 0xff);
+            (*m_TeletypeCallback)(word & 0xff);
         }
 
         m_Port177566 = word;
