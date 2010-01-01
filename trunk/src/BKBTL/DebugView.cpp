@@ -212,7 +212,7 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
     COLORREF colorText = GetSysColor(COLOR_WINDOWTEXT);
 
-    DebugView_DrawRectangle(hdc, x - cxChar, y - 8, x + cxChar + 26 * cxChar, y + 8 + cyLine * 14);
+    DebugView_DrawRectangle(hdc, x - cxChar, y - 8, x + cxChar + 26 * cxChar, y + 8 + cyLine * 12);
 
     // Registers
     for (int r = 0; r < 8; r++) {
@@ -227,36 +227,24 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
     }
     ::SetTextColor(hdc, colorText);
 
-    // CPC value
-    TextOut(hdc, x, y + 8 * cyLine, _T("PC'"), 3);
-    WORD cpc = pProc->GetCPC();
-    DrawOctalValue(hdc, x + cxChar * 3, y + 8 * cyLine, cpc);
-    DrawBinaryValue(hdc, x + cxChar * 10, y + 8 * cyLine, cpc);
-
     // PSW value
     ::SetTextColor(hdc, arrRChanged[8] ? COLOR_RED : colorText);
-    TextOut(hdc, x, y + 10 * cyLine, _T("PS"), 2);
+    TextOut(hdc, x, y + 9 * cyLine, _T("PS"), 2);
     WORD psw = arrR[8]; // pProc->GetPSW();
-    DrawOctalValue(hdc, x + cxChar * 3, y + 10 * cyLine, psw);
-    TextOut(hdc, x + cxChar * 10, y + 9 * cyLine, _T("       HP  TNZVC"), 16);
-    DrawBinaryValue(hdc, x + cxChar * 10, y + 10 * cyLine, psw);
+    DrawOctalValue(hdc, x + cxChar * 3, y + 9 * cyLine, psw);
+    TextOut(hdc, x + cxChar * 10, y + 8 * cyLine, _T("       HP  TNZVC"), 16);
+    DrawBinaryValue(hdc, x + cxChar * 10, y + 9 * cyLine, psw);
 
     ::SetTextColor(hdc, colorText);
 
-    // CPSW value
-    TextOut(hdc, x, y + 11 * cyLine, _T("PS'"), 3);
-    WORD cpsw = pProc->GetCPSW();
-    DrawOctalValue(hdc, x + cxChar * 3, y + 11 * cyLine, cpsw);
-    DrawBinaryValue(hdc, x + cxChar * 10, y + 11 * cyLine, cpsw);
-
     // Processor mode - HALT or USER
     BOOL okHaltMode = pProc->IsHaltMode();
-    TextOut(hdc, x, y + 13 * cyLine, okHaltMode ? _T("HALT") : _T("USER"), 4);
+    TextOut(hdc, x, y + 11 * cyLine, okHaltMode ? _T("HALT") : _T("USER"), 4);
 
     // "Stopped" flag
     BOOL okStopped = pProc->IsStopped();
     if (okStopped)
-        TextOut(hdc, x + 6 * cxChar, y + 13 * cyLine, _T("STOP"), 4);
+        TextOut(hdc, x + 6 * cxChar, y + 11 * cyLine, _T("STOP"), 4);
 
 }
 
@@ -276,8 +264,8 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
                 current + idx * 2 - 14, pProc->IsHaltMode(), okExec, &addrtype);
     }
 
-    WORD address = current - 14;
-    for (int index = 0; index < 16; index++) {  // Рисуем строки
+    WORD address = current - 10;
+    for (int index = 0; index < 14; index++) {  // Рисуем строки
         // Адрес
         DrawOctalValue(hdc, x + 4 * cxChar, y, address);
 
@@ -312,62 +300,62 @@ void DebugView_DrawPorts(HDC hdc, CMotherboard* pBoard, int x, int y)
     value = g_pBoard->GetPortView(0177660);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177660);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 33 * cxChar, y, _T("keyboard"), 8);
+    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 16 * cxChar, y, _T("keyb state"), 10);
     y += cyLine;
     value = g_pBoard->GetPortView(0177662);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177662);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 33 * cxChar, y, _T("pal & keyb"), 10);
+    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 16 * cxChar, y, _T("keyb data"), 9);
     y += cyLine;
     value = g_pBoard->GetPortView(0177664);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177664);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 33 * cxChar, y, _T("scroll"), 6);
+    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 16 * cxChar, y, _T("scroll"), 6);
     y += cyLine;
     value = g_pBoard->GetPortView(0177706);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177706);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 33 * cxChar, y, _T("timer reload"), 12);
+    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 16 * cxChar, y, _T("timer reload"), 12);
     y += cyLine;
     value = g_pBoard->GetPortView(0177710);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177710);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 33 * cxChar, y, _T("timer value"), 11);
+    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 16 * cxChar, y, _T("timer value"), 11);
     y += cyLine;
     value = g_pBoard->GetPortView(0177712);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177712);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 33 * cxChar, y, _T("timer manage"), 12);
+    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 16 * cxChar, y, _T("timer manage"), 12);
     y += cyLine;
     value = g_pBoard->GetPortView(0177714);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177714);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 33 * cxChar, y, _T("parallel"), 8);
+    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 16 * cxChar, y, _T("parallel"), 8);
     y += cyLine;
     value = g_pBoard->GetPortView(0177716);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177716);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 33 * cxChar, y, _T("system"), 6);
+    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 16 * cxChar, y, _T("system"), 6);
     y += cyLine;
     value = g_pBoard->GetPortView(0177130);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177130);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 33 * cxChar, y, _T("floppy state"), 12);
+    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 16 * cxChar, y, _T("floppy state"), 12);
     y += cyLine;
     value = g_pBoard->GetPortView(0177132);
     DrawOctalValue(hdc, x + 0 * cxChar, y, 0177132);
     DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 33 * cxChar, y, _T("floppy data"), 11);
+    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
+    TextOut(hdc, x + 16 * cxChar, y, _T("floppy data"), 11);
 }
 
 

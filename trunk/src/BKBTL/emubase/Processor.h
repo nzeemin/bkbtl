@@ -33,8 +33,6 @@ protected:  // Processor state
     WORD        m_psw;              // Processor Status Word (PSW)
     WORD        m_R[8];             // Registers (R0..R5, R6=SP, R7=PC)
     BOOL        m_okStopped;        // "Processor stopped" flag
-    WORD        m_savepc;           // CPC register
-    WORD        m_savepsw;          // CPSW register
     BOOL        m_userspace;        // Read TRUE if user space is used -- CPU is accessing I/O from HALT mode using user space
     BOOL        m_stepmode;         // Read TRUE if it's step mode
     BOOL        m_haltpin;			// HALT 
@@ -69,14 +67,12 @@ protected:
 
 public:  // Register control
     WORD        GetPSW() const { return m_psw; }
-    WORD        GetCPSW() const { return m_savepsw; }
     void        SetPSW(WORD word) { m_psw = word; }
     WORD        GetReg(int regno) const { return m_R[regno]; }
     void        SetReg(int regno, WORD word) { m_R[regno] = word; }
     WORD        GetSP() const { return m_R[6]; }
     void        SetSP(WORD word) { m_R[6] = word; }
     WORD        GetPC() const { return m_R[7]; }
-    WORD        GetCPC() const { return m_savepc; }
     void        SetPC(WORD word) { m_R[7] = word; }
 
 public:  // PSW bits control
