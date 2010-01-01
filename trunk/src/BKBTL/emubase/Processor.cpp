@@ -285,7 +285,7 @@ CProcessor::CProcessor (CMotherboard* pBoard)
 	m_waitmode = FALSE;
 	m_userspace = FALSE;
 	m_stepmode = FALSE;
-	m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_EVNTrq = FALSE;
+	m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = FALSE;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = FALSE;
     //m_VIRQrq = FALSE;
     m_haltpin = FALSE;
@@ -298,7 +298,7 @@ void CProcessor::Start ()
 	m_userspace = FALSE;
 	m_stepmode = FALSE;
 	m_waitmode = FALSE;
-	m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_EVNTrq = FALSE;
+	m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = FALSE;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = FALSE;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 
@@ -318,7 +318,7 @@ void CProcessor::Stop ()
 	m_psw = 0340;
     m_savepc = m_savepsw = 0;
     m_internalTick = 0;
-	m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_EVNTrq = FALSE;
+	m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = FALSE;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = FALSE;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
     m_haltpin = FALSE;
@@ -426,10 +426,10 @@ void CProcessor::Execute()
             {
                 intrVector = 0170;  intrMode = TRUE;
             }
-            else if (m_EVNTrq && (m_psw & 0200) != 0200)  // EVNT signal, priority 6
+            else if (m_IRQ2rq && (m_psw & 0200) != 0200)  // EVNT signal, priority 6
             {
                 intrVector = 0000100;  intrMode = FALSE;
-                m_EVNTrq = FALSE;
+                m_IRQ2rq = FALSE;
             }
             else if (m_virqrq > 0 && (m_psw & 0200) != 0200)  // VIRQ, priority 7
             {
@@ -484,11 +484,11 @@ void CProcessor::Execute()
 	}
 }
 
-void CProcessor::TickEVNT()
+void CProcessor::TickIRQ2()
 {
     if (m_okStopped) return;  // Processor is stopped - nothing to do
 
-	m_EVNTrq = TRUE;
+	m_IRQ2rq = TRUE;
 }
 
 void CProcessor::PowerFail()
@@ -788,10 +788,7 @@ void CProcessor::TranslateInstruction ()
 void CProcessor::ExecuteUNKNOWN ()  // Нет такой инструкции - просто вызывается TRAP 10
 {
 #if !defined(PRODUCT)
-    TCHAR oct1[10], oct2[10];
-	PrintOctalValue(oct1, m_instruction);
-	PrintOctalValue(oct2, GetPC()-2);
-	DebugPrintFormat(_T(">>Invalid OPCODE = %s @ %s\r\n"), oct1, oct2);
+	DebugPrintFormat(_T(">>Invalid OPCODE = %06o %06o\r\n"), GetPC()-2, m_instruction);
 #endif
 
     m_RSVDrq = TRUE;
@@ -1956,38 +1953,34 @@ void CProcessor::ExecuteSOB ()  // SOB - subtract one: R = R - 1 ; if R != 0 : P
 
 void CProcessor::ExecuteMOV ()
 {
-	if(m_instruction&0100000)
+	if (m_instruction&0100000)  // MOVB
 	{
-		BYTE dst;
+		BYTE dst = m_methsrc ? GetByte(GetByteAddr(m_methsrc, m_regsrc)) : GetReg(m_regsrc);
 
-		dst=m_methsrc?GetByte(GetByteAddr(m_methsrc,m_regsrc)):GetReg(m_regsrc);
-
-		SetN(dst>>7);
+		SetN(dst >> 7);
 		SetZ(!dst);
 		SetV(0);
 
-		if(m_methdest)
-			SetByte(GetByteAddr(m_methdest,m_regdest),dst);
+		if (m_methdest)
+			SetByte(GetByteAddr(m_methdest, m_regdest), dst);
 		else
-			SetReg(m_regdest,(dst&0200)?(0177400|dst):dst);
+			SetReg(m_regdest, (dst&0200)?(0177400|dst):dst);
 
-		m_internalTick=MOVB_TIMING[m_methsrc][m_methdest];
+		m_internalTick = MOVB_TIMING[m_methsrc][m_methdest];
 	}
-	else
+	else  // MOV
 	{
-		WORD dst;
+		WORD dst = m_methsrc ? GetWord(GetWordAddr(m_methsrc, m_regsrc)) : GetReg(m_regsrc);
 
-		dst=m_methsrc?GetWord(GetWordAddr(m_methsrc,m_regsrc)):GetReg(m_regsrc);
-
-		SetN(dst>>15);
+		SetN(dst >> 15);
 		SetZ(!dst);
 		SetV(0);
 
 		if(m_methdest)
-			SetWord(GetWordAddr(m_methdest,m_regdest),dst);
+			SetWord(GetWordAddr(m_methdest, m_regdest), dst);
 		else
-			SetReg(m_regdest,dst);
-		m_internalTick=MOV_TIMING[m_methsrc][m_methdest];
+			SetReg(m_regdest, dst);
+		m_internalTick = MOV_TIMING[m_methsrc][m_methdest];
 	}
 }
 

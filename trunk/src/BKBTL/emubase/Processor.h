@@ -55,7 +55,7 @@ protected:  // Interrupt processing
 	BOOL		m_ACLOrq;           // Power down interrupt pending
     BOOL        m_HALTrq;           // HALT command or HALT signal
     BOOL        m_RPL2rq;           // Double hangup interrupt pending
-	BOOL		m_EVNTrq;           // Timer event interrupt pending
+	BOOL		m_IRQ2rq;           // Timer event interrupt pending
     BOOL        m_BPT_rq;           // BPT command interrupt pending
     BOOL        m_IOT_rq;           // IOT command interrupt pending
     BOOL        m_EMT_rq;           // EMT command interrupt pending
@@ -105,7 +105,7 @@ public:  // Processor state
 public:  // Processor control
     void        Start();     // Start processor
     void        Stop();      // Stop processor
-    void        TickEVNT();  // EVNT signal
+    void        TickIRQ2();  // IRQ2 signal
 	void		PowerFail();
     void        InterruptVIRQ(int que, WORD interrupt);  // External interrupt via VIRQ signal
     void        Execute();   // Execute one instruction - for debugger only
