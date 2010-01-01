@@ -279,7 +279,6 @@ CProcessor::CProcessor (CMotherboard* pBoard)
     m_pBoard = pBoard;
     ZeroMemory(m_R, sizeof(m_R));
 	m_psw = 0340;
-    m_savepc = m_savepsw = 0;
     m_okStopped = TRUE;
     m_internalTick = 0;
 	m_waitmode = FALSE;
@@ -316,7 +315,6 @@ void CProcessor::Stop ()
 	m_stepmode = FALSE;
 	m_waitmode = FALSE;
 	m_psw = 0340;
-    m_savepc = m_savepsw = 0;
     m_internalTick = 0;
 	m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = FALSE;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = FALSE;
@@ -345,11 +343,11 @@ void CProcessor::Execute()
 	    //ASSERT(m_psw<0777);
     }
 	
-    if ((m_psw & 0600) != 0600)
-    {
-        m_savepc = GetPC();
-        m_savepsw = m_psw;
-    }
+    //if ((m_psw & 0600) != 0600)
+    //{
+    //    //m_savepc = GetPC();
+    //    //m_savepsw = m_psw;
+    //}
 
 	if (m_stepmode)
 		m_stepmode = FALSE;
@@ -458,8 +456,8 @@ void CProcessor::Execute()
                 intrVector |= selVector;
 
                 // Save PC/PSW to CPC/CPSW
-			    m_savepc = GetPC();
-			    m_savepsw = GetPSW();
+			    //m_savepc = GetPC();
+			    //m_savepsw = GetPSW();
 
                 m_psw |= 0400;
 
@@ -811,8 +809,8 @@ void CProcessor::ExecuteSTEP()
     }
 
     m_stepmode = TRUE;
-	SetPC(m_savepc);
-	SetPSW(m_savepsw);
+	//SetPC(m_savepc);
+	//SetPSW(m_savepsw);
 }
 
 void CProcessor::ExecuteRSEL()
@@ -847,8 +845,8 @@ void CProcessor::ExecuteRUN()
         return;
     }
 
-	SetPC(m_savepc);
-	SetPSW(m_savepsw);
+	//SetPC(m_savepc);
+	//SetPSW(m_savepsw);
 }
 
 void CProcessor::ExecuteHALT ()  // HALT - Останов
@@ -863,7 +861,7 @@ void CProcessor::ExecuteRCPC	()
         return;
     }
 
-    SetReg(0,m_savepc);
+    //SetReg(0,m_savepc);
 	m_internalTick=NOP_TIMING;
 }
 void CProcessor::ExecuteRCPS	()
@@ -874,7 +872,7 @@ void CProcessor::ExecuteRCPS	()
         return;
     }
 
-    SetReg(0,m_savepsw);
+    //SetReg(0,m_savepsw);
 	m_internalTick=NOP_TIMING;
 }
 void CProcessor::ExecuteWCPC	()
@@ -885,7 +883,7 @@ void CProcessor::ExecuteWCPC	()
         return;
     }
 
-    m_savepc=GetReg(0);
+    //m_savepc=GetReg(0);
 	m_internalTick=NOP_TIMING;
 }
 void CProcessor::ExecuteWCPS	()
@@ -896,7 +894,7 @@ void CProcessor::ExecuteWCPS	()
         return;
     }
 
-    m_savepsw=GetReg(0);
+    //m_savepsw=GetReg(0);
 	m_internalTick=NOP_TIMING;
 }
 
@@ -2275,8 +2273,8 @@ void CProcessor::SaveToImage(BYTE* pImage)
     CopyMemory(pwImage, m_R, 2 * 8);
     pwImage += 2 * 8;
     // Saved PC and PSW
-	*pwImage++ = m_savepc;
-	*pwImage++ = m_savepsw;
+	*pwImage++ = 0;  //m_savepc;
+	*pwImage++ = 0;  //m_savepsw;
     // Stopped flag
     *pwImage++ = (m_okStopped ? 1 : 0);
 }
@@ -2288,9 +2286,9 @@ void CProcessor::LoadFromImage(const BYTE* pImage)
     m_psw = *pwImage++;
     // Registers R0..R7
     CopyMemory(m_R, pwImage, 2 * 8);
-    // Saved PC and PSW
-	m_savepc= *pwImage++;
-	m_savepsw= *pwImage++;
+    // Saved PC and PSW - skip
+	*pwImage++;
+	*pwImage++;
     // Stopped flag
     m_okStopped = (*pwImage++ != 0);
 }
