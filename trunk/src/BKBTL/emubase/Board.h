@@ -202,8 +202,8 @@ public:  // Saving/loading emulator status
     //void        SaveToImage(BYTE* pImage);
     //void        LoadFromImage(const BYTE* pImage);
 private:  // Ports: implementation
-    //WORD        m_Port177560;       // Serial port input state register
-    //WORD        m_Port177562;       // Serial port input data register
+    WORD        m_Port177560;       // Serial port input state register
+    WORD        m_Port177562;       // Serial port input data register
     WORD        m_Port177564;       // Serial port output state register
     WORD        m_Port177566;       // Serial port output data register
     WORD        m_Port177660;       // Keyboard status register

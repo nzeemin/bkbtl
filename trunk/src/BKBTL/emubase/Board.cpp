@@ -71,6 +71,7 @@ void CMotherboard::Reset ()
     m_pCPU->Stop();
 
     // Reset ports
+    m_Port177560 = m_Port177562 = 0;
     m_Port177564 = 0200;
     m_Port177566 = 0;
     m_Port177660 = 0100;
@@ -198,7 +199,10 @@ void CMotherboard::ResetDevices()
     if (m_pFloppyCtl != NULL)
         m_pFloppyCtl->Reset();
 
-    //TODO: Reset ports
+    // Reset ports
+    m_Port177560 = m_Port177562 = 0;
+    m_Port177564 = 0200;
+    m_Port177566 = 0;
 }
 
 void CMotherboard::Tick50()  // 50 Hz timer
@@ -701,7 +705,11 @@ WORD CMotherboard::GetPortWord(WORD address)
 {
     switch (address)
     {
-    case 0177564:  // Serial port status register
+    case 0177560:  // Serial port recieve status
+        return m_Port177560;
+    case 0177562:  // Serial port recieve data
+        return m_Port177562;
+    case 0177564:  // Serial port translate status
         return m_Port177564;
     case 0177566:  // Serial port interrupt vector
         return 060;
@@ -779,7 +787,11 @@ WORD CMotherboard::GetPortView(WORD address)
 {
     switch (address)
     {
-    case 0177564:  // Serial port status register
+    case 0177560:  // Serial port recieve status
+        return m_Port177560;
+    case 0177562:  // Serial port recieve data
+        return m_Port177562;
+    case 0177564:  // Serial port translate status
         return m_Port177564;
     case 0177566:  // Serial port interrupt vector
         return 060;
@@ -843,6 +855,9 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
     switch (address)
     {
     case 0177560:
+        m_Port177560 = word;
+        break;
+    case 0177562:
         //TODO
         break;
     case 0177564:  // Serial port output status register
