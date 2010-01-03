@@ -306,6 +306,8 @@ BOOL CMotherboard::SystemFrame()
 {
     int frameProcTicks = (m_Configuration & BK_COPT_BK0011) ? 8 : 6;
     const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
+    const int teletypeTicks = 20000 / (9600 / 25);
+    int teletypeTxCount = 0;
 
     int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
     if (m_TapeReadCallback != NULL || m_TapeWriteCallback != NULL)
@@ -378,6 +380,27 @@ BOOL CMotherboard::SystemFrame()
                 case 0140: value = UINT_MAX;         break;
                 }
                 (*m_TapeWriteCallback)(value, tapeSamples);
+            }
+        }
+
+        if (frameticks % teletypeTicks)
+        {
+            if (teletypeTxCount > 0)
+            {
+                teletypeTxCount--;
+                if (teletypeTxCount == 0)  // Translation countdown finished - the byte translated
+                {
+                    (*m_TeletypeCallback)(m_Port177566 & 0xff);
+                    m_Port177564 |= 0200;
+                    if (m_Port177564 & 0100)
+                    {
+                         m_pCPU->InterruptVIRQ(1, 064);
+                    }
+                }
+            }
+            else if ((m_Port177564 & 0200) == 0)
+            {
+                teletypeTxCount = 8;  // Start translation countdown
             }
         }
     }
@@ -819,33 +842,21 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 {
     switch (address)
     {
+    case 0177560:
+        //TODO
+        break;
     case 0177564:  // Serial port output status register
 //#if !defined(PRODUCT)
 //        DebugPrintFormat(_T("177564 write '%06o'\r\n"), word);
 //#endif
-        if ((word & 0200) == 0)
-        {
-            if (m_TeletypeCallback != NULL)
-            {
-                (*m_TeletypeCallback)(m_Port177566 & 0xff);
-                if (m_Port177564 & 0100)
-                {
-                     m_pCPU->InterruptVIRQ(1, 064);
-                }
-            }
-        }
-        m_Port177564 = (word | 0200);
+        m_Port177564 = word;
         break;
     case 0177566:  // Serial port output data
 //#if !defined(PRODUCT)
 //        DebugPrintFormat(_T("177566 write '%c'\r\n"), (BYTE)word);
 //#endif
-        if (m_TeletypeCallback != NULL)  //STUB
-        {
-            (*m_TeletypeCallback)(word & 0xff);
-        }
-
         m_Port177566 = word;
+        m_Port177564 &= ~0200;
         break;
 
     case 0177700: case 0177702: case 0177704:  // Unknown something
