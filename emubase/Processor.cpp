@@ -139,14 +139,7 @@ void CProcessor::Init()
 
 	RegisterMethodRef( 0000010, 0000013, &CProcessor::ExecuteRUN );
 	RegisterMethodRef( 0000014, 0000017, &CProcessor::ExecuteSTEP );
-	RegisterMethodRef( 0000020, 0000020, &CProcessor::ExecuteRSEL );
-	RegisterMethodRef( 0000021, 0000021, &CProcessor::ExecuteMFUS );
-	RegisterMethodRef( 0000022, 0000023, &CProcessor::ExecuteRCPC );
-	RegisterMethodRef( 0000024, 0000027, &CProcessor::ExecuteRCPS );
 	RegisterMethodRef( 0000030, 0000030, &CProcessor::Execute000030 );
-	RegisterMethodRef( 0000031, 0000031, &CProcessor::ExecuteMTUS );
-	RegisterMethodRef( 0000032, 0000033, &CProcessor::ExecuteWCPC );
-	RegisterMethodRef( 0000034, 0000037, &CProcessor::ExecuteWCPS );
 
 	RegisterMethodRef( 0000100, 0000177, &CProcessor::ExecuteJMP );
 	RegisterMethodRef( 0000200, 0000207, &CProcessor::ExecuteRTS );  // RTS / RETURN
@@ -813,18 +806,6 @@ void CProcessor::ExecuteSTEP()
 	//SetPSW(m_savepsw);
 }
 
-void CProcessor::ExecuteRSEL()
-{
-    if ((m_psw & PSW_HALT) == 0)
-    {
-        m_RSVDrq = TRUE;
-        return;
-    }
-
-    //SetReg(0, ???);  //TODO
-    ASSERT(0);
-}
-
 void CProcessor::Execute000030()  // Unknown command
 {
     if ((m_psw & PSW_HALT) == 0)
@@ -852,83 +833,6 @@ void CProcessor::ExecuteRUN()
 void CProcessor::ExecuteHALT ()  // HALT - Останов
 {
     m_HALTrq = TRUE;
-}
-void CProcessor::ExecuteRCPC	()
-{
-    if ((m_psw & PSW_HALT) == 0)
-    {
-        m_RSVDrq = TRUE;
-        return;
-    }
-
-    //SetReg(0,m_savepc);
-	m_internalTick=NOP_TIMING;
-}
-void CProcessor::ExecuteRCPS	()
-{
-    if ((m_psw & PSW_HALT) == 0)
-    {
-        m_RSVDrq = TRUE;
-        return;
-    }
-
-    //SetReg(0,m_savepsw);
-	m_internalTick=NOP_TIMING;
-}
-void CProcessor::ExecuteWCPC	()
-{
-    if ((m_psw & PSW_HALT) == 0)
-    {
-        m_RSVDrq = TRUE;
-        return;
-    }
-
-    //m_savepc=GetReg(0);
-	m_internalTick=NOP_TIMING;
-}
-void CProcessor::ExecuteWCPS	()
-{
-    if ((m_psw & PSW_HALT) == 0)
-    {
-        m_RSVDrq = TRUE;
-        return;
-    }
-
-    //m_savepsw=GetReg(0);
-	m_internalTick=NOP_TIMING;
-}
-
-void CProcessor::ExecuteMFUS () //move from user space
-{
-    if ((m_psw & PSW_HALT) == 0)
-    {
-        m_RSVDrq = TRUE;
-        return;
-    }
-
-    //r0 = (r5)+
-	m_userspace = TRUE;
-	SetReg(0,GetWord(GetReg(5)));
-	m_userspace = FALSE;
-	SetReg(5,GetReg(5)+2);
-
-	m_internalTick=MOV_TIMING[0][2];
-}
-
-void CProcessor::ExecuteMTUS () //move to user space
-{
-    if ((m_psw & PSW_HALT) == 0)
-    {
-        m_RSVDrq = TRUE;
-        return;
-    }
-
-    //-(r5)=r0
-	SetReg(5,GetReg(5)-2);
-	m_userspace = TRUE;
-	SetWord(GetReg(5),GetReg(0));
-	m_userspace = FALSE;
-	m_internalTick=MOV_TIMING[0][2];
 }
 
 void CProcessor::ExecuteRTI ()  // RTI - Возврат из прерывания
