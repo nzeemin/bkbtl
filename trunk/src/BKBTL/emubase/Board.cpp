@@ -20,8 +20,8 @@ CMotherboard::CMotherboard ()
     m_SoundGenCallback = NULL;
 
     // Allocate memory for RAM and ROM
-    m_pRAM = (BYTE*) ::LocalAlloc(LPTR, 128 * 1024);
-    m_pROM = (BYTE*) ::LocalAlloc(LPTR, 64 * 1024);
+    m_pRAM = (BYTE*) ::malloc(128 * 1024);  ::memset(m_pRAM, 0, 128 * 1024);
+    m_pROM = (BYTE*) ::malloc(64 * 1024);  ::memset(m_pROM, 0, 64 * 1024);
 
     SetConfiguration(BK_CONF_BK0010_BASIC);  // Default configuration
 
@@ -36,8 +36,8 @@ CMotherboard::~CMotherboard ()
         delete m_pFloppyCtl;
 
     // Free memory
-    ::LocalFree(m_pRAM);
-    ::LocalFree(m_pROM);
+    ::free(m_pRAM);
+    ::free(m_pROM);
 }
 
 void CMotherboard::SetConfiguration(WORD conf)
@@ -53,8 +53,8 @@ void CMotherboard::SetConfiguration(WORD conf)
         m_MemoryMapOnOff = 0xbf;
 
     // Clean RAM/ROM
-    ::ZeroMemory(m_pRAM, 128 * 1024);
-    ::ZeroMemory(m_pROM, 64 * 1024);
+    ::memset(m_pRAM, 0, 128 * 1024);
+    ::memset(m_pROM, 0, 64 * 1024);
 
     if (m_pFloppyCtl == NULL && (conf & BK_COPT_FDD) != 0)
     {
