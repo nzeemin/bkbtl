@@ -57,7 +57,7 @@ BOOL Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, DWORD bytesToRead)
         return FALSE;
 
     ASSERT(bytesToRead <= 8192);
-    ZeroMemory(buffer, 8192);
+    ::memset(buffer, 0, 8192);
 
     DWORD dwBytesRead;
     ReadFile(hRomFile, buffer, bytesToRead, &dwBytesRead, NULL);
@@ -81,8 +81,8 @@ BOOL Emulator_Init()
     g_pBoard = new CMotherboard();
 
     // Allocate memory for old RAM values
-    g_pEmulatorRam = (BYTE*) ::LocalAlloc(LPTR, 65536);
-    g_pEmulatorChangedRam = (BYTE*) ::LocalAlloc(LPTR, 65536);
+    g_pEmulatorRam = (BYTE*) ::malloc(65536);  ::memset(g_pEmulatorRam, 0, 65536);
+    g_pEmulatorChangedRam = (BYTE*) ::malloc(65536);  ::memset(g_pEmulatorChangedRam, 0, 65536);
 
     g_pBoard->Reset();
 
@@ -110,8 +110,8 @@ void Emulator_Done()
     g_pBoard = NULL;
 
     // Free memory used for old RAM values
-    ::LocalFree(g_pEmulatorRam);
-    ::LocalFree(g_pEmulatorChangedRam);
+    ::free(g_pEmulatorRam);
+    ::free(g_pEmulatorChangedRam);
 }
 
 BOOL Emulator_InitConfiguration(BKConfiguration configuration)
@@ -162,7 +162,7 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
         }
         g_pBoard->LoadROM(1, buffer);
         // Unused 8KB
-        ZeroMemory(buffer, 8192);
+        ::memset(buffer, 0, 8192);
         g_pBoard->LoadROM(2, buffer);
         // Load Tests ROM file
         if (!Emulator_LoadRomFile(FILENAME_BKROM_TESTS, buffer, 8064))
@@ -194,7 +194,7 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
     if (configuration & BK_COPT_FDD)
     {
         // Load disk driver ROM file
-        ZeroMemory(buffer, 8192);
+        ::memset(buffer, 0, 8192);
         if (!Emulator_LoadRomFile(FILENAME_BKROM_DISK_327, buffer, 4096))
         {
             AlertWarning(_T("Failed to load DISK 327 ROM file."));
@@ -431,8 +431,8 @@ void Emulator_SaveImage(LPCTSTR sFilePath)
     }
 
     // Allocate memory
-    BYTE* pImage = (BYTE*) ::LocalAlloc(LPTR, BKIMAGE_SIZE);
-    ZeroMemory(pImage, BKIMAGE_SIZE);
+    BYTE* pImage = (BYTE*) ::malloc(BKIMAGE_SIZE);  memset(pImage, 0, BKIMAGE_SIZE);
+    ::memset(pImage, 0, BKIMAGE_SIZE);
     // Prepare header
     DWORD* pHeader = (DWORD*) pImage;
     *pHeader++ = BKIMAGE_HEADER1;
@@ -449,7 +449,7 @@ void Emulator_SaveImage(LPCTSTR sFilePath)
     //TODO: Check if dwBytesWritten != BKIMAGE_SIZE
 
     // Free memory, close file
-    LocalFree(pImage);
+    ::free(pImage);
     CloseHandle(hFile);
 }
 
@@ -474,7 +474,7 @@ void Emulator_LoadImage(LPCTSTR sFilePath)
     //TODO: Check version and size
 
     // Allocate memory
-    BYTE* pImage = (BYTE*) ::LocalAlloc(LPTR, BKIMAGE_SIZE);
+    BYTE* pImage = (BYTE*) ::malloc(BKIMAGE_SIZE);  ::memset(pImage, 0, BKIMAGE_SIZE);
 
     // Read image
     SetFilePointer(hFile, 0, NULL, FILE_BEGIN);
@@ -488,7 +488,7 @@ void Emulator_LoadImage(LPCTSTR sFilePath)
     m_dwEmulatorUptime = *(DWORD*)(pImage + 16);
 
     // Free memory, close file
-    LocalFree(pImage);
+    ::free(pImage);
     CloseHandle(hFile);
 
     g_okEmulatorRunning = FALSE;
