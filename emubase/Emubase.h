@@ -53,7 +53,7 @@ int DisassembleInstruction(WORD* pMemory, WORD addr, TCHAR* sInstr, TCHAR* sArg)
 
 struct CFloppyDrive
 {
-    HANDLE hFile;
+    FILE* fpFile;
     BOOL okReadOnly;    // Write protection flag
 	WORD track;         // Track number: from 0 to 79
 	WORD side;          // Disk side: 0 or 1
@@ -98,7 +98,7 @@ public:
 public:
     BOOL AttachImage(int drive, LPCTSTR sFileName);
     void DetachImage(int drive);
-    BOOL IsAttached(int drive) { return (m_drivedata[drive].hFile != INVALID_HANDLE_VALUE); }
+    BOOL IsAttached(int drive) { return (m_drivedata[drive].fpFile != NULL); }
     BOOL IsReadOnly(int drive) { return m_drivedata[drive].okReadOnly; } // return (m_status & FLOPPY_STATUS_WRITEPROTECT) != 0; }
     BOOL IsEngineOn() { return (m_flags & FLOPPY_CMD_ENGINESTART) != 0; }
 	WORD GetData(void);         // Reading port 177132 - data
