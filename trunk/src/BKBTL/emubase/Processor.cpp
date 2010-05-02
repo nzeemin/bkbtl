@@ -270,7 +270,7 @@ CProcessor::CProcessor (CMotherboard* pBoard)
 {
     ASSERT(pBoard != NULL);
     m_pBoard = pBoard;
-    ZeroMemory(m_R, sizeof(m_R));
+    ::memset(m_R, 0, sizeof(m_R));
 	m_psw = 0340;
     m_okStopped = TRUE;
     m_internalTick = 0;
@@ -2174,7 +2174,7 @@ void CProcessor::SaveToImage(BYTE* pImage)
     // PSW
     *pwImage++ = m_psw;
     // Registers R0..R7
-    CopyMemory(pwImage, m_R, 2 * 8);
+    ::memcpy(pwImage, m_R, 2 * 8);
     pwImage += 2 * 8;
     // Saved PC and PSW
 	*pwImage++ = 0;  //m_savepc;
@@ -2189,7 +2189,7 @@ void CProcessor::LoadFromImage(const BYTE* pImage)
     // PSW
     m_psw = *pwImage++;
     // Registers R0..R7
-    CopyMemory(m_R, pwImage, 2 * 8);
+    ::memcpy(m_R, pwImage, 2 * 8);
     // Saved PC and PSW - skip
 	*pwImage++;
 	*pwImage++;

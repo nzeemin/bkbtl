@@ -92,7 +92,7 @@ void CMotherboard::Reset ()
 void CMotherboard::LoadROM(int bank, const BYTE* pBuffer)  // Load 8 KB ROM image from the buffer
 {
     ASSERT(bank >= 0 && bank < 4);
-    ::CopyMemory(m_pROM + 8192 * bank, pBuffer, 8192);
+    ::memcpy(m_pROM + 8192 * bank, pBuffer, 8192);
 }
 
 void CMotherboard::LoadRAM(int startbank, const BYTE* pBuffer, int length)
@@ -101,7 +101,7 @@ void CMotherboard::LoadRAM(int startbank, const BYTE* pBuffer, int length)
     ASSERT(startbank >= 0 && startbank < 15);
     int address = 8192 * startbank;
     ASSERT(address + length <= 128 * 1024);
-    ::CopyMemory(m_pRAM + address, pBuffer, length);
+    ::memcpy(m_pRAM + address, pBuffer, length);
 }
 
 
@@ -977,14 +977,14 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 //
 //    // ROM
 //    BYTE* pImageRom = pImage + 256;
-//    CopyMemory(pImageRom, m_pROM, 32 * 1024);
+//    memcpy(pImageRom, m_pROM, 32 * 1024);
 //    // RAM planes 0, 1, 2
 //    BYTE* pImageRam = pImageRom + 32 * 1024;
-//    CopyMemory(pImageRam, m_pRAM[0], 64 * 1024);
+//    memcpy(pImageRam, m_pRAM[0], 64 * 1024);
 //    pImageRam += 64 * 1024;
-//    CopyMemory(pImageRam, m_pRAM[1], 64 * 1024);
+//    memcpy(pImageRam, m_pRAM[1], 64 * 1024);
 //    pImageRam += 64 * 1024;
-//    CopyMemory(pImageRam, m_pRAM[2], 64 * 1024);
+//    memcpy(pImageRam, m_pRAM[2], 64 * 1024);
 //}
 //void CMotherboard::LoadFromImage(const BYTE* pImage)
 //{
@@ -1011,14 +1011,14 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 //
 //    // ROM
 //    const BYTE* pImageRom = pImage + 256;
-//    CopyMemory(m_pROM, pImageRom, 32 * 1024);
+//    memcpy(m_pROM, pImageRom, 32 * 1024);
 //    // RAM planes 0, 1, 2
 //    const BYTE* pImageRam = pImageRom + 32 * 1024;
-//    CopyMemory(m_pRAM[0], pImageRam, 64 * 1024);
+//    memcpy(m_pRAM[0], pImageRam, 64 * 1024);
 //    pImageRam += 64 * 1024;
-//    CopyMemory(m_pRAM[1], pImageRam, 64 * 1024);
+//    memcpy(m_pRAM[1], pImageRam, 64 * 1024);
 //    pImageRam += 64 * 1024;
-//    CopyMemory(m_pRAM[2], pImageRam, 64 * 1024);
+//    memcpy(m_pRAM[2], pImageRam, 64 * 1024);
 //}
 
 //void CMotherboard::FloppyDebug(BYTE val)
