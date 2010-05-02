@@ -284,9 +284,7 @@ inline void CProcessor::SetZ (BOOL bFlag)
 // PSW bits calculations - implementation
 inline BOOL CProcessor::CheckAddForOverflow (BYTE a, BYTE b)
 {
-    //WORD sum = a < 0200 ? (WORD)a + (WORD)b + 0200 : (WORD)a + (WORD)b - 0200;
-    //return HIBYTE (sum) != 0;
-
+#ifdef _M_IX86
     BOOL bOverflow = FALSE;
     _asm
     {
@@ -301,12 +299,14 @@ inline BOOL CProcessor::CheckAddForOverflow (BYTE a, BYTE b)
         popf
     }
     return bOverflow;
+#else
+    WORD sum = a < 0200 ? (WORD)a + (WORD)b + 0200 : (WORD)a + (WORD)b - 0200;
+    return HIBYTE (sum) != 0;
+#endif
 }
 inline BOOL CProcessor::CheckAddForOverflow (WORD a, WORD b)
 {
-    //DWORD sum =  a < 0100000 ? (DWORD)a + (DWORD)b + 0100000 : (DWORD)a + (DWORD)b - 0100000;
-    //return HIWORD (sum) != 0;
-
+#ifdef _M_IX86
     BOOL bOverflow = FALSE;
     _asm
     {
@@ -321,14 +321,16 @@ inline BOOL CProcessor::CheckAddForOverflow (WORD a, WORD b)
         popf
     }
     return bOverflow;
+#else
+    DWORD sum =  a < 0100000 ? (DWORD)a + (DWORD)b + 0100000 : (DWORD)a + (DWORD)b - 0100000;
+    return HIWORD (sum) != 0;
+#endif
 }
 //void        CProcessor::SetReg(int regno, WORD word) 
 
 inline BOOL CProcessor::CheckSubForOverflow (BYTE a, BYTE b)
 {
-    //WORD sum = a < 0200 ? (WORD)a - (WORD)b + 0200 : (WORD)a - (WORD)b - 0200;
-    //return HIBYTE (sum) != 0;
-
+#ifdef _M_IX86
     BOOL bOverflow = FALSE;
     _asm
     {
@@ -343,12 +345,14 @@ inline BOOL CProcessor::CheckSubForOverflow (BYTE a, BYTE b)
         popf
     }
     return bOverflow;
+#else
+    WORD sum = a < 0200 ? (WORD)a - (WORD)b + 0200 : (WORD)a - (WORD)b - 0200;
+    return HIBYTE (sum) != 0;
+#endif
 }
 inline BOOL CProcessor::CheckSubForOverflow (WORD a, WORD b)
 {
-    //DWORD sum =  a < 0100000 ? (DWORD)a - (DWORD)b + 0100000 : (DWORD)a - (DWORD)b - 0100000;
-    //return HIWORD (sum) != 0;
-
+#ifdef _M_IX86
     BOOL bOverflow = FALSE;
     _asm
     {
@@ -363,6 +367,10 @@ inline BOOL CProcessor::CheckSubForOverflow (WORD a, WORD b)
         popf
     }
     return bOverflow;
+#else
+    DWORD sum =  a < 0100000 ? (DWORD)a - (DWORD)b + 0100000 : (DWORD)a - (DWORD)b - 0100000;
+    return HIWORD (sum) != 0;
+#endif
 }
 inline BOOL CProcessor::CheckAddForCarry (BYTE a, BYTE b)
 {
