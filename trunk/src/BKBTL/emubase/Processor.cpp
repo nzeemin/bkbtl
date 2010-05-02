@@ -1648,11 +1648,11 @@ void CProcessor::ExecuteMTPS ()  // MTPS - move to PS
 	
 	if(GetPSW()&0400)//in halt?
 	{ //allow everything
-		SetPSW(GetPSW()&0400|dst);
+		SetPSW((GetPSW() & 0400) | dst);
 	}
 	else
 	{
-		SetPSW((GetPSW()&0420)|(dst&0357));//preserve T			
+		SetPSW((GetPSW() & 0420) | (dst & 0357));  // preserve T
 	}
 
 	m_internalTick=MTPS_TIMING[m_methdest];
