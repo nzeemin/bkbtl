@@ -1,6 +1,8 @@
 // Emulator.cpp
 
 #include "stdafx.h"
+#include <stdio.h>
+#include <Share.h>
 #include "BKBTL.h"
 #include "Emulator.h"
 #include "Views.h"
@@ -51,23 +53,21 @@ const LPCTSTR FILENAME_BKROM_BK11M_EXT  = _T("b11m_ext.rom");
 
 BOOL Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, DWORD bytesToRead)
 {
-    HANDLE hRomFile = CreateFile(strFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
-            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (hRomFile == INVALID_HANDLE_VALUE)
+    FILE* fpRomFile = ::_tfsopen(strFileName, _T("rb"), _SH_DENYWR);
+    if (fpRomFile == NULL)
         return FALSE;
 
     ASSERT(bytesToRead <= 8192);
     ::memset(buffer, 0, 8192);
 
-    DWORD dwBytesRead;
-    ReadFile(hRomFile, buffer, bytesToRead, &dwBytesRead, NULL);
+    DWORD dwBytesRead = ::fread(buffer, 1, bytesToRead, fpRomFile);
     if (dwBytesRead != bytesToRead)
     {
-        CloseHandle(hRomFile);
+        ::fclose(fpRomFile);
         return FALSE;
     }
 
-    CloseHandle(hRomFile);
+    ::fclose(fpRomFile);
 
     return TRUE;
 }
