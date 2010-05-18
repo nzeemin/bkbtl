@@ -300,8 +300,10 @@ inline BOOL CProcessor::CheckAddForOverflow (BYTE a, BYTE b)
     }
     return bOverflow;
 #else
-    WORD sum = a < 0200 ? (WORD)a + (WORD)b + 0200 : (WORD)a + (WORD)b - 0200;
-    return HIBYTE (sum) != 0;
+    //WORD sum = a < 0200 ? (WORD)a + (WORD)b + 0200 : (WORD)a + (WORD)b - 0200;
+    //return HIBYTE (sum) != 0;
+    BYTE sum = a + b;
+    return ((~a ^ b) & (a ^ sum)) & 0200;
 #endif
 }
 inline BOOL CProcessor::CheckAddForOverflow (WORD a, WORD b)
@@ -322,8 +324,10 @@ inline BOOL CProcessor::CheckAddForOverflow (WORD a, WORD b)
     }
     return bOverflow;
 #else
-    DWORD sum =  a < 0100000 ? (DWORD)a + (DWORD)b + 0100000 : (DWORD)a + (DWORD)b - 0100000;
-    return HIWORD (sum) != 0;
+    //DWORD sum =  a < 0100000 ? (DWORD)a + (DWORD)b + 0100000 : (DWORD)a + (DWORD)b - 0100000;
+    //return HIWORD (sum) != 0;
+    WORD sum = a + b;
+    return ((~a ^ b) & (a ^ sum)) & 0100000;
 #endif
 }
 //void        CProcessor::SetReg(int regno, WORD word) 
@@ -346,8 +350,10 @@ inline BOOL CProcessor::CheckSubForOverflow (BYTE a, BYTE b)
     }
     return bOverflow;
 #else
-    WORD sum = a < 0200 ? (WORD)a - (WORD)b + 0200 : (WORD)a - (WORD)b - 0200;
-    return HIBYTE (sum) != 0;
+    //WORD sum = a < 0200 ? (WORD)a - (WORD)b + 0200 : (WORD)a - (WORD)b - 0200;
+    //return HIBYTE (sum) != 0;
+    BYTE sum = a - b;
+    return ((a ^ b) & (~b ^ sum)) & 0200;
 #endif
 }
 inline BOOL CProcessor::CheckSubForOverflow (WORD a, WORD b)
@@ -368,8 +374,10 @@ inline BOOL CProcessor::CheckSubForOverflow (WORD a, WORD b)
     }
     return bOverflow;
 #else
-    DWORD sum =  a < 0100000 ? (DWORD)a - (DWORD)b + 0100000 : (DWORD)a - (DWORD)b - 0100000;
-    return HIWORD (sum) != 0;
+    //DWORD sum =  a < 0100000 ? (DWORD)a - (DWORD)b + 0100000 : (DWORD)a - (DWORD)b - 0100000;
+    //return HIWORD (sum) != 0;
+    WORD sum = a - b;
+    return ((a ^ b) & (~b ^ sum)) & 0100000;
 #endif
 }
 inline BOOL CProcessor::CheckAddForCarry (BYTE a, BYTE b)
