@@ -1,7 +1,7 @@
 // Board.cpp
 //
 
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "Emubase.h"
 #include "Board.h"
 
@@ -375,13 +375,13 @@ BOOL CMotherboard::SystemFrame()
             }
             else if (m_TapeWriteCallback != NULL)
             {
-                UINT value = 0;
+                unsigned int value = 0;
                 switch (m_Port177716tap & 0140)
                 {
-                case 0000: value = 0;                break;
-                case 0040: value = UINT_MAX / 4;     break;
-                case 0100: value = UINT_MAX / 4 * 3; break;
-                case 0140: value = UINT_MAX;         break;
+                case 0000: value = 0;                  break;
+                case 0040: value = 0xffffffff / 4;     break;
+                case 0100: value = 0xffffffff / 4 * 3; break;
+                case 0140: value = 0xffffffff;         break;
                 }
                 (*m_TapeWriteCallback)(value, tapeSamples);
             }
@@ -419,7 +419,7 @@ void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2)
     {
         //TODO: Check if joystick enabled
 
-        WORD mask;
+        WORD mask = 0;
         switch (scancode)
         {
         case BK_KEY_JOYSTICK_BUTTON1: mask = 0x01; break;

@@ -1,12 +1,13 @@
 // Disasm.cpp
 // See defines in header file Emubase.h
 
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "Disasm.h"
 #include "Defines.h"
 
-//NOTE: I know, we use unsafe string copy functions
-#pragma warning( disable: 4996 )
+#ifdef _MSC_VER
+#pragma warning( disable: 4996 )  //NOTE: I know, we use unsafe functions
+#endif
 
 // Формат отображения режимов адресации
 const LPCTSTR ADDRESS_MODE_FORMAT[] = {

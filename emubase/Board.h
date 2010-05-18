@@ -63,12 +63,12 @@ enum BKConfiguration
 //////////////////////////////////////////////////////////////////////
 // BK special key codes
 
-#define BK_KEY_STOP         0201
-#define BK_KEY_AR2          0202
-#define BK_KEY_BACKSHIFT    0203
-#define BK_KEY_LOWER        0204
-#define BK_KEY_UPPER        0205
-#define BK_KEY_REPEAT       0206
+#define BK_KEY_REPEAT       0201
+#define BK_KEY_LOWER        0273
+#define BK_KEY_UPPER        0274
+#define BK_KEY_BACKSHIFT    0275
+#define BK_KEY_AR2          0276
+#define BK_KEY_STOP         0277
 
 // События от джойстика - передавать в метод KeyboardEvent
 #define BK_KEY_JOYSTICK_BUTTON1 0210
@@ -91,18 +91,18 @@ enum BKConfiguration
 //   samples    Number of samples to play.
 // Output:
 //   result     Bit to put in tape input port.
-typedef BOOL (CALLBACK* TAPEREADCALLBACK)(UINT samples);
+typedef BOOL (CALLBACK* TAPEREADCALLBACK)(unsigned int samples);
 
 // Tape emulator callback used to write a data to tape.
 // Input:
 //   value      Sample value to write.
-typedef void (CALLBACK* TAPEWRITECALLBACK)(int value, UINT samples);
+typedef void (CALLBACK* TAPEWRITECALLBACK)(int value, unsigned int samples);
 
 // Sound generator callback function type
 typedef void (CALLBACK* SOUNDGENCALLBACK)(unsigned short L, unsigned short R);
 
 // Teletype callback function type - board calls it if symbol ready to transmit
-typedef void (CALLBACK* TELETYPECALLBACK)(BYTE value);
+typedef void (CALLBACK* TELETYPECALLBACK)(unsigned char value);
 
 class CFloppyController;
 
