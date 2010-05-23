@@ -6,114 +6,31 @@
 
 
 // Timings ///////////////////////////////////////////////////////////
+// Таблицы таймингов основаны на статье Ю. А. Зальцмана, журнал "Персональный компьютер БК" №1 1995.
 
-//MOV -- 64 
-WORD MOV_TIMING[8][8]=
-{	
-		{0x000C, 0x0021, 0x0027, 0x0033, 0x002B, 0x0037, 0x0033, 0x0043}, 
-		{0x0018, 0x0031, 0x0037, 0x0043, 0x003B, 0x0047, 0x0043, 0x0054}, 
-		{0x0019, 0x0037, 0x0037, 0x0043, 0x003B, 0x0047, 0x0043, 0x0053}, 
-		{0x0025, 0x0043, 0x0043, 0x004F, 0x0047, 0x0054, 0x004F, 0x0060}, 
-		{0x0019, 0x0037, 0x0037, 0x0043, 0x003B, 0x0047, 0x0043, 0x0053}, 
-		{0x0025, 0x0043, 0x0043, 0x004F, 0x0047, 0x0054, 0x004F, 0x0060}, 
-		{0x0029, 0x0039, 0x003F, 0x004C, 0x003F, 0x004C, 0x004B, 0x005C}, 
-		{0x0035, 0x0045, 0x004C, 0x0057, 0x004C, 0x0057, 0x0057, 0x0068}
-};
+const int TIMING_BRANCH =   16;  // 5.4 us - BR, BEQ etc.
+const int TIMING_ILLEGAL = 144;
+const int TIMING_WAIT   = 1140;  // 380 us
+const int TIMING_EMT    =   68;  // 22.8 us
+const int TIMING_RTI    =   40;  // 13.4 us - RTI and RTT
+const int TIMING_RTS    =   32;  // 10.8 us
+const int TIMING_NOP    =   12;  // 4 us - NOP and all commands without operands and with register operands
+const int TIMING_SOB    =   20;  // 6.8 us
+const int TIMING_BR     =   16;  // 5.4 us
+const int TIMING_MARK   =   36;
 
-WORD MOVB_TIMING[8][8]=
-{
-		{0x000C, 0x0025, 0x002B, 0x0037, 0x002F, 0x003B, 0x003B, 0x0047}, 
-		{0x0018, 0x0035, 0x003B, 0x0047, 0x003F, 0x004C, 0x004B, 0x0057}, 
-		{0x0019, 0x003B, 0x003B, 0x0047, 0x0040, 0x004B, 0x004C, 0x0057}, 
-		{0x0025, 0x0047, 0x0047, 0x0054, 0x004B, 0x0057, 0x0057, 0x0063}, 
-		{0x0019, 0x003B, 0x003B, 0x0047, 0x0040, 0x004B, 0x004C, 0x0057}, 
-		{0x0025, 0x0047, 0x0047, 0x0054, 0x004B, 0x0057, 0x0057, 0x0063}, 
-		{0x0029, 0x003D, 0x0043, 0x004F, 0x0043, 0x004F, 0x0054, 0x005F}, 
-		{0x0035, 0x0049, 0x004F, 0x005B, 0x004F, 0x005B, 0x005F, 0x006C}
-};
+const int TIMING_REGREG =   12;  // Base timing
+const int TIMING_A[8]   = { 0, 12, 12, 20, 12, 20, 20, 28 };  // Source
+const int TIMING_B[8]   = { 0, 20, 20, 32, 20, 32, 32, 40 };  // Destination
+const int TIMING_AB[8]  = { 0, 16, 16, 24, 16, 24, 24, 32 };  // Source and destination are the same
+const int TIMING_A2[8]  = { 0, 20, 20, 28, 20, 28, 28, 36 };
+const int TIMING_DS[8]  = { 0, 32, 32, 40, 32, 40, 40, 48 };
 
-WORD CMP_TIMING[8][8]=
-{
-    
-		{0x000C, 0x001C, 0x001D, 0x0029, 0x0021, 0x002D, 0x0035, 0x0041}, 
-		{0x0018, 0x002D, 0x002D, 0x0039, 0x0031, 0x003D, 0x0045, 0x0051}, 
-		{0x0019, 0x002D, 0x002D, 0x0039, 0x0031, 0x003D, 0x0045, 0x0051}, 
-		{0x0025, 0x0039, 0x0039, 0x0045, 0x003D, 0x0049, 0x0051, 0x005E}, 
-		{0x0019, 0x002D, 0x002D, 0x0039, 0x0031, 0x003D, 0x0045, 0x0051}, 
-		{0x0025, 0x0039, 0x0039, 0x0045, 0x003D, 0x0049, 0x0051, 0x005E}, 
-		{0x0029, 0x0035, 0x0035, 0x0041, 0x0035, 0x0041, 0x004D, 0x005A}, 
-		{0x0035, 0x0041, 0x0041, 0x004E, 0x0041, 0x004E, 0x005A, 0x0065}
-};
+#define TIMING_A1 TIMING_A
+#define TIMING_DJ TIMING_A2
 
-WORD CLR_TIMING[8]=
-{
-		0x000C, 0x001C, 0x0023, 0x002F, 0x0023, 0x002F, 0x002F, 0x003F
-};
-
-WORD CRLB_TIMING[8]=
-{
-		0x000C, 0x0021, 0x0027, 0x0033, 0x0027, 0x0033, 0x0037, 0x0043 
-};
-
-WORD TST_TIMING[8]=
-{
-		0x000C, 0x0018, 0x0019, 0x0025, 0x0019, 0x0025, 0x0031, 0x003D
-};
-
-WORD MTPS_TIMING[8]=
-{
-		0x0018, 0x0029, 0x0029, 0x0035, 0x0029, 0x0035, 0x0041, 0x004D
-};
-
-WORD XOR_TIMING[8]=
-{
-		0x000C, 0x0025, 0x002B, 0x0037, 0x002F, 0x003B, 0x003B, 0x0047
-};
-
-WORD ASH_TIMING[8]=
-{
-		0x0029,	0x003D, 0x003D, 0x0049, 0x0041, 0x004D, 0x0055, 0x0062
-};
-WORD ASH_S_TIMING=0x0008; 
-
-WORD ASHC_TIMING[8]=
-{
-		0x0039, 0x004E, 0x004D, 0x005A, 0x0051, 0x005D, 0x0066,	0x0072
-};
-WORD ASHC_S_TIMING=0x0008;
-
-WORD MUL_TIMING[8]=
-{
-		0x00B3, 0x00C7, 0x00C7, 0x00D4, 0x00CA, 0x00D8, 0x00E1, 0x00EC
-};
-
-WORD DIV_TIMING[8]=
-{
-		0x00D3, 0x00E8, 0x00E7, 0x00F4, 0x00EB, 0x00F8,	0x0100,	0x010D 
-};
-
-WORD JMP_TIMING[7]=
-{
-
-		0x002D, 0x002D, 0x003D, 0x002D, 0x003D, 0x0031,	0x0041
-};
-WORD JSR_TIMING[7]=
-{
-		0x0045, 0x0045, 0x0056, 0x0045, 0x0056, 0x0049, 0x0059
-};
-
-WORD BRANCH_TRUE_TIMING=0x0025;
-WORD BRANCH_FALSE_TIMING=0x0010;
-WORD BPT_TIMING=0x0094;
-WORD EMT_TIMING=0x009C;
-WORD RTI_TIMING=0x0059;
-WORD RTS_TIMING=0x0031;
-WORD NOP_TIMING=0x0010;
-WORD SOB_TIMING=0x002D;
-WORD SOB_LAST_TIMING=0x0019; //last iteration of SOB
-WORD BR_TIMING=0x0025;
-WORD MARK_TIMING=0x0041;
-WORD RESET_TIMING=0x0433;
+#define TIMING_DST (m_methsrc ? TIMING_AB : TIMING_B)
+#define TIMING_CMP (m_methsrc ? TIMING_A1 : TIMING_A2)
 
 
 //////////////////////////////////////////////////////////////////////
@@ -324,12 +241,13 @@ void CProcessor::Execute()
         m_internalTick--;
         return;
     }
-    m_internalTick = EMT_TIMING;  //ANYTHING UNKNOWN WILL CAUSE EXCEPTION (EMT)
+    m_internalTick = TIMING_ILLEGAL;  // ANYTHING UNKNOWN
 
     m_RPLYrq = FALSE;
 	
 	if (!m_waitmode)
     {
+        m_instructionpc = m_R[7];  // Store adrress of the current instruction
         FetchInstruction();  // Read next instruction from memory
         if (!m_RPLYrq)
 		    TranslateInstruction();  // Execute next instruction
@@ -757,7 +675,8 @@ void CProcessor::FetchInstruction()
 {
     // Считываем очередную инструкцию
     WORD pc = GetPC();
-	ASSERT((pc & 1) == 0); // it have to be word aligned
+	//ASSERT((pc & 1) == 0); // it have to be word aligned
+    pc = pc & ~1;
 
     m_instruction = GetWordExec(pc);
     SetPC(GetPC() + 2);
@@ -791,6 +710,8 @@ void CProcessor::ExecuteUNKNOWN ()  // Нет такой инструкции - просто вызывается 
 void CProcessor::ExecuteWAIT ()  // WAIT - Wait for an interrupt
 {
 	m_waitmode = TRUE;
+
+    m_internalTick = TIMING_WAIT;
 }
 
 void CProcessor::ExecuteSTEP()
@@ -849,26 +770,26 @@ void CProcessor::ExecuteRTI ()  // RTI - Возврат из прерывания
 		SetPSW(new_psw&0777); //load new mode
 
     SetSP( GetSP() + 2 );
-	m_internalTick=RTI_TIMING;
+	m_internalTick=TIMING_RTI;
 }
 
 void CProcessor::ExecuteBPT ()  // BPT - Breakpoint
 {
     m_BPT_rq = TRUE;
-	m_internalTick = BPT_TIMING;
+	m_internalTick = TIMING_EMT;
 }
 
 void CProcessor::ExecuteIOT ()  // IOT - I/O trap
 {
     m_IOT_rq = TRUE;
-	m_internalTick=EMT_TIMING;
+	m_internalTick=TIMING_EMT;
 }
 
 void CProcessor::ExecuteRESET ()  // Reset input/output devices
 {
     m_pBoard->ResetDevices();  // INIT signal
 
-	m_internalTick = RESET_TIMING;
+	m_internalTick = TIMING_WAIT;
 }
 
 void CProcessor::ExecuteRTT ()  // RTT - return from trace trap
@@ -886,7 +807,7 @@ void CProcessor::ExecuteRTT ()  // RTT - return from trace trap
     SetSP( GetSP() + 2 );
 
 	//m_psw |= PSW_T; // set the trap flag ???
-	m_internalTick = RTI_TIMING;
+	m_internalTick = TIMING_RTI;
 }
 
 void CProcessor::ExecuteRTS ()  // RTS - return from subroutine - Возврат из процедуры
@@ -894,97 +815,98 @@ void CProcessor::ExecuteRTS ()  // RTS - return from subroutine - Возврат из про
 	SetPC(GetReg(m_regdest));
 	SetReg(m_regdest,GetWord(GetSP()));
 	SetSP(GetSP()+2);
-	m_internalTick=RTS_TIMING;
+
+    m_internalTick = TIMING_RTS;
 }
 
 void CProcessor::ExecuteNOP ()  // NOP - Нет операции
 {
-	m_internalTick=NOP_TIMING;
+	m_internalTick = TIMING_NOP;
 }
 
 void CProcessor::ExecuteCLC ()  // CLC - Очистка C
 {
     SetC(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteCLV ()
 {
     SetV(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteCLVC ()
 {
     SetV(FALSE);
     SetC(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLZ ()
 {
     SetZ(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLZC ()
 {
     SetZ(FALSE);
     SetC(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLZV ()
 {
     SetZ(FALSE);
     SetV(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLZVC ()
 {
     SetZ(FALSE);
     SetV(FALSE);
     SetC(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLN ()
 {
     SetN(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLNC ()
 {
     SetN(FALSE);
     SetC(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLNV ()
 {
     SetN(FALSE);
     SetV(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLNVC ()
 {
     SetN(FALSE);
     SetV(FALSE);
     SetZ(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLNZ ()
 {
     SetN(FALSE);
     SetZ(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLNZC ()
 {
     SetN(FALSE);
     SetZ(FALSE);
     SetC(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCLNZV ()
 {
     SetN(FALSE);
     SetZ(FALSE);
     SetV(FALSE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteCCC ()
 {
@@ -992,91 +914,91 @@ void CProcessor::ExecuteCCC ()
     SetV(FALSE);
     SetZ(FALSE);
     SetN(FALSE);
-	m_internalTick=NOP_TIMING;
+    m_internalTick = TIMING_REGREG;
 }
 void CProcessor::ExecuteSEC ()
 {
     SetC(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSEV ()
 {
     SetV(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSEVC ()
 {
     SetV(TRUE);
     SetC(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSEZ ()
 {
     SetZ(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSEZC ()
 {
     SetZ(TRUE);
     SetC(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSEZV ()
 {
     SetZ(TRUE);
     SetV(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSEZVC ()
 {
     SetZ(TRUE);
     SetV(TRUE);
     SetC(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSEN ()
 {
     SetN(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSENC ()
 {
     SetN(TRUE);
     SetZ(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSENV ()
 {
     SetN(TRUE);
     SetV(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSENVC ()
 {
     SetN(TRUE);
     SetV(TRUE);
     SetC(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSENZ ()
 {
     SetN(TRUE);
     SetZ(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSENZC ()
 {
     SetN(TRUE);
     SetZ(TRUE);
     SetC(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSENZV ()
 {
     SetN(TRUE);
     SetZ(TRUE);
     SetV(TRUE);
-	m_internalTick=NOP_TIMING;
+	m_internalTick=TIMING_NOP;
 }
 void CProcessor::ExecuteSCC ()
 {
@@ -1084,7 +1006,7 @@ void CProcessor::ExecuteSCC ()
     SetV(TRUE);
     SetZ(TRUE);
     SetN(TRUE);
-	m_internalTick=NOP_TIMING;
+    m_internalTick = TIMING_REGREG;
 }
 
 void CProcessor::ExecuteJMP ()  // JMP - jump: PC = &d (a-mode > 0)
@@ -1092,12 +1014,14 @@ void CProcessor::ExecuteJMP ()  // JMP - jump: PC = &d (a-mode > 0)
     if (m_methdest == 0)  // Неправильный метод адресации
     {
         m_RPLYrq = TRUE;
-		m_internalTick = EMT_TIMING;
+		
+        m_internalTick = TIMING_EMT;
     }
     else 
 	{
         SetPC(GetWordAddr(m_methdest,m_regdest));
-		m_internalTick=JMP_TIMING[m_methdest-1];
+
+		m_internalTick = TIMING_DJ[m_methdest];
     }
 }
 
@@ -1118,7 +1042,8 @@ void CProcessor::ExecuteSWAB ()
 	SetZ(!(dst&0377));
 	SetV(0);
 	SetC(0);
-	m_internalTick=MOV_TIMING[m_methdest][m_methdest];
+
+    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 }
 
 void CProcessor::ExecuteCLR ()  // CLR
@@ -1135,7 +1060,7 @@ void CProcessor::ExecuteCLR ()  // CLR
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400));
 		
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1149,7 +1074,7 @@ void CProcessor::ExecuteCLR ()  // CLR
 		else
 			SetReg(m_regdest,0);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1174,8 +1099,7 @@ void CProcessor::ExecuteCOM ()  // COM
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400)|dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
-		
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1192,7 +1116,7 @@ void CProcessor::ExecuteCOM ()  // COM
 		else
 			SetReg(m_regdest,dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1216,8 +1140,7 @@ void CProcessor::ExecuteINC ()  // INC - Инкремент
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400)|dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
-	
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1235,7 +1158,7 @@ void CProcessor::ExecuteINC ()  // INC - Инкремент
 		else
 			SetReg(m_regdest,dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1259,8 +1182,7 @@ void CProcessor::ExecuteDEC ()  // DEC - Декремент
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400)|dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
-	
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1277,7 +1199,7 @@ void CProcessor::ExecuteDEC ()  // DEC - Декремент
 		else
 			SetReg(m_regdest,dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1303,8 +1225,7 @@ void CProcessor::ExecuteNEG ()
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400)|dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
-
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1324,7 +1245,7 @@ void CProcessor::ExecuteNEG ()
 		else
 			SetReg(m_regdest,dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1349,7 +1270,7 @@ void CProcessor::ExecuteADC ()  // ADC{B}
 		SetV(GetC() && (dst==0200));
 		SetC(GetC() && GetZ());
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1369,7 +1290,7 @@ void CProcessor::ExecuteADC ()  // ADC{B}
 		SetV(GetC() && (dst==0100000));
 		SetC(GetC() && GetZ());
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1394,7 +1315,7 @@ void CProcessor::ExecuteSBC ()  // SBC{B}
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400)|dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1412,7 +1333,8 @@ void CProcessor::ExecuteSBC ()  // SBC{B}
 			SetWord(ea,dst);
 		else
 			SetReg(m_regdest,dst);
-		m_internalTick=CLR_TIMING[m_methdest];
+
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1428,7 +1350,7 @@ void CProcessor::ExecuteTST ()  // TST{B} - test
 		SetV(0);
 		SetC(0);
 
-		m_internalTick=TST_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_A1[m_methdest];
 	}
 	else
 	{
@@ -1439,7 +1361,8 @@ void CProcessor::ExecuteTST ()  // TST{B} - test
 		SetZ(!dst);
 		SetV(0);
 		SetC(0);	
-		m_internalTick=TST_TIMING[m_methdest];
+
+		m_internalTick = TIMING_REGREG + TIMING_A1[m_methdest];
 	}
 }
 
@@ -1466,7 +1389,7 @@ void CProcessor::ExecuteROR ()  // ROR{B}
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400)|dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1487,7 +1410,7 @@ void CProcessor::ExecuteROR ()  // ROR{B}
 		else
 			SetReg(m_regdest,dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1514,7 +1437,7 @@ void CProcessor::ExecuteROL ()  // ROL{B}
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400)|dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1535,7 +1458,7 @@ void CProcessor::ExecuteROL ()  // ROL{B}
 		else
 			SetReg(m_regdest,dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1559,9 +1482,7 @@ void CProcessor::ExecuteASR ()  // ASR{B}
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400)|dst);
 
-
-		m_internalTick=CLR_TIMING[m_methdest];
-
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1580,8 +1501,7 @@ void CProcessor::ExecuteASR ()  // ASR{B}
 		else
 			SetReg(m_regdest,dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
-	
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1605,7 +1525,7 @@ void CProcessor::ExecuteASL ()  // ASL{B}
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)& 0177400)|dst);
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 	else
 	{
@@ -1623,7 +1543,7 @@ void CProcessor::ExecuteASL ()  // ASL{B}
 		else
 			SetReg(m_regdest,dst);	
 
-		m_internalTick=CLR_TIMING[m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 	}
 }
 
@@ -1637,7 +1557,7 @@ void CProcessor::ExecuteSXT ()  // SXT - sign-extend
 	SetZ(!GetN());
 	SetV(0);
 
-	m_internalTick=CLR_TIMING[m_methdest];
+	m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 }
 
 void CProcessor::ExecuteMTPS ()  // MTPS - move to PS
@@ -1655,7 +1575,7 @@ void CProcessor::ExecuteMTPS ()  // MTPS - move to PS
 		SetPSW((GetPSW() & 0420) | (dst & 0357));  // preserve T
 	}
 
-	m_internalTick=MTPS_TIMING[m_methdest];
+	m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 }
 
 void CProcessor::ExecuteMFPS ()  // MFPS - move from PS
@@ -1669,153 +1589,153 @@ void CProcessor::ExecuteMFPS ()  // MFPS - move from PS
     SetZ(psw == 0);
     SetV(0);
 
-	m_internalTick = CLR_TIMING[m_methdest];
+	m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
 }
 
 void CProcessor::ExecuteBR ()
 {
     SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
-	m_internalTick=BR_TIMING;
+	m_internalTick=TIMING_BR;
 }
 
 void CProcessor::ExecuteBNE ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (! GetZ())
 	{
         SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
-		m_internalTick=BRANCH_TRUE_TIMING;
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBEQ ()
 {
-	m_internalTick = BRANCH_FALSE_TIMING;
     if (GetZ())
 	{
-		m_internalTick = BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBGE ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (GetN() == GetV())
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBLT ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (GetN() != GetV())
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBGT ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (! ((GetN() != GetV()) || GetZ()))
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBLE ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if ((GetN() != GetV()) || GetZ())
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBPL ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (! GetN())
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBMI ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (GetN())
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBHI ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (! (GetZ() || GetC()))
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBLOS ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (GetZ() || GetC())
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBVC ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (! GetV())
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBVS ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (GetV())
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBHIS ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (! GetC())
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBLO ()
 {
-	m_internalTick=BRANCH_FALSE_TIMING;
     if (GetC())
 	{
-		m_internalTick=BRANCH_TRUE_TIMING;
         SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
 	}
+
+	m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteXOR ()  // XOR
@@ -1835,22 +1755,22 @@ void CProcessor::ExecuteXOR ()  // XOR
 	else
 		SetReg(m_regdest,dst);
 	
-	m_internalTick=XOR_TIMING[m_methdest];
+	m_internalTick = TIMING_REGREG + TIMING_A2[m_methdest];
 }
 
 void CProcessor::ExecuteSOB ()  // SOB - subtract one: R = R - 1 ; if R != 0 : PC = PC - 2*nn
 {
     WORD dst = GetReg(m_regsrc);
 	
-	m_internalTick=SOB_LAST_TIMING;
     --dst;
     SetReg(m_regsrc, dst);
     
     if (dst)
 	{
-		m_internalTick=SOB_TIMING;
         SetPC(GetPC() - (m_instruction & (WORD)077) * 2 );
 	}
+
+	m_internalTick = TIMING_SOB;
 }
 
 void CProcessor::ExecuteMOV ()
@@ -1868,7 +1788,7 @@ void CProcessor::ExecuteMOV ()
 		else
 			SetReg(m_regdest, (dst&0200)?(0177400|dst):dst);
 
-		m_internalTick = MOVB_TIMING[m_methsrc][m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
 	}
 	else  // MOV
 	{
@@ -1882,7 +1802,8 @@ void CProcessor::ExecuteMOV ()
 			SetWord(GetWordAddr(m_methdest, m_regdest), dst);
 		else
 			SetReg(m_regdest, dst);
-		m_internalTick = MOV_TIMING[m_methsrc][m_methdest];
+
+		m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
 	}
 }
 
@@ -1903,7 +1824,7 @@ void CProcessor::ExecuteCMP ()
         SetV( CheckSubForOverflow (src, src2) );
         SetC( CheckSubForCarry (src, src2) );
 
-		m_internalTick=CMP_TIMING[m_methsrc][m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_A1[m_methsrc] + TIMING_CMP[m_methdest];
 	}
 	else
 	{
@@ -1920,8 +1841,8 @@ void CProcessor::ExecuteCMP ()
         SetZ( CheckForZero ((WORD)(src - src2)) );
         SetV( CheckSubForOverflow (src, src2) );
         SetC( CheckSubForCarry (src, src2) );
-		m_internalTick=CMP_TIMING[m_methsrc][m_methdest];
 	
+		m_internalTick = TIMING_REGREG + TIMING_A1[m_methsrc] + TIMING_CMP[m_methdest];
 	}
 }
 
@@ -1942,7 +1863,8 @@ void CProcessor::ExecuteBIT ()  // BIT{B} - bit test
 		SetN(dst >> 7);
 		SetZ(!dst);
 		SetV(0);
-		m_internalTick = CMP_TIMING[m_methsrc][m_methdest];
+
+		m_internalTick = TIMING_REGREG + TIMING_A1[m_methsrc] + TIMING_CMP[m_methdest];
 	}
 	else
 	{
@@ -1958,7 +1880,8 @@ void CProcessor::ExecuteBIT ()  // BIT{B} - bit test
 		SetN(dst >> 15);
 		SetZ(!dst);
 		SetV(0);
-		m_internalTick = CMP_TIMING[m_methsrc][m_methdest];
+
+		m_internalTick = TIMING_REGREG + TIMING_A1[m_methsrc] + TIMING_CMP[m_methdest];
 	}
 }
 
@@ -1984,7 +1907,8 @@ void CProcessor::ExecuteBIC ()  // BIC{B} - bit clear
 			SetByte(ea,dst);
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400)|dst);
-		m_internalTick=MOVB_TIMING[m_methsrc][m_methdest];
+		
+		m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
 	}
 	else
 	{
@@ -2005,7 +1929,8 @@ void CProcessor::ExecuteBIC ()  // BIC{B} - bit clear
 			SetWord(ea,dst);
 		else
 			SetReg(m_regdest,dst);
-		m_internalTick=MOV_TIMING[m_methsrc][m_methdest];
+
+		m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
 	}
 }
 
@@ -2032,7 +1957,7 @@ void CProcessor::ExecuteBIS ()  // BIS{B} - bit set
 		else
 			SetReg(m_regdest,(GetReg(m_regdest)&0177400)|dst);
 
-		m_internalTick=MOVB_TIMING[m_methsrc][m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
 	}
 	else
 	{
@@ -2054,7 +1979,7 @@ void CProcessor::ExecuteBIS ()  // BIS{B} - bit set
 		else
 			SetReg(m_regdest,dst);
 
-		m_internalTick=MOV_TIMING[m_methsrc][m_methdest];
+		m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
 	}
 }
 
@@ -2084,7 +2009,7 @@ void CProcessor::ExecuteADD ()  // ADD
 	else
 		SetReg(m_regdest,dst);
 
-	m_internalTick=MOVB_TIMING[m_methsrc][m_methdest];
+	m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
 }
 
 void CProcessor::ExecuteSUB ()
@@ -2109,19 +2034,19 @@ void CProcessor::ExecuteSUB ()
 	else
 		SetReg(m_regdest,dst);
 
-	m_internalTick=MOVB_TIMING[m_methsrc][m_methdest];
+	m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
 }
 
 void CProcessor::ExecuteEMT ()  // EMT - emulator trap
 {
     m_EMT_rq = TRUE;
-	m_internalTick=EMT_TIMING;
+	m_internalTick=TIMING_EMT;
 }
 
 void CProcessor::ExecuteTRAP ()
 {
     m_TRAPrq = TRUE;
-	m_internalTick=EMT_TIMING;
+	m_internalTick=TIMING_EMT;
 }
 
 void CProcessor::ExecuteJSR ()  // JSR - Jump subroutine: *--SP = R; R = PC; PC = &d (a-mode > 0)
@@ -2130,7 +2055,7 @@ void CProcessor::ExecuteJSR ()  // JSR - Jump subroutine: *--SP = R; R = PC; PC 
     if (m_methdest == 0) 
 	{  // Неправильный метод адресации
         m_RPLYrq = TRUE;
-		m_internalTick=EMT_TIMING;
+		m_internalTick=TIMING_EMT;
     }
     else 
 	{
@@ -2146,7 +2071,7 @@ void CProcessor::ExecuteJSR ()  // JSR - Jump subroutine: *--SP = R; R = PC; PC 
 
         SetPC(dst);
 
-		m_internalTick=JSR_TIMING[m_methdest-1];
+		m_internalTick = TIMING_DS[m_methdest];
     }
 }
 
@@ -2157,7 +2082,7 @@ void CProcessor::ExecuteMARK ()  // MARK
     SetReg(5, GetWord( GetSP() ));
     SetSP( GetSP() + 2 );
 	
-    m_internalTick = MARK_TIMING;
+    m_internalTick = TIMING_MARK;
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -181,12 +181,12 @@ void CMotherboard::SetRAMByte(BYTE chunk, WORD offset, BYTE byte)
 
 WORD CMotherboard::GetROMWord(WORD offset)
 {
-    ASSERT(offset < 32768);
+    ASSERT(offset < 1024 * 64);
     return *((WORD*)(m_pROM + offset)); 
 }
 BYTE CMotherboard::GetROMByte(WORD offset) 
 { 
-    ASSERT(offset < 32768);
+    ASSERT(offset < 1024 * 64);
     return m_pROM[offset]; 
 }
 
@@ -304,6 +304,7 @@ void CMotherboard::DebugTicks()
 * 160000 тиков ÷ѕ - 8 раз за тик (Ѕ -0011, 12ћ√ц / 3 = 4 ћ√ц, 2.5 мкс)
 * программируемый таймер - на каждый 128-й тик процессора; 42.6(6) мкс либо 32 мкс
 * 2 тика IRQ2 50 √ц, в 0-й и 10000-й тик фрейма
+* 625 тиков FDD - каждый 32-й тик (300 RPM = 5 оборотов в секунду)
 * 68571 тиков AY-3-891x: 1.714275 ћ√ц (12ћ√ц / 7 = 1.714 ћ√ц, 5.83(3) мкс)
 */
 BOOL CMotherboard::SystemFrame()
@@ -343,7 +344,7 @@ BOOL CMotherboard::SystemFrame()
             Tick50();  // 1/50 timer event
         }
 
-        if ((m_Configuration & BK_COPT_FDD) && (frameticks % 32 == 0))  // FDD tick
+        if ((m_Configuration & BK_COPT_FDD) && (frameticks % 42 == 0))  // FDD tick
         {
             if (m_pFloppyCtl != NULL)
                 m_pFloppyCtl->Periodic();
@@ -758,7 +759,7 @@ WORD CMotherboard::GetPortWord(WORD address)
         {
             WORD state = m_pFloppyCtl->GetState();
 //#if !defined(PRODUCT)
-//            DebugPrintFormat(_T("FDD GetState %06o\n"), state);
+//            DebugLogFormat(_T("Floppy GETSTATE %06o\t\tCPU %06o\n"), state, m_pCPU->GetInstructionPC());
 //#endif
             return state;
         }
@@ -771,7 +772,13 @@ WORD CMotherboard::GetPortWord(WORD address)
             return 0;
         }
         if (m_pFloppyCtl != NULL)
-            return m_pFloppyCtl->GetData();
+        {
+            WORD word = m_pFloppyCtl->GetData();
+#if !defined(PRODUCT)
+            DebugLogFormat(_T("Floppy READ\t\t%04x\tCPU %06o\n"), word, m_pCPU->GetInstructionPC());
+#endif
+            return word;
+        }
         return 0;
 
     default: 
@@ -917,16 +924,9 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
     case 0177130:  // –егистр управлени€  Ќ√ћƒ
         if (m_pFloppyCtl != NULL)
         {
-            WORD drivebits = (word & 3);
-            switch (drivebits)  //  онвертируем биты выбора дисковода в формат, прин€тый у CFloppyDrive
-            {
-            case 0: drivebits = 00000; break;
-            case 1: drivebits = 02007; break;
-            case 2: drivebits = 02006; break;
-            case 3: drivebits = 02005; break;
-            }
-            word = (word & ~02007) | drivebits;
-
+#if !defined(PRODUCT)
+            DebugLogFormat(_T("Floppy COMMAND %06o\t\tCPU %06o\r\n"), word, m_pCPU->GetInstructionPC());
+#endif
             m_pFloppyCtl->SetCommand(word);
         }
         break;

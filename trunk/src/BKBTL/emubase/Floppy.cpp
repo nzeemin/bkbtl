@@ -128,6 +128,11 @@ void CFloppyController::DetachImage(int drive)
 
 WORD CFloppyController::GetState(void)
 {
+    if (m_pDrive == NULL)
+        return 0;
+    if (m_pDrive->fpFile == NULL)
+        return FLOPPY_STATUS_INDEXMARK | (m_track == 0 ? FLOPPY_STATUS_TRACK0 : 0);
+
     if (m_track == 0)
         m_status |= FLOPPY_STATUS_TRACK0;
     else
@@ -137,13 +142,12 @@ WORD CFloppyController::GetState(void)
     else
         m_status &= ~FLOPPY_STATUS_INDEXMARK;
 
-    WORD res = m_status;
+    WORD res = m_status | FLOPPY_STATUS_RDY;
 
 //#if !defined(PRODUCT)
-//    if (res & FLOPPY_STATUS_MOREDATA)
+//    //if (res & FLOPPY_STATUS_MOREDATA)
 //    {
-//        TCHAR oct2[7];  PrintOctalValue(oct2, res);
-//        DebugLogFormat(_T("Floppy GET STATE %s\r\n"), oct2);
+//        DebugLogFormat(_T("Floppy GET STATE %06o\r\n"), res);
 //    }
 //#endif
 
@@ -153,23 +157,36 @@ WORD CFloppyController::GetState(void)
 void CFloppyController::SetCommand(WORD cmd)
 {
 //#if !defined(PRODUCT)
-//	TCHAR oct2[7];
-//    PrintOctalValue(oct2, cmd);
-//	DebugLogFormat(_T("Floppy COMMAND %s\r\n"), oct2);
+//	DebugLogFormat(_T("Floppy COMMAND %06o\r\n"), cmd);
 //#endif
 
     BOOL okPrepareTrack = FALSE;  // Нужно ли считывать дорожку в буфер
 
     // Проверить, не сменился ли текущий привод
-    WORD newdrive = (cmd & 3) ^ 3;
+    int newdrive = -1;
+    switch (cmd & 0x0f)
+    {
+    case 0:                             newdrive = -1; break;
+	case 1: default:                    newdrive = 0;  break;
+	case 2: case 6: case 10: case 14:   newdrive = 1;  break;
+	case 4: case 12:                    newdrive = 2;  break;
+	case 8:                             newdrive = 3;  break;
+    }
+
     if (m_drive != newdrive)
     {
         FlushChanges();
 
         m_drive = newdrive;
-        m_pDrive = m_drivedata + m_drive;
+        m_pDrive = (newdrive == -1) ? NULL : m_drivedata + m_drive;
         okPrepareTrack = TRUE;
+#if !defined(PRODUCT)
+	    DebugLogFormat(_T("Floppy CURRENT DRIVE %d\r\n"), newdrive);
+#endif
     }
+    if (m_drive == -1)
+        return;
+
     cmd &= ~3;  // Убираем из команды информацию о текущем приводе
 
     // Copy new flags to m_flags
@@ -188,9 +205,9 @@ void CFloppyController::SetCommand(WORD cmd)
 
     if (cmd & FLOPPY_CMD_STEP)  // Move head for one track to center or from center
     {
-//#if !defined(PRODUCT)
-//        DebugLog(_T("Floppy STEP\r\n"));  //DEBUG
-//#endif
+#if !defined(PRODUCT)
+        DebugLog(_T("Floppy STEP\r\n"));  //DEBUG
+#endif
         m_side = (m_flags & FLOPPY_CMD_SIDEUP) ? 1 : 0;
 
         if (m_flags & FLOPPY_CMD_DIR)
@@ -207,9 +224,9 @@ void CFloppyController::SetCommand(WORD cmd)
 
     if(cmd & FLOPPY_CMD_SEARCHSYNC)  // Search for marker
     {
-//#if !defined(PRODUCT)
-//        DebugLog(_T("Floppy SEARCHSYNC\r\n"));  //DEBUG
-//#endif
+#if !defined(PRODUCT)
+        DebugLog(_T("Floppy SEARCHSYNC\r\n"));  //DEBUG
+#endif
         m_flags &= ~FLOPPY_CMD_SEARCHSYNC;
         m_searchsync = TRUE;
         m_crccalculus = TRUE;
@@ -218,9 +235,9 @@ void CFloppyController::SetCommand(WORD cmd)
 
     if (m_writing && (cmd & FLOPPY_CMD_SKIPSYNC))  // Запись маркера
     {
-//#if !defined(PRODUCT)
-//        DebugLog(_T("Floppy MARKER\r\n"));  //DEBUG
-//#endif
+#if !defined(PRODUCT)
+        DebugLog(_T("Floppy MARKER\r\n"));  //DEBUG
+#endif
         m_writemarker = TRUE;
         m_status &= ~FLOPPY_STATUS_CHECKSUMOK;
     }
@@ -237,14 +254,17 @@ WORD CFloppyController::GetData(void)
     m_writing = m_searchsync = FALSE;
     m_writeflag = m_shiftflag = FALSE;
 
+    if (m_pDrive == NULL || m_pDrive->fpFile == NULL)
+        return 0;
+
     return m_datareg;
 }
 
 void CFloppyController::WriteData(WORD data)
 {
-//#if !defined(PRODUCT)
-//	DebugLogFormat(_T("Floppy WRITE\t\t%04x\r\n"), data);  //DEBUG
-//#endif
+#if !defined(PRODUCT)
+	DebugLogFormat(_T("Floppy WRITE\t\t%04x\r\n"), data);  //DEBUG
+#endif
 
     m_writing = TRUE;  // Switch to write mode if not yet
     m_searchsync = FALSE;
@@ -278,6 +298,10 @@ void CFloppyController::WriteData(WORD data)
 void CFloppyController::Periodic()
 {
     if (!IsEngineOn()) return;  // Вращаем дискеты только если включен мотор
+
+//#if !defined(PRODUCT)
+//            DebugLogFormat(_T("Floppy Periodic\n"));
+//#endif
 
     // Вращаем дискеты во всех драйвах сразу
     for (int drive = 0; drive < 4; drive++)
@@ -327,18 +351,18 @@ void CFloppyController::Periodic()
 
             if (m_shiftmarker)
             {
-//#if !defined(PRODUCT)
-//            DebugLogFormat(_T("Floppy WRITING %04x MARKER\r\n"), m_shiftreg);  //DEBUG
-//#endif
+#if !defined(PRODUCT)
+            DebugLogFormat(_T("Floppy WRITING %06o MARKER\r\n"), m_shiftreg);  //DEBUG
+#endif
                 m_pDrive->marker[m_pDrive->dataptr / 2] = TRUE;
                 m_shiftmarker = FALSE;
                 m_crccalculus = TRUE;  // Start CRC calculation
             }
             else
             {
-//#if !defined(PRODUCT)
-//            DebugLogFormat(_T("Floppy WRITING %04x\r\n"), m_shiftreg);  //DEBUG
-//#endif
+#if !defined(PRODUCT)
+            DebugLogFormat(_T("Floppy WRITING %06o\r\n"), m_shiftreg);  //DEBUG
+#endif
                 m_pDrive->marker[m_pDrive->dataptr / 2] = FALSE;
             }
 
@@ -414,12 +438,13 @@ void CFloppyController::PrepareTrack()
 
 void CFloppyController::FlushChanges()
 {
+    if (m_drive == -1) return;
     if (!IsAttached(m_drive)) return;
     if (!m_trackchanged) return;
 
-//#if !defined(PRODUCT)
-//    DebugLog(_T("Floppy FLUSH\r\n"));  //DEBUG
-//#endif
+#if !defined(PRODUCT)
+    DebugLog(_T("Floppy FLUSH\r\n"));  //DEBUG
+#endif
 
     // Decode track data from m_data
     BYTE data[5120];  memset(data, 0, 5120);
@@ -449,9 +474,9 @@ void CFloppyController::FlushChanges()
         //TODO: Проверка на ошибки записи
     }
     else {
-//#if !defined(PRODUCT)
-//    DebugLog(_T("Floppy FLUSH FAILED\r\n"));  //DEBUG
-//#endif
+#if !defined(PRODUCT)
+        DebugLog(_T("Floppy FLUSH FAILED\r\n"));  //DEBUG
+#endif
     }
 
     m_trackchanged = FALSE;
@@ -473,7 +498,11 @@ static void EncodeTrackData(BYTE* pSrc, BYTE* data, BYTE* marker, WORD track, WO
     memset(marker, 0, FLOPPY_RAWMARKERSIZE);
     DWORD count;
     int ptr = 0;
-    int gap = 34;
+
+    // Index mark gap
+    for (count = 0; count < FLOPPY_INDEXLENGTH; count++) data[ptr++] = 0x4e;
+
+    int gap = 32;  // GAP1 length
     for (int sect = 0; sect < 10; sect++)
     {
         // GAP
@@ -492,7 +521,7 @@ static void EncodeTrackData(BYTE* pSrc, BYTE* data, BYTE* marker, WORD track, WO
         data[ptr++] = 0x12;  data[ptr++] = 0x34;  // CRC stub
 
         // sync
-        for (count = 0; count < 24; count++) data[ptr++] = 0x4e;
+        for (count = 0; count < 22; count++) data[ptr++] = 0x4e;
         // data header
         for (count = 0; count < 12; count++) data[ptr++] = 0x00;
         // marker
@@ -506,7 +535,7 @@ static void EncodeTrackData(BYTE* pSrc, BYTE* data, BYTE* marker, WORD track, WO
         //TODO: Calculate CRC
         data[ptr++] = 0x43;  data[ptr++] = 0x21;  // CRC stub
 
-        gap = 38;
+        gap = 36;  // GAP3 length
     }
     // fill GAP4B to the end of the track
     while (ptr < FLOPPY_RAWTRACKSIZE) data[ptr++] = 0x4e;

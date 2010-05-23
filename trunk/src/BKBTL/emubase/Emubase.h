@@ -49,7 +49,7 @@ int DisassembleInstruction(WORD* pMemory, WORD addr, TCHAR* sInstr, TCHAR* sArg)
 
 #define FLOPPY_RAWTRACKSIZE             6250
 #define FLOPPY_RAWMARKERSIZE            (FLOPPY_RAWTRACKSIZE / 2)
-#define FLOPPY_INDEXLENGTH              150
+#define FLOPPY_INDEXLENGTH              80
 
 struct CFloppyDrive
 {
@@ -72,8 +72,8 @@ class CFloppyController
 {
 protected:
     CFloppyDrive m_drivedata[4];
-    WORD m_drive;       // Drive number: from 0 to 3
-    CFloppyDrive* m_pDrive;  // Current drive
+    int  m_drive;       // Drive number: from 0 to 3; -1 if not selected
+    CFloppyDrive* m_pDrive;  // Current drive; NULL if not selected
 	WORD m_track;       // Track number: from 0 to 79
 	WORD m_side;        // Disk side: 0 or 1
 	WORD m_status;      // See FLOPPY_STATUS_XXX defines

@@ -891,8 +891,8 @@ void MainWindow_DoEmulatorFloppy(int slot)
         ofn.lStructSize = sizeof(ofn);
         ofn.hwndOwner = g_hwnd;
         ofn.hInstance = g_hInst;
-        ofn.lpstrTitle = _T("Open floppy image to load");
-        ofn.lpstrFilter = _T("BK floppy images (*.dsk, *.rtd)\0*.dsk;*.rtd\0All Files (*.*)\0*.*\0\0");
+        ofn.lpstrTitle = _T("Open floppy image to attach");
+        ofn.lpstrFilter = _T("BK floppy images (*.img, *.bkd)\0*.img;*.bkd\0All Files (*.*)\0*.*\0\0");
         ofn.Flags = OFN_FILEMUSTEXIST;
         ofn.lpstrFile = bufFileName;
         ofn.nMaxFile = sizeof(bufFileName) / sizeof(TCHAR);
