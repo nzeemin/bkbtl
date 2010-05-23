@@ -40,6 +40,7 @@ protected:  // Processor state
 
 protected:  // Current instruction processing
     WORD        m_instruction;      // Curent instruction
+    WORD        m_instructionpc;    // Address of the current instruction
     int         m_regsrc;           // Source register number
     int         m_methsrc;          // Source address mode
     WORD        m_addrsrc;          // Source address
@@ -74,6 +75,7 @@ public:  // Register control
     void        SetSP(WORD word) { m_R[6] = word; }
     WORD        GetPC() const { return m_R[7]; }
     void        SetPC(WORD word) { m_R[7] = word; }
+    WORD        GetInstructionPC() const { return m_instructionpc; }  // Address of the current instruction
 
 public:  // PSW bits control
     void        SetC(BOOL bFlag);

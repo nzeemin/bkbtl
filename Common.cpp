@@ -74,7 +74,7 @@ void DebugLog(LPCTSTR message)
         // Create file
         Common_LogFile = CreateFile(TRACELOG_FILE_NAME,
                 GENERIC_WRITE, FILE_SHARE_READ, NULL,
-                OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+                CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     }
     SetFilePointer(Common_LogFile, 0, NULL, FILE_END);
 

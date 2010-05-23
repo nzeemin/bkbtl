@@ -46,7 +46,7 @@ const LPCTSTR FILENAME_BKROM_TESTS      = _T("tests.rom");
 const LPCTSTR FILENAME_BKROM_BASIC10_1  = _T("basic10_1.rom");
 const LPCTSTR FILENAME_BKROM_BASIC10_2  = _T("basic10_2.rom");
 const LPCTSTR FILENAME_BKROM_BASIC10_3  = _T("basic10_3.rom");
-const LPCTSTR FILENAME_BKROM_DISK_327   = _T("disk_327.rom");
+const LPCTSTR FILENAME_BKROM_DISK_326   = _T("disk_326.rom");
 const LPCTSTR FILENAME_BKROM_BK11M_BOS  = _T("b11m_bos.rom");
 const LPCTSTR FILENAME_BKROM_BK11M_EXT  = _T("b11m_ext.rom");
 
@@ -195,9 +195,9 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
     {
         // Load disk driver ROM file
         ::memset(buffer, 0, 8192);
-        if (!Emulator_LoadRomFile(FILENAME_BKROM_DISK_327, buffer, 4096))
+        if (!Emulator_LoadRomFile(FILENAME_BKROM_DISK_326, buffer, 4096))
         {
-            AlertWarning(_T("Failed to load DISK 327 ROM file."));
+            AlertWarning(_T("Failed to load DISK ROM file."));
             return FALSE;
         }
         g_pBoard->LoadROM(3, buffer);
