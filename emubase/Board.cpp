@@ -246,7 +246,7 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437
                 m_timerdivider = 0;
             }
             break;
-        case 3:  // 32 * 16 * 4 = 2048 мкс
+        case 3:  // 32 * 16 * 4 = 2048 мкс, 8129 тактов процессора
             if (m_timerdivider >= 64)
             {
                 flag = TRUE;
@@ -259,7 +259,7 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437
         return; 
 
     m_timer--;
-    m_timer &= 077777;
+    //m_timer &= 077777;
 
     if (m_timer == 0)
     {
@@ -267,20 +267,23 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437
         //    m_timerflags |= 010;  // Overflow
         m_timerflags |= 0200;  // Set Ready bit
         //TODO: if m_timerflags bit 3 set then stop counting
-        m_timer = m_timerreload & 077777;  // Reload timer
+        //m_timer = m_timerreload & 077777;  // Reload timer
+        m_timer = m_timerreload;
     }
 }
 
 void CMotherboard::SetTimerReload(WORD val)	 // Sets timer reload value
 {
-    m_timerreload = val & 077777;
+    //m_timerreload = val & 077777;
+    m_timerreload = val;
     if ((m_timerflags & 1) == 0)
         m_timer = m_timerreload;
 }
 void CMotherboard::SetTimerState(WORD val) // Sets timer state
 {
     if ((val & 1) && ((m_timerflags & 1) == 0))
-        m_timer = m_timerreload & 077777;
+        //m_timer = m_timerreload & 077777;
+        m_timer = m_timerreload;
 
     //m_timerflags &= 0250;  // Clear everything but bits 7,5,3
     //m_timerflags |= (val & (~0250));  // Preserve bits 753
@@ -888,7 +891,7 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         SetTimerReload(word);
         break;
     case 0177710:  // System Timer Counter -- регистр реверсивного счетчика таймера
-        //TODO
+        m_timer = word;
         break;
     case 0177712:  // System Timer Manage -- регистр управления таймера
         SetTimerState(word);
