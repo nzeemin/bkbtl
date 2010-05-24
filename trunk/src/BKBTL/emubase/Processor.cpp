@@ -10,9 +10,9 @@
 
 const int TIMING_BRANCH =   16;  // 5.4 us - BR, BEQ etc.
 const int TIMING_ILLEGAL = 144;
-const int TIMING_WAIT   = 1140;  // 380 us
-const int TIMING_EMT    =   68;  // 22.8 us
-const int TIMING_RTI    =   40;  // 13.4 us - RTI and RTT
+const int TIMING_WAIT   = 1140;  // 380 us - WAIT and RESET
+const int TIMING_EMT    =   68;  // 22.8 us - IOT, BPT, EMT, TRAP - 42+5t
+const int TIMING_RTI    =   40;  // 13.4 us - RTI and RTT - 24+2t
 const int TIMING_RTS    =   32;  // 10.8 us
 const int TIMING_NOP    =   12;  // 4 us - NOP and all commands without operands and with register operands
 const int TIMING_SOB    =   20;  // 6.8 us
@@ -247,18 +247,14 @@ void CProcessor::Execute()
 	
 	if (!m_waitmode)
     {
-        m_instructionpc = m_R[7];  // Store adrress of the current instruction
+        m_instructionpc = m_R[7];  // Store address of the current instruction
         FetchInstruction();  // Read next instruction from memory
         if (!m_RPLYrq)
+        {
 		    TranslateInstruction();  // Execute next instruction
-	    //ASSERT(m_psw<0777);
+            if (m_internalTick > 0) m_internalTick--;  // Count current tick too
+        }
     }
-	
-    //if ((m_psw & 0600) != 0600)
-    //{
-    //    //m_savepc = GetPC();
-    //    //m_savepsw = m_psw;
-    //}
 
 	if (m_stepmode)
 		m_stepmode = FALSE;
