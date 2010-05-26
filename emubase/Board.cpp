@@ -77,7 +77,7 @@ void CMotherboard::Reset ()
     m_Port177660 = 0100;
     m_Port177662rd = 0;
     m_Port177662wr = 047400;
-    m_Port177664 = 0;
+    m_Port177664 = 01330;
     m_Port177714in = m_Port177714out = 0;
     m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0200;
     m_Port177716mem = m_Port177716tap = 0;
@@ -91,7 +91,7 @@ void CMotherboard::Reset ()
 
 void CMotherboard::LoadROM(int bank, const BYTE* pBuffer)  // Load 8 KB ROM image from the buffer
 {
-    ASSERT(bank >= 0 && bank < 4);
+    ASSERT(bank >= 0 && bank < 7);
     ::memcpy(m_pROM + 8192 * bank, pBuffer, 8192);
 }
 
@@ -639,43 +639,42 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
     {
         const int memoryBlockMap[8] = { 1, 5, 2, 3, 4, 7, 0, 6 };
         int memoryRamChunk = 0;  // Number of 16K RAM chunk, 0..7
-        int memoryBank = (address >> 14) & 3;
+        int memoryBank = (address >> 14) & 3;  // 4 banks #0..3
         switch (memoryBank)
         {
         case 0:  // 000000-037776: всегда страница ОЗУ 0
             addrType = ADDRTYPE_RAM;
             break;
         case 1:  // 040000-077777, окно 0, страница ОЗУ 0..7
-            memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 12) & 7];
+            memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 12) & 7];  // 8 chanks #0..7
             addrType = ADDRTYPE_RAM | memoryRamChunk;
-            address &= 37777;
+            address &= 037777;
             break;
         case 2:  // 100000-137776, окно 1, страница ОЗУ 0..7 или ПЗУ
-            if (m_Port177716mem & 0x1b)  // Включено ПЗУ 0..3
+            if (m_Port177716mem & 033)  // Включено ПЗУ 0..3
             {
                 addrType = ADDRTYPE_ROM;
-                address -= 0100000;
                 int memoryRomChunk = 0;
-                if (m_Port177716mem & 1)
-                    memoryRomChunk = 0;
-                else if (m_Port177716mem & 2)
-                    memoryRomChunk = 1;
+                if (m_Port177716mem & 16)
+                    memoryRomChunk = 3;
                 else if (m_Port177716mem & 8)
                     memoryRomChunk = 2;
-                else if (m_Port177716mem & 16)
-                    memoryRomChunk = 3;
-                address = memoryRomChunk * 040000;
+                else if (m_Port177716mem & 2)
+                    memoryRomChunk = 1;
+                else if (m_Port177716mem & 1)
+                    memoryRomChunk = 0;
+                address = address - 0100000 + memoryRomChunk * 040000;
             }
             else  // Включено ОЗУ 0..7
             {
                 memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 8) & 7];
                 addrType = ADDRTYPE_RAM | memoryRamChunk;
-                address &= 37777;
+                address &= 037777;
             }
             break;
         case 3:  // 140000-177776
             addrType = ADDRTYPE_ROM;
-            address -= 0100000;
+            address -= 040000;
             break;
         }
 
