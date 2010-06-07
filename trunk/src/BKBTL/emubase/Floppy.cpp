@@ -137,7 +137,7 @@ WORD CFloppyController::GetState(void)
         m_status |= FLOPPY_STATUS_TRACK0;
     else
         m_status &= ~FLOPPY_STATUS_TRACK0;
-    if (m_pDrive->dataptr < FLOPPY_INDEXLENGTH)
+    if (m_pDrive->dataptr >= FLOPPY_RAWTRACKSIZE - FLOPPY_INDEXLENGTH)
         m_status |= FLOPPY_STATUS_INDEXMARK;
     else
         m_status &= ~FLOPPY_STATUS_INDEXMARK;
