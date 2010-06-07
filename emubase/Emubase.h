@@ -49,7 +49,7 @@ int DisassembleInstruction(WORD* pMemory, WORD addr, TCHAR* sInstr, TCHAR* sArg)
 
 #define FLOPPY_RAWTRACKSIZE             6250
 #define FLOPPY_RAWMARKERSIZE            (FLOPPY_RAWTRACKSIZE / 2)
-#define FLOPPY_INDEXLENGTH              80
+#define FLOPPY_INDEXLENGTH              30
 
 struct CFloppyDrive
 {
