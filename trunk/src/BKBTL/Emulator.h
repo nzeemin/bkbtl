@@ -3,6 +3,7 @@
 #pragma once
 
 #include "emubase\Board.h"
+#include "Views.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -35,6 +36,8 @@ void Emulator_Start();
 void Emulator_Stop();
 void Emulator_Reset();
 int Emulator_SystemFrame();
+
+void Emulator_PrepareScreenRGB32(void* pBits, ScreenViewMode screenMode);
 
 // Update cached values after Run or Step
 void Emulator_OnUpdate();
