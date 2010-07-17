@@ -39,36 +39,6 @@ WORD ScreenView_GetKeyEventFromQueue();
 
 
 //////////////////////////////////////////////////////////////////////
-// Colors
-
-const DWORD ScreenView_ColorPalette[4] = {
-    0x000000, 0x0000FF, 0x00FF00, 0xFF0000
-};
-
-const DWORD ScreenView_ColorPalettes[16][4] = {
-    //                                     Palette#     01           10          11
-    0x000000, 0x0000FF, 0x00FF00, 0xFF0000,  // 00    синий   |   зеленый  |  красный
-    0x000000, 0xFFFF00, 0xFF00FF, 0xFF0000,  // 01   желтый   |  сиреневый |  красный
-    0x000000, 0x00FFFF, 0x0000FF, 0xFF00FF,  // 02   голубой  |    синий   | сиреневый
-    0x000000, 0x00FF00, 0x00FFFF, 0xFFFF00,  // 03   зеленый  |   голубой  |  желтый
-    0x000000, 0xFF00FF, 0x00FFFF, 0xFFFFFF,  // 04  сиреневый |   голубой  |   белый
-    0x000000, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF,  // 05    белый   |    белый   |   белый
-    0x000000, 0x7F0000, 0x7F0000, 0xFF0000,  // 06  темн-красн| красн-корич|  красный
-    0x000000, 0x00FF7F, 0x00FF7F, 0xFFFF00,  // 07  салатовый | светл-зелен|  желтый
-    0x000000, 0xFF00FF, 0x7F00FF, 0x7F007F,  // 08  фиолетовый| фиол-синий | сиреневый
-    0x000000, 0x00FF7F, 0x7F00FF, 0x7F0000,  // 09 светл-зелен| фиол-синий |красн-корич
-    0x000000, 0x00FF7F, 0x7F007F, 0x7F0000,  // 10  салатовый | фиолетовый |темн-красный
-    0x000000, 0x00FFFF, 0xFFFF00, 0xFF0000,  // 11   голубой  |   желтый   |  красный
-    0x000000, 0xFF0000, 0x00FF00, 0x00FFFF,  // 12   красный  |   зеленый  |  голубой
-    0x000000, 0x00FFFF, 0xFFFF00, 0xFFFFFF,  // 13   голубой  |   желтый   |   белый
-    0x000000, 0xFFFF00, 0x00FF00, 0xFFFFFF,  // 14   желтый   |   зеленый  |   белый 
-    0x000000, 0x00FFFF, 0x00FF00, 0xFFFFFF,  // 15   голубой  |   зеленый  |   белый
-};
-
-
-//////////////////////////////////////////////////////////////////////
-
-
 
 void ScreenView_RegisterClass()
 {
@@ -261,64 +231,7 @@ void ScreenView_PrepareScreen()
 {
     if (m_bits == NULL) return;
 
-    // Get scroll value
-    WORD scroll = g_pBoard->GetPortView(0177664);
-    BOOL okSmallScreen = ((scroll & 01000) == 0);
-    scroll &= 0377;
-    scroll = (scroll >= 0330) ? scroll - 0330 : 050 + scroll;
-
-    // Get palette
-    DWORD* pPalette;
-    //if ((g_nEmulatorConfiguration & BK_COPT_BK0011) == 0)
-        pPalette = (DWORD*)ScreenView_ColorPalette;
-    //else
-    //    pPalette = (DWORD*)ScreenView_ColorPalettes[g_pBoard->GetPalette()];
-
-    const BYTE* pVideoBuffer = g_pBoard->GetVideoBuffer();
-    ASSERT(pVideoBuffer != NULL);
-
-    // Render to bitmap
-    int linesToShow = okSmallScreen ? 64 : 256;
-    for (int y = 0; y < linesToShow; y++)
-    {
-        int yy = (y + scroll) & 0377;
-        const WORD* pVideo = (WORD*)(pVideoBuffer + yy * 0100);
-        DWORD* pBits = m_bits + (256 - 1 - y) * 512;
-        for (int x = 0; x < 512 / 16; x++)
-        {
-            WORD src = *pVideo;
-
-            if (m_ScreenMode == BlackWhiteScreen)  // Black and white mode 512 x 256
-            {
-                for (int bit = 0; bit < 16; bit++)
-                {
-                    DWORD color = (src & 1) ? 0x0ffffff : 0;
-                    *pBits = color;
-                    pBits++;
-                    src = src >> 1;
-                }
-            }
-            else  // Color mode 256 x 256
-            {
-                for (int bit = 0; bit < 16; bit += 2)
-                {
-                    DWORD color = pPalette[src & 3];
-                    *pBits = color;
-                    pBits++;
-                    *pBits = color;
-                    pBits++;
-                    src = src >> 2;
-                }
-            }
-
-            pVideo++;
-        }
-    }
-
-    if (okSmallScreen)
-    {
-        ::ZeroMemory(m_bits, (256 - 64) * 512 * sizeof(DWORD));
-    }
+    Emulator_PrepareScreenRGB32(m_bits, m_ScreenMode);
 }
 
 void ScreenView_PutKeyEventToQueue(WORD keyevent)
