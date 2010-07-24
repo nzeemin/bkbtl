@@ -13,6 +13,7 @@
 #include "Dialogs.h"
 #include "Views.h"
 #include "ToolWindow.h"
+#include "Joystick.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -45,7 +46,7 @@ void MainWindow_DoEmulatorReset();
 void MainWindow_DoEmulatorRealSpeed();
 void MainWindow_DoEmulatorSound();
 void MainWindow_DoEmulatorCovox();
-void MainWindow_DoEmulatorNumPadJoystick();
+void MainWindow_DoEmulatorJoystick(int joystickNum);
 void MainWindow_DoFileSaveState();
 void MainWindow_DoFileLoadState();
 void MainWindow_DoEmulatorFloppy(int slot);
@@ -565,7 +566,9 @@ void MainWindow_UpdateMenu()
     //CheckMenuItem(hMenu, ID_EMULATOR_REALSPEED, (Settings_GetRealSpeed() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_SOUND, (Settings_GetSound() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_COVOX, (Settings_GetCovox() ? MF_CHECKED : MF_UNCHECKED));
-    CheckMenuItem(hMenu, ID_EMULATOR_NUMPADJOYSTICK, (Settings_GetNumPadJoystick() ? MF_CHECKED : MF_UNCHECKED));
+    CheckMenuItem(hMenu, ID_EMULATOR_NUMPADJOYSTICK, (Settings_GetJoystick() == 0 ? MF_CHECKED : MF_UNCHECKED));
+    CheckMenuItem(hMenu, ID_EMULATOR_JOYSTICK1, (Settings_GetJoystick() == 1 ? MF_CHECKED : MF_UNCHECKED));
+    CheckMenuItem(hMenu, ID_EMULATOR_JOYSTICK2, (Settings_GetJoystick() == 2 ? MF_CHECKED : MF_UNCHECKED));
     MainWindow_SetToolbarImage(ID_EMULATOR_SOUND, (Settings_GetSound() ? ToolbarImageSoundOn : ToolbarImageSoundOff));
     EnableMenuItem(hMenu, ID_DEBUG_STEPINTO, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
 
@@ -669,7 +672,13 @@ bool MainWindow_DoCommand(int commandId)
         MainWindow_DoEmulatorCovox();
         break;
     case ID_EMULATOR_NUMPADJOYSTICK:
-        MainWindow_DoEmulatorNumPadJoystick();
+        MainWindow_DoEmulatorJoystick(0);
+        break;
+    case ID_EMULATOR_JOYSTICK1:
+        MainWindow_DoEmulatorJoystick(1);
+        break;
+    case ID_EMULATOR_JOYSTICK2:
+        MainWindow_DoEmulatorJoystick(2);
         break;
     case ID_EMULATOR_FLOPPY0:
         MainWindow_DoEmulatorFloppy(0);
@@ -813,9 +822,14 @@ void MainWindow_DoEmulatorCovox()
 
     MainWindow_UpdateMenu();
 }
-void MainWindow_DoEmulatorNumPadJoystick()
+void MainWindow_DoEmulatorJoystick(int joystick)
 {
-    Settings_SetNumPadJoystick(!Settings_GetNumPadJoystick());
+    if (!Joystick_SelectJoystick(joystick))
+    {
+        AlertWarning(_T("Failed to select the joystick."));
+    }
+
+    Settings_SetJoystick(joystick);
 
     MainWindow_UpdateMenu();
 }

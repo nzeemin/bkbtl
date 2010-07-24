@@ -75,7 +75,8 @@
 #define ID_EMULATOR_COVOX               32823
 #define ID_DEBUG_TELETYPE               32824
 #define ID_DEBUG_STEPOVER               32825
-#define ID_ACCELERATOR32827             32827
+#define ID_EMULATOR_JOYSTICK1           32829
+#define ID_EMULATOR_JOYSTICK2           32830
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -84,7 +85,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        146
-#define _APS_NEXT_COMMAND_VALUE         32829
+#define _APS_NEXT_COMMAND_VALUE         32831
 #define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

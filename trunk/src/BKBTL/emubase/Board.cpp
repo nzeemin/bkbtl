@@ -433,9 +433,9 @@ void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2)
         case BK_KEY_JOYSTICK_BUTTON2: mask = 0x02; break;
         case BK_KEY_JOYSTICK_BUTTON3: mask = 0x04; break;
         case BK_KEY_JOYSTICK_BUTTON4: mask = 0x08; break;
-        case BK_KEY_JOYSTICK_RIGHT:   mask = 0x10; break;
+        case BK_KEY_JOYSTICK_LEFT:    mask = 0x10; break;
         case BK_KEY_JOYSTICK_DOWN:    mask = 0x20; break;
-        case BK_KEY_JOYSTICK_LEFT:    mask = 0x40; break;
+        case BK_KEY_JOYSTICK_RIGHT:   mask = 0x40; break;
         case BK_KEY_JOYSTICK_UP:      mask = 0x80; break;
         }
 
@@ -486,6 +486,11 @@ void CMotherboard::TapeInput(BOOL inputBit)
         m_Port177716 = (m_Port177716 & ~040) | tapeBitNew;  // Write new tape bit
         m_Port177716 |= 4;  // Set "ready" flag
     }
+}
+
+void CMotherboard::SetPrinterInPort(BYTE data)
+{
+    m_Port177714in = data;
 }
 
 

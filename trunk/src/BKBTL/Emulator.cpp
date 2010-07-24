@@ -8,6 +8,7 @@
 #include "Views.h"
 #include "emubase\Emubase.h"
 #include "SoundGen.h"
+#include "Joystick.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -367,6 +368,7 @@ int Emulator_SystemFrame()
 
     ScreenView_ScanKeyboard();
     ScreenView_ProcessKeyboard();
+    Emulator_ProcessJoystick();
     
 	if (!g_pBoard->SystemFrame())
         return 0;
@@ -403,6 +405,15 @@ int Emulator_SystemFrame()
 	}
 
     return 1;
+}
+
+void Emulator_ProcessJoystick()
+{
+    if (Settings_GetJoystick() == 0)
+        return;  // NumPad joystick processing is inside ScreenView_ScanKeyboard() function
+
+    UINT joystate = Joystick_GetJoystickState();
+    g_pBoard->SetPrinterInPort(joystate);
 }
 
 void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R)

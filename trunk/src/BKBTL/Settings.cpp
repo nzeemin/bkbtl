@@ -19,8 +19,8 @@ BOOL m_Settings_Sound = FALSE;
 BOOL m_Settings_Sound_Valid = FALSE;
 BOOL m_Settings_Covox = FALSE;
 BOOL m_Settings_Covox_Valid = FALSE;
-BOOL m_Settings_NumPadJoystick = FALSE;
-BOOL m_Settings_NumPadJoystick_Valid = FALSE;
+BOOL m_Settings_Joystick = FALSE;
+BOOL m_Settings_Joystick_Valid = FALSE;
 BOOL m_Settings_Keyboard = FALSE;
 BOOL m_Settings_Keyboard_Valid = FALSE;
 BOOL m_Settings_Tape = FALSE;
@@ -243,22 +243,22 @@ BOOL Settings_GetCovox()
     return m_Settings_Covox;
 }
 
-void Settings_SetNumPadJoystick(BOOL flag)
+void Settings_SetJoystick(int joystick)
 {
-    m_Settings_NumPadJoystick = flag;
-    m_Settings_NumPadJoystick_Valid = TRUE;
-    Settings_SaveDwordValue(_T("NumPadJoystick"), (DWORD) flag);
+    m_Settings_Joystick = joystick;
+    m_Settings_Joystick_Valid = TRUE;
+    Settings_SaveDwordValue(_T("Joystick"), (DWORD) joystick);
 }
-BOOL Settings_GetNumPadJoystick()
+int Settings_GetJoystick()
 {
-    if (!m_Settings_NumPadJoystick_Valid)
+    if (!m_Settings_Joystick_Valid)
     {
         DWORD dwValue = (DWORD) FALSE;
-        Settings_LoadDwordValue(_T("NumPadJoystick"), &dwValue);
-        m_Settings_NumPadJoystick = (BOOL) dwValue;
-        m_Settings_NumPadJoystick_Valid = TRUE;
+        Settings_LoadDwordValue(_T("Joystick"), &dwValue);
+        m_Settings_Joystick = (int) dwValue;
+        m_Settings_Joystick_Valid = TRUE;
     }
-    return m_Settings_NumPadJoystick;
+    return m_Settings_Joystick;
 }
 
 void Settings_SetKeyboard(BOOL flag)

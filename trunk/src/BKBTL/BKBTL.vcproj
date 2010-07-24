@@ -386,6 +386,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Joystick.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\Joystick.h"
+			>
+		</File>
+		<File
 			RelativePath=".\KeyboardView.cpp"
 			>
 		</File>
