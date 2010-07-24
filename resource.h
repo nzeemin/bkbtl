@@ -71,12 +71,12 @@
 #define ID_CONF_BK0011                  32819
 #define ID_EMULATOR_BK0011M             32820
 #define ID_CONF_BK0011FDD               32821
-#define ID_EMULATOR_NUMPADJOYSTICK      32822
-#define ID_EMULATOR_COVOX               32823
-#define ID_DEBUG_TELETYPE               32824
-#define ID_DEBUG_STEPOVER               32825
-#define ID_EMULATOR_JOYSTICK1           32829
-#define ID_EMULATOR_JOYSTICK2           32830
+#define ID_EMULATOR_JOYSTICKNUMPAD      32822
+#define ID_EMULATOR_JOYSTICK1           32823
+#define ID_EMULATOR_JOYSTICK2           32824
+#define ID_EMULATOR_COVOX               32825
+#define ID_DEBUG_TELETYPE               32826
+#define ID_DEBUG_STEPOVER               32827
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

@@ -226,52 +226,41 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437
     if ((m_timerflags & 1) == 1)  // Timer is off, nothing to do
         return;
 
-    BOOL flag = FALSE;
     m_timerdivider++;
     
-    switch ((m_timerflags >> 5) & 3)
+    BOOL flag = FALSE;
+    switch ((m_timerflags >> 5) & 3)  // биты 5,6 -- prescaler
     {
         case 0:  // 32 мкс
             flag = TRUE;
-            m_timerdivider = 0;
             break;
         case 1:  // 32 * 16 = 512 мкс
-            if (m_timerdivider >= 16)
-            {
-                flag = TRUE;
-                m_timerdivider = 0;
-            }
+            flag = (m_timerdivider >= 16);
             break;
         case 2: // 32 * 4 = 128 мкс
-            if (m_timerdivider >= 4)
-            {
-                flag = TRUE;
-                m_timerdivider = 0;
-            }
+            flag = (m_timerdivider >= 4);
             break;
         case 3:  // 32 * 16 * 4 = 2048 мкс, 8129 тактов процессора
-            if (m_timerdivider >= 64)
-            {
-                flag = TRUE;
-                m_timerdivider = 0;
-            }
+            flag = (m_timerdivider >= 64);
             break;
     }
 
     if (!flag)  // Nothing happened
         return; 
 
-    m_timer--;
-    //m_timer &= 077777;
+    m_timerdivider = 0;
 
-    if (m_timer == 0)
+    m_timer--;
+    if (m_timer != 0)
+        return;
+
+    if (m_timerflags & 010)  // If OneShot bit set then stop counting
+        m_timerflags &= ~020;
+    if ((m_timerflags & 2) == 0)  // If not WrapAround then reload
     {
-        //if (m_timerflags & 0200)
-        //    m_timerflags |= 010;  // Overflow
-        m_timerflags |= 0200;  // Set Ready bit
-        //TODO: if m_timerflags bit 3 set then stop counting
-        //m_timer = m_timerreload & 077777;  // Reload timer
         m_timer = m_timerreload;
+        if (m_timerflags & 4)
+            m_timerflags |= 0200;  // Set Ready bit
     }
 }
 
@@ -424,8 +413,6 @@ void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2)
 {
     if ((scancode & 0xf8) == 0210)  // События от джойстика
     {
-        //TODO: Check if joystick enabled
-
         WORD mask = 0;
         switch (scancode)
         {

@@ -566,9 +566,16 @@ void MainWindow_UpdateMenu()
     //CheckMenuItem(hMenu, ID_EMULATOR_REALSPEED, (Settings_GetRealSpeed() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_SOUND, (Settings_GetSound() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_COVOX, (Settings_GetCovox() ? MF_CHECKED : MF_UNCHECKED));
-    CheckMenuItem(hMenu, ID_EMULATOR_NUMPADJOYSTICK, (Settings_GetJoystick() == 0 ? MF_CHECKED : MF_UNCHECKED));
-    CheckMenuItem(hMenu, ID_EMULATOR_JOYSTICK1, (Settings_GetJoystick() == 1 ? MF_CHECKED : MF_UNCHECKED));
-    CheckMenuItem(hMenu, ID_EMULATOR_JOYSTICK2, (Settings_GetJoystick() == 2 ? MF_CHECKED : MF_UNCHECKED));
+
+    UINT joystickcmd = 0;
+    switch (Settings_GetJoystick())
+    {
+    case 0: joystickcmd = ID_EMULATOR_JOYSTICKNUMPAD; break;
+    case 1: joystickcmd = ID_EMULATOR_JOYSTICK1; break;
+    case 2: joystickcmd = ID_EMULATOR_JOYSTICK2; break;
+    }
+    CheckMenuRadioItem(hMenu, ID_EMULATOR_JOYSTICKNUMPAD, ID_EMULATOR_JOYSTICK2, joystickcmd, MF_BYCOMMAND);
+
     MainWindow_SetToolbarImage(ID_EMULATOR_SOUND, (Settings_GetSound() ? ToolbarImageSoundOn : ToolbarImageSoundOff));
     EnableMenuItem(hMenu, ID_DEBUG_STEPINTO, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
 
@@ -671,7 +678,7 @@ bool MainWindow_DoCommand(int commandId)
     case ID_EMULATOR_COVOX:
         MainWindow_DoEmulatorCovox();
         break;
-    case ID_EMULATOR_NUMPADJOYSTICK:
+    case ID_EMULATOR_JOYSTICKNUMPAD:
         MainWindow_DoEmulatorJoystick(0);
         break;
     case ID_EMULATOR_JOYSTICK1:

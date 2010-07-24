@@ -35,7 +35,7 @@ void Emulator_SetCovox(BOOL covoxOnOff);
 void Emulator_Start();
 void Emulator_Stop();
 void Emulator_Reset();
-int Emulator_SystemFrame();
+int  Emulator_SystemFrame();
 void Emulator_ProcessJoystick();
 
 void Emulator_PrepareScreenRGB32(void* pBits, ScreenViewMode screenMode);
