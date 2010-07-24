@@ -357,7 +357,7 @@ void ScreenView_ProcessKeyboard()
         BOOL ctrl = ((keyevent & 0x4000) != 0);
         BYTE bkscan = LOBYTE(keyevent);
 
-        if (((bkscan & 0xf8) == 0210) && !Settings_GetNumPadJoystick())  // Skip joystick events if NumPad joystick is off
+        if (((bkscan & 0xf8) == 0210) && Settings_GetJoystick() != 0)  // Skip joystick events if NumPad joystick is off
             return;
 
 //#if !defined(PRODUCT)

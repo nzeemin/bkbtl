@@ -12,6 +12,7 @@
 #include "Emulator.h"
 #include "Dialogs.h"
 #include "Views.h"
+#include "Joystick.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -148,6 +149,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     InitCommonControlsEx(&ics);
 
     Settings_Init();
+    Joystick_Init();
+    Joystick_SelectJoystick(Settings_GetJoystick());
     if (!Emulator_Init())
         return FALSE;
     Emulator_SetSound(Settings_GetSound());
@@ -200,6 +203,7 @@ void DoneInstance()
 
     Emulator_Done();
 
+    Joystick_Done();
     Settings_Done();
 }
 

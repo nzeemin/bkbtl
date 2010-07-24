@@ -152,6 +152,7 @@ public:
     void        KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2);  // Key pressed or released
 	WORD        GetKeyboardRegister(void);
     WORD        GetPrinterOutPort() const { return m_Port177714out; }
+    void        SetPrinterInPort(BYTE data);
 public:  // Floppy    
     BOOL        AttachFloppyImage(int slot, LPCTSTR sFileName);
     void        DetachFloppyImage(int slot);
