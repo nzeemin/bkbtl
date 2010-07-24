@@ -113,7 +113,7 @@ BEGIN
         MENUITEM "Sound",                       ID_EMULATOR_SOUND
         MENUITEM "Covox",                       ID_EMULATOR_COVOX
         MENUITEM SEPARATOR
-        MENUITEM "NumPad Joystick",             ID_EMULATOR_NUMPADJOYSTICK
+        MENUITEM "NumPad Joystick",             ID_EMULATOR_JOYSTICKNUMPAD
         MENUITEM "Joystick 1",                  ID_EMULATOR_JOYSTICK1
         MENUITEM "Joystick 2",                  ID_EMULATOR_JOYSTICK2
     END
