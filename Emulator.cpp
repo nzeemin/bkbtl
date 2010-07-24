@@ -168,7 +168,7 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
         g_pBoard->LoadROM(0, buffer);
     }
 
-    if (configuration & BK_COPT_ROM_BASIC)
+    if ((configuration & BK_COPT_BK0011) == 0 && (configuration & BK_COPT_ROM_BASIC) != 0)  // BK 0010 BASIC ROMs
     {
         // Load BASIC ROM 1 file
         if (!Emulator_LoadRomFile(FILENAME_BKROM_BASIC10_1, buffer, 0, 8192))
@@ -192,7 +192,7 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
         }
         g_pBoard->LoadROM(3, buffer);
     }
-    else if (configuration & BK_COPT_ROM_FOCAL)
+    else if ((configuration & BK_COPT_BK0011) == 0 && (configuration & BK_COPT_ROM_FOCAL) != 0)  // BK 0010 FOCAL
     {
         // Load Focal ROM file
         if (!Emulator_LoadRomFile(FILENAME_BKROM_FOCAL, buffer, 0, 8192))

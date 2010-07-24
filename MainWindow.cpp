@@ -112,7 +112,7 @@ BOOL MainWindow_InitToolbar()
     addbitmap.nID = IDB_TOOLBAR;
     SendMessage(m_hwndToolbar, TB_ADDBITMAP, 2, (LPARAM) &addbitmap);
 
-    TBBUTTON buttons[6];
+    TBBUTTON buttons[11];
     ZeroMemory(buttons, sizeof(buttons));
     for (int i = 0; i < sizeof(buttons) / sizeof(TBBUTTON); i++)
     {
@@ -137,6 +137,23 @@ BOOL MainWindow_InitToolbar()
     buttons[5].iBitmap = 8;
     buttons[5].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
     buttons[5].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Sound"));
+    buttons[6].fsStyle = BTNS_SEP;
+    buttons[7].idCommand = ID_EMULATOR_FLOPPY0;
+    buttons[7].iBitmap = ToolbarImageFloppySlot;
+    buttons[7].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
+    buttons[7].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("A"));
+    buttons[8].idCommand = ID_EMULATOR_FLOPPY1;
+    buttons[8].iBitmap = ToolbarImageFloppySlot;
+    buttons[8].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
+    buttons[8].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("B"));
+    buttons[9].idCommand = ID_EMULATOR_FLOPPY2;
+    buttons[9].iBitmap = ToolbarImageFloppySlot;
+    buttons[9].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
+    buttons[9].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("C"));
+    buttons[10].idCommand = ID_EMULATOR_FLOPPY3;
+    buttons[10].iBitmap = ToolbarImageFloppySlot;
+    buttons[10].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
+    buttons[10].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("D"));
 
     SendMessage(m_hwndToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons); 
 
@@ -883,6 +900,12 @@ void MainWindow_DoEmulatorFloppy(int slot)
     }
     else
     {
+        if ((g_nEmulatorConfiguration & BK_COPT_FDD) == 0)
+        {
+            AlertWarning(_T("Current configuration has no floppy controller."));
+            return;
+        }
+
         // File Open dialog
         TCHAR bufFileName[MAX_PATH];
         *bufFileName = 0;

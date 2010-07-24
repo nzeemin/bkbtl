@@ -80,7 +80,8 @@ void CMotherboard::Reset ()
     m_Port177664 = 01330;
     m_Port177714in = m_Port177714out = 0;
     m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0200;
-    m_Port177716mem = m_Port177716tap = 0;
+    m_Port177716mem = 0000001;
+    m_Port177716tap = 0;
     m_timer = m_timerreload = m_timerdivider = 0;
     m_timerflags = 0177400;
 
@@ -89,9 +90,11 @@ void CMotherboard::Reset ()
     m_pCPU->Start();
 }
 
-void CMotherboard::LoadROM(int bank, const BYTE* pBuffer)  // Load 8 KB ROM image from the buffer
+// Load 8 KB ROM image from the buffer
+//   bank - number of 8k ROM bank, 0..7
+void CMotherboard::LoadROM(int bank, const BYTE* pBuffer)
 {
-    ASSERT(bank >= 0 && bank < 7);
+    ASSERT(bank >= 0 && bank <= 7);
     ::memcpy(m_pROM + 8192 * bank, pBuffer, 8192);
 }
 
@@ -528,7 +531,7 @@ WORD CMotherboard::GetWord(WORD address, BOOL okHaltMode, BOOL okExec)
         //TODO: What to do if okExec == TRUE ?
         return GetPortWord(address);
     case ADDRTYPE_DENY:
-        m_pCPU->InterruptVIRQ(1, 4);
+        m_pCPU->MemoryError();
         return 0;
     }
 
@@ -551,7 +554,7 @@ BYTE CMotherboard::GetByte(WORD address, BOOL okHaltMode)
         //TODO: What to do if okExec == TRUE ?
         return GetPortByte(address);
     case ADDRTYPE_DENY:
-        m_pCPU->InterruptVIRQ(1, 4);
+        m_pCPU->MemoryError();
         return 0;
     }
 
@@ -571,13 +574,13 @@ void CMotherboard::SetWord(WORD address, BOOL okHaltMode, WORD word)
         SetRAMWord(addrtype & ADDRTYPE_RAMMASK, offset & 0177776, word);
         return;
     case ADDRTYPE_ROM:  // Writing to ROM: exception
-        m_pCPU->InterruptVIRQ(1, 4);
+        m_pCPU->MemoryError();
         return;
     case ADDRTYPE_IO:
         SetPortWord(address, word);
         return;
     case ADDRTYPE_DENY:
-        m_pCPU->InterruptVIRQ(1, 4);
+        m_pCPU->MemoryError();
         return;
     }
 
@@ -595,13 +598,13 @@ void CMotherboard::SetByte(WORD address, BOOL okHaltMode, BYTE byte)
         SetRAMByte(addrtype & ADDRTYPE_RAMMASK, offset, byte);
         return;
     case ADDRTYPE_ROM:  // Writing to ROM: exception
-        m_pCPU->InterruptVIRQ(1, 4);
+        m_pCPU->MemoryError();
         return;
     case ADDRTYPE_IO:
         SetPortByte(address, byte);
         return;
     case ADDRTYPE_DENY:
-        m_pCPU->InterruptVIRQ(1, 4);
+        m_pCPU->MemoryError();
         return;
     }
 
@@ -634,54 +637,7 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
         return ADDRTYPE_IO;
     }
 
-    int addrType = 0;
-    if (m_Configuration & BK_COPT_BK0011)  // БК-0011, управление памятью через регистр 177716
-    {
-        const int memoryBlockMap[8] = { 1, 5, 2, 3, 4, 7, 0, 6 };
-        int memoryRamChunk = 0;  // Number of 16K RAM chunk, 0..7
-        int memoryBank = (address >> 14) & 3;  // 4 banks #0..3
-        switch (memoryBank)
-        {
-        case 0:  // 000000-037776: всегда страница ОЗУ 0
-            addrType = ADDRTYPE_RAM;
-            break;
-        case 1:  // 040000-077777, окно 0, страница ОЗУ 0..7
-            memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 12) & 7];  // 8 chanks #0..7
-            addrType = ADDRTYPE_RAM | memoryRamChunk;
-            address &= 037777;
-            break;
-        case 2:  // 100000-137776, окно 1, страница ОЗУ 0..7 или ПЗУ
-            if (m_Port177716mem & 033)  // Включено ПЗУ 0..3
-            {
-                addrType = ADDRTYPE_ROM;
-                int memoryRomChunk = 0;
-                if (m_Port177716mem & 16)
-                    memoryRomChunk = 3;
-                else if (m_Port177716mem & 8)
-                    memoryRomChunk = 2;
-                else if (m_Port177716mem & 2)
-                    memoryRomChunk = 1;
-                else if (m_Port177716mem & 1)
-                    memoryRomChunk = 0;
-                address = address - 0100000 + memoryRomChunk * 040000;
-            }
-            else  // Включено ОЗУ 0..7
-            {
-                memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 8) & 7];
-                addrType = ADDRTYPE_RAM | memoryRamChunk;
-                address &= 037777;
-            }
-            break;
-        case 3:  // 140000-177776
-            addrType = ADDRTYPE_ROM;
-            address -= 040000;
-            break;
-        }
-
-        *pOffset = address;
-        return addrType;
-    }
-    else  // БК-0010, нет управления памятью
+    if ((m_Configuration & BK_COPT_BK0011) == 0)  // БК-0010, нет управления памятью
     {
         int memoryBlock = (address >> 13) & 7;  // 8K block number 0..7
         BOOL okValid = (m_MemoryMapOnOff >> memoryBlock) & 1;  // 1 - OK, 0 - deny
@@ -693,6 +649,66 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
         
         *pOffset = address;
         return (okRom) ? ADDRTYPE_ROM : ADDRTYPE_RAM;
+    }
+    else  // БК-0011, управление памятью через регистр 177716
+    {
+        const int memoryBlockMap[8] = { 1, 5, 2, 3, 4, 7, 0, 6 };
+        int memoryRamChunk = 0;  // Number of 16K RAM chunk, 0..7
+        int memoryBank = (address >> 14) & 3;  // 16K bank number 0..3
+        int addrType = 0;
+        switch (memoryBank)
+        {
+        case 0:  // 000000-037777: всегда страница ОЗУ 0
+            addrType = ADDRTYPE_RAM;
+            break;
+        case 1:  // 040000-077777, окно 0, страница ОЗУ 0..7
+            memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 12) & 7];  // 8 chanks #0..7
+            addrType = ADDRTYPE_RAM | memoryRamChunk;
+            address &= 037777;
+            break;
+        case 2:  // 100000-137777, окно 1, страница ОЗУ 0..7 или ПЗУ
+            if (m_Port177716mem & 033)  // Включено ПЗУ 0..3
+            {
+                addrType = ADDRTYPE_ROM;
+                int memoryRomChunk = 0;
+                if (m_Port177716mem & 1)
+                {
+                    //addrType = ADDRTYPE_DENY;
+                    //break;
+                    memoryRomChunk = 0;
+                }
+                else if (m_Port177716mem & 2)
+                    memoryRomChunk = 1;
+                else if (m_Port177716mem & 8)
+                {
+                    addrType = ADDRTYPE_DENY;
+                    break;
+                    //memoryRomChunk = 2;
+                }
+                else
+                {
+                    addrType = ADDRTYPE_DENY;
+                    break;
+                }
+                //else if (m_Port177716mem & 16)
+                //    memoryRomChunk = 3;
+                address = (address & 037777) + memoryRomChunk * 040000;
+                break;
+            }
+            
+            // Включено ОЗУ 0..7
+            memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 8) & 7];
+            addrType = ADDRTYPE_RAM | memoryRamChunk;
+            address &= 037777;
+            break;
+        case 3:  // 140000-177777
+            addrType = ADDRTYPE_ROM;
+            address -= 040000;
+            break;
+        }
+
+        *pOffset = address;
+        return addrType;
     }
 }
 
@@ -776,9 +792,9 @@ WORD CMotherboard::GetPortWord(WORD address)
         if (m_pFloppyCtl != NULL)
         {
             WORD word = m_pFloppyCtl->GetData();
-#if !defined(PRODUCT)
-            DebugLogFormat(_T("Floppy READ\t\t%04x\tCPU %06o\n"), word, m_pCPU->GetInstructionPC());
-#endif
+//#if !defined(PRODUCT)
+//            DebugLogFormat(_T("Floppy READ\t\t%04x\tCPU %06o\n"), word, m_pCPU->GetInstructionPC());
+//#endif
             return word;
         }
         return 0;
@@ -904,6 +920,9 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         if (word & 04000)
         {
             m_Port177716mem = word;
+//#if !defined(PRODUCT)
+//            DebugLogFormat(_T("177716mem %06o\t\t%06o\r\n"), word, m_pCPU->GetInstructionPC());
+//#endif
         }
         else
         {
@@ -926,9 +945,9 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
     case 0177130:  // Регистр управления КНГМД
         if (m_pFloppyCtl != NULL)
         {
-#if !defined(PRODUCT)
-            DebugLogFormat(_T("Floppy COMMAND %06o\t\tCPU %06o\r\n"), word, m_pCPU->GetInstructionPC());
-#endif
+//#if !defined(PRODUCT)
+//            DebugLogFormat(_T("Floppy COMMAND %06o\t\tCPU %06o\r\n"), word, m_pCPU->GetInstructionPC());
+//#endif
             m_pFloppyCtl->SetCommand(word);
         }
         break;
