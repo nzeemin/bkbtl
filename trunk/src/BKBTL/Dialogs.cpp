@@ -316,6 +316,20 @@ void Dialogs_DoLoadBinLoad(LPCTSTR strFileName)
 
     ::LocalFree(pBuffer);
     ::CloseHandle(hFile);
+
+    ScreenView_KeyEvent(0123, TRUE);
+    ScreenView_KeyEvent(0123, FALSE);
+    if (baseAddress == 01000)
+    {
+        ScreenView_KeyEvent(061, TRUE);
+        ScreenView_KeyEvent(061, FALSE);
+        ScreenView_KeyEvent(060, TRUE);
+        ScreenView_KeyEvent(060, FALSE);
+        ScreenView_KeyEvent(060, TRUE);
+        ScreenView_KeyEvent(060, FALSE);
+        ScreenView_KeyEvent(060, TRUE);
+        ScreenView_KeyEvent(060, FALSE);
+    }
 }
 
 

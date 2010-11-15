@@ -80,7 +80,7 @@ void CMotherboard::Reset ()
     m_Port177664 = 01330;
     m_Port177714in = m_Port177714out = 0;
     m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0200;
-    m_Port177716mem = 0000001;
+    m_Port177716mem = 0000002;
     m_Port177716tap = 0;
     m_timer = m_timerreload = m_timerdivider = 0;
     m_timerflags = 0177400;
@@ -495,7 +495,8 @@ WORD CMotherboard::GetWordView(WORD address, BOOL okHaltMode, BOOL okExec, int* 
     switch (addrtype & ADDRTYPE_MASK)
     {
     case ADDRTYPE_RAM:
-        return GetRAMWord(offset & 0177776);  //TODO: Use (addrtype & ADDRTYPE_RAMMASK) bits
+        //return GetRAMWord(offset & 0177776);  //TODO: Use (addrtype & ADDRTYPE_RAMMASK) bits
+        return GetRAMWord(addrtype & ADDRTYPE_RAMMASK, offset & 0177776);
     case ADDRTYPE_ROM:
         return GetROMWord(offset);
     case ADDRTYPE_IO:
@@ -539,7 +540,7 @@ BYTE CMotherboard::GetByte(WORD address, BOOL okHaltMode)
     switch (addrtype & ADDRTYPE_MASK)
     {
     case ADDRTYPE_RAM:
-        return GetRAMByte(addrtype & ADDRTYPE_RAMMASK, offset);  //TODO: Use (addrtype & ADDRTYPE_RAMMASK) bits
+        return GetRAMByte(addrtype & ADDRTYPE_RAMMASK, offset);
     case ADDRTYPE_ROM:
         return GetROMByte(offset);
     case ADDRTYPE_IO:
@@ -663,39 +664,36 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
             {
                 addrType = ADDRTYPE_ROM;
                 int memoryRomChunk = 0;
-                if (m_Port177716mem & 1)
-                {
-                    //addrType = ADDRTYPE_DENY;
-                    //break;
+                if (m_Port177716mem & 1)  // Page 0 - BASIC
                     memoryRomChunk = 0;
-                }
-                else if (m_Port177716mem & 2)
+                else if (m_Port177716mem & 2)  // Page 1 - ext. BOS + ext. BASIC
                     memoryRomChunk = 1;
-                else if (m_Port177716mem & 8)
-                {
-                    addrType = ADDRTYPE_DENY;
-                    break;
-                    //memoryRomChunk = 2;
-                }
                 else
                 {
                     addrType = ADDRTYPE_DENY;
                     break;
                 }
-                //else if (m_Port177716mem & 16)
-                //    memoryRomChunk = 3;
+
                 address = (address & 037777) + memoryRomChunk * 040000;
-                break;
             }
-            
-            // Включено ОЗУ 0..7
-            memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 8) & 7];
-            addrType = ADDRTYPE_RAM | memoryRamChunk;
-            address &= 037777;
+            else  // Включено ОЗУ 0..7
+            {
+                memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 8) & 7];
+                addrType = ADDRTYPE_RAM | memoryRamChunk;
+                address &= 037777;
+            }
             break;
         case 3:  // 140000-177777
             addrType = ADDRTYPE_ROM;
-            address -= 040000;
+            if (address < 0160000)  // 140000-157777 -- system ROM
+                address = (address & 017777) + 0100000;
+            else  // 160000-177777 -- FDD ROM
+            {
+                if ((m_Configuration & BK_COPT_FDD) == 0)
+                    addrType = ADDRTYPE_DENY;
+                else
+                    address = (address & 017777) + 0120000;
+            }
             break;
         }
 
@@ -724,6 +722,13 @@ WORD CMotherboard::GetPortWord(WORD address)
         return m_Port177564;
     case 0177566:  // Serial port interrupt vector
         return 060;
+
+	case 0177700:  // Регистр режима (РР) ВМ1
+		return 0177740;
+	case 0177702:  // Регистр адреса прерывания (РАП) ВМ1
+		return 0177777;
+    case 0177704:  // Регистр ошибки (РОШ) ВМ1
+        return 0177440;
 
     case 0177706:  // System Timer counter start value -- регистр установки таймера
         return m_timerreload;
