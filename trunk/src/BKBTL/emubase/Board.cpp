@@ -206,6 +206,11 @@ void CMotherboard::ResetDevices()
     m_Port177560 = m_Port177562 = 0;
     m_Port177564 = 0200;
     m_Port177566 = 0;
+
+    // Reset timer
+    m_timerflags = 0177400;
+    m_timer = 0177777;
+    m_timerreload = 011000;
 }
 
 void CMotherboard::Tick50()  // 50 Hz timer
@@ -225,11 +230,13 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437
 {
     if ((m_timerflags & 1) == 1)  // Timer is off, nothing to do
         return;
+    if ((m_timerflags & 16) == 0)  // Not RUN
+        return;
 
     m_timerdivider++;
     
     BOOL flag = FALSE;
-    switch ((m_timerflags >> 5) & 3)  // биты 5,6 -- prescaler
+    switch ((m_timerflags >> 5) & 3)  // bits 5,6 -- prescaler
     {
         case 0:  // 32 мкс
             flag = TRUE;
@@ -249,37 +256,37 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437
         return; 
 
     m_timerdivider = 0;
-
     m_timer--;
     if (m_timer != 0)
         return;
 
-    if (m_timerflags & 010)  // If OneShot bit set then stop counting
-        m_timerflags &= ~020;
-    if ((m_timerflags & 2) == 0)  // If not WrapAround then reload
+    if ((m_timerflags & 4) != 0)  // If EXPENABLE
     {
-        m_timer = m_timerreload;
-        if (m_timerflags & 4)
-            m_timerflags |= 0200;  // Set Ready bit
+        m_timerflags |= 128;  // Set EXPIRY bit
+        //DebugPrint(_T("Timer\r\n"));
+    }
+    if (m_timerflags & 8 && (m_timerflags & 2) == 0)  // If ONESHOT and not WRAPAROUND then reset RUN bit
+        m_timerflags &= ~16;
+    else
+    {
+        if ((m_timerflags & 2) == 0)  // If not WRAPAROUND then reload
+            m_timer = m_timerreload;
     }
 }
 
 void CMotherboard::SetTimerReload(WORD val)	 // Sets timer reload value
 {
-    //m_timerreload = val & 077777;
+    //DebugPrintFormat(_T("SetTimerReload %06o\r\n"), val);
     m_timerreload = val;
-    if ((m_timerflags & 1) == 0)
-        m_timer = m_timerreload;
 }
 void CMotherboard::SetTimerState(WORD val) // Sets timer state
 {
-    if ((val & 1) && ((m_timerflags & 1) == 0))
-        //m_timer = m_timerreload & 077777;
+    //DebugPrintFormat(_T("SetTimerState %06o\r\n"), val);
+    if ((val & 1) && ((m_timerflags & 1) == 0) ||
+        ((val & 16) == 0) && ((m_timerflags & 16) == 1))
         m_timer = m_timerreload;
 
-    //m_timerflags &= 0250;  // Clear everything but bits 7,5,3
-    //m_timerflags |= (val & (~0250));  // Preserve bits 753
-    m_timerflags = 0177400 | (val & 0x00ff);
+    m_timerflags = 0177400 | val;
 }
 
 void CMotherboard::DebugTicks()
@@ -903,7 +910,7 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         SetTimerReload(word);
         break;
     case 0177710:  // System Timer Counter -- регистр реверсивного счетчика таймера
-        m_timer = word;
+        //Do nothing: the register is read-only
         break;
     case 0177712:  // System Timer Manage -- регистр управления таймера
         SetTimerState(word);
@@ -942,6 +949,26 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
     case 0177130:  // Регистр управления КНГМД
         if (m_pFloppyCtl != NULL)
         {
+            if ((m_Configuration & BK_COPT_BK0011) == 0)
+            {
+                // Выбирать по адресам 120000-157777 в соответствии с битами 2-3 либо ПЗУ BASIC либо дополнительное ОЗУ
+                switch (word & 0x0c)
+                {
+                case 0x0c:
+                    m_MemoryMap |= (32 | 64);  // 16KB BASIC ROM memory mapped to 120000-157777
+                    m_MemoryMapOnOff |= (32 | 64);
+                    break;
+                case 0x08:
+                    m_MemoryMap &= ~(32 | 64);
+                    m_MemoryMapOnOff &= ~(32 | 64);  // Nothing mapped to 120000-157777
+                    break;
+                default:
+                    m_MemoryMap &= ~(32 | 64);  // 16KB extra memory mapped to 120000-157777
+                    m_MemoryMapOnOff |= (32 | 64);
+                    break;
+                }
+                word &= ~(0x0c);
+            }
 //#if !defined(PRODUCT)
 //            DebugLogFormat(_T("Floppy COMMAND %06o\t\tCPU %06o\r\n"), word, m_pCPU->GetInstructionPC());
 //#endif
