@@ -94,16 +94,16 @@ BOOL Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, DWORD fileOffset, D
     ASSERT(bytesToRead <= 8192);
     ::memset(buffer, 0, 8192);
 
+    if (fileOffset > 0)
+    {
+        ::fseek(fpRomFile, fileOffset, SEEK_SET);
+    }
+
     DWORD dwBytesRead = ::fread(buffer, 1, bytesToRead, fpRomFile);
     if (dwBytesRead != bytesToRead)
     {
         ::fclose(fpRomFile);
         return FALSE;
-    }
-
-    if (fileOffset > 0)
-    {
-        ::fseek(fpRomFile, fileOffset, SEEK_SET);
     }
 
     ::fclose(fpRomFile);
