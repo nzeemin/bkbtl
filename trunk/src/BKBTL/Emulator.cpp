@@ -52,6 +52,7 @@ const LPCTSTR FILENAME_BKROM_BK11M_BOS  = _T("b11m_bos.rom");
 const LPCTSTR FILENAME_BKROM_BK11M_EXT  = _T("b11m_ext.rom");
 const LPCTSTR FILENAME_BKROM_BASIC11M_0 = _T("basic11m_0.rom");
 const LPCTSTR FILENAME_BKROM_BASIC11M_1 = _T("basic11m_1.rom");
+const LPCTSTR FILENAME_BKROM_BK11M_MSTD = _T("b11m_mstd.rom");
 
 
 //////////////////////////////////////////////////////////////////////
@@ -269,6 +270,18 @@ BOOL Emulator_InitConfiguration(BKConfiguration configuration)
         }
         g_pBoard->LoadROM((configuration & BK_COPT_BK0011) ? 5 : 3, buffer);
     }
+
+    if ((configuration & BK_COPT_BK0011) && (configuration & BK_COPT_FDD) == 0)
+    {
+        // Load BK0011M MSTD
+        if (!Emulator_LoadRomFile(FILENAME_BKROM_BK11M_MSTD, buffer, 0, 8192))
+        {
+            AlertWarning(_T("Failed to load BK11M MSTD ROM file."));
+            return FALSE;
+        }
+        g_pBoard->LoadROM(5, buffer);
+    }
+
 
     g_nEmulatorConfiguration = configuration;
 

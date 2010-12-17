@@ -346,7 +346,7 @@ BOOL CMotherboard::SystemFrame()
             Tick50();  // 1/50 timer event
         }
 
-        if ((m_Configuration & BK_COPT_FDD) && (frameticks % 42 == 0))  // FDD tick
+        if ((m_Configuration & BK_COPT_FDD) && (frameticks % 44 == 0))  // FDD tick
         {
             if (m_pFloppyCtl != NULL)
                 m_pFloppyCtl->Periodic();
@@ -697,9 +697,10 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
             else  // 160000-177777 -- FDD ROM
             {
                 if ((m_Configuration & BK_COPT_FDD) == 0)
-                    addrType = ADDRTYPE_DENY;
+                    //addrType = ADDRTYPE_DENY;
+                    address = (address & 017777) + 0120000;  // BK-0011V MSTD
                 else
-                    address = (address & 017777) + 0120000;
+                    address = (address & 017777) + 0120000;  // FDD ROM
             }
             break;
         }
