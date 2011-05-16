@@ -55,10 +55,10 @@ struct CFloppyDrive
 {
     FILE* fpFile;
     BOOL okReadOnly;    // Write protection flag
-	WORD track;         // Track number: from 0 to 79
-	WORD side;          // Disk side: 0 or 1
-	WORD dataptr;       // Data offset within m_data - "head" position
-	BYTE data[FLOPPY_RAWTRACKSIZE];  // Raw track image for the current track
+    WORD track;         // Track number: from 0 to 79
+    WORD side;          // Disk side: 0 or 1
+    WORD dataptr;       // Data offset within m_data - "head" position
+    BYTE data[FLOPPY_RAWTRACKSIZE];  // Raw track image for the current track
     BYTE marker[FLOPPY_RAWMARKERSIZE];  // Marker positions
     WORD datatrack;     // Track number of data in m_data array
     WORD dataside;      // Disk side of data in m_data array
@@ -74,11 +74,11 @@ protected:
     CFloppyDrive m_drivedata[4];
     int  m_drive;       // Drive number: from 0 to 3; -1 if not selected
     CFloppyDrive* m_pDrive;  // Current drive; NULL if not selected
-	WORD m_track;       // Track number: from 0 to 79
-	WORD m_side;        // Disk side: 0 or 1
-	WORD m_status;      // See FLOPPY_STATUS_XXX defines
-	WORD m_flags;       // See FLOPPY_CMD_XXX defines
-	WORD m_datareg;     // Read mode data register
+    WORD m_track;       // Track number: from 0 to 79
+    WORD m_side;        // Disk side: 0 or 1
+    WORD m_status;      // See FLOPPY_STATUS_XXX defines
+    WORD m_flags;       // See FLOPPY_CMD_XXX defines
+    WORD m_datareg;     // Read mode data register
     WORD m_writereg;    // Write mode data register
     BOOL m_writeflag;   // Write mode data register has data
     BOOL m_writemarker; // Write marker in m_marker
@@ -101,16 +101,16 @@ public:
     BOOL IsAttached(int drive) { return (m_drivedata[drive].fpFile != NULL); }
     BOOL IsReadOnly(int drive) { return m_drivedata[drive].okReadOnly; } // return (m_status & FLOPPY_STATUS_WRITEPROTECT) != 0; }
     BOOL IsEngineOn() { return (m_flags & FLOPPY_CMD_ENGINESTART) != 0; }
-	WORD GetData(void);         // Reading port 177132 - data
-	WORD GetState(void);        // Reading port 177130 - device status
+    WORD GetData(void);         // Reading port 177132 - data
+    WORD GetState(void);        // Reading port 177130 - device status
     WORD GetDataView() const { return m_datareg; }  // Get port 177132 value for debugger
-	WORD GetStateView() const { return m_status; }  // Get port 177130 value for debugger
-	void SetCommand(WORD cmd);  // Writing to port 177130 - commands
-	void WriteData(WORD Data);  // Writing to port 177132 - data
-	void Periodic();            // Rotate disk; call it each 64 us - 15625 times per second
+    WORD GetStateView() const { return m_status; }  // Get port 177130 value for debugger
+    void SetCommand(WORD cmd);  // Writing to port 177130 - commands
+    void WriteData(WORD Data);  // Writing to port 177132 - data
+    void Periodic();            // Rotate disk; call it each 64 us - 15625 times per second
 
 private:
-	void PrepareTrack();
+    void PrepareTrack();
     void FlushChanges();  // If current track was changed - save it
 
 };

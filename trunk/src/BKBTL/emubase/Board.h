@@ -144,13 +144,13 @@ public:  // System control
     void        LoadROM(int bank, const BYTE* pBuffer);  // Load 8 KB ROM image from the biffer
     void        LoadRAM(int startbank, const BYTE* pBuffer, int length);  // Load data into the RAM
     void        Tick50();           // Tick 50 Hz - goes to CPU EVNT line
-	void		TimerTick();		// Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
+    void		TimerTick();		// Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
     void        ResetDevices();     // INIT signal
 public:
     void        ExecuteCPU();  // Execute one CPU instruction
     BOOL        SystemFrame();  // Do one frame -- use for normal run
     void        KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2);  // Key pressed or released
-	WORD        GetKeyboardRegister(void);
+    WORD        GetKeyboardRegister(void);
     WORD        GetPrinterOutPort() const { return m_Port177714out; }
     void        SetPrinterInPort(BYTE data);
 public:  // Floppy    
@@ -159,10 +159,10 @@ public:  // Floppy
     BOOL        IsFloppyImageAttached(int slot);
     BOOL        IsFloppyReadOnly(int slot);
 public:  // Callbacks
-	void		SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate);
+    void		SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate);
     void        SetTapeWriteCallback(TAPEWRITECALLBACK callback, int sampleRate);
-	void		SetSoundGenCallback(SOUNDGENCALLBACK callback);
-	void		SetTeletypeCallback(TELETYPECALLBACK callback);
+    void		SetSoundGenCallback(SOUNDGENCALLBACK callback);
+    void		SetTeletypeCallback(TELETYPECALLBACK callback);
 public:  // Memory
     // Read command for execution
     WORD GetWordExec(WORD address, BOOL okHaltMode) { return GetWord(address, okHaltMode, TRUE); }
@@ -217,22 +217,22 @@ private:  // Ports: implementation
     WORD        m_Port177716mem;    // System register (memory)
     WORD        m_Port177716tap;    // System register (tape)
 private:  // Timer implementation
-	WORD		m_timer;
-	WORD		m_timerreload;
-	WORD		m_timerflags;
-	WORD		m_timerdivider;
-	void		SetTimerReload(WORD val);	//sets timer reload value
-	void		SetTimerState(WORD val);	//sets timer state
+    WORD		m_timer;
+    WORD		m_timerreload;
+    WORD		m_timerflags;
+    WORD		m_timerdivider;
+    void		SetTimerReload(WORD val);	//sets timer reload value
+    void		SetTimerState(WORD val);	//sets timer state
 private:
     WORD        m_CPUbp;  // CPU breakpoint address
 private:
     TAPEREADCALLBACK m_TapeReadCallback;
     TAPEWRITECALLBACK m_TapeWriteCallback;
-	int			m_nTapeSampleRate;
+    int			m_nTapeSampleRate;
     SOUNDGENCALLBACK m_SoundGenCallback;
     TELETYPECALLBACK m_TeletypeCallback;
 private:
-	void        DoSound(void);
+    void        DoSound(void);
 };
 
 
