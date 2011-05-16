@@ -731,10 +731,10 @@ WORD CMotherboard::GetPortWord(WORD address)
     case 0177566:  // Serial port interrupt vector
         return 060;
 
-	case 0177700:  // Регистр режима (РР) ВМ1
-		return 0177740;
-	case 0177702:  // Регистр адреса прерывания (РАП) ВМ1
-		return 0177777;
+    case 0177700:  // Регистр режима (РР) ВМ1
+        return 0177740;
+    case 0177702:  // Регистр адреса прерывания (РАП) ВМ1
+        return 0177777;
     case 0177704:  // Регистр ошибки (РОШ) ВМ1
         return 0177440;
 

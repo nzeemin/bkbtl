@@ -16,9 +16,9 @@ class CProcessor  // KM1801VM1 processor
 public:  // Constructor / initialization
                 CProcessor(CMotherboard* pBoard);
     void        AssertHALT();
-	void		DeassertHALT();
-	void		MemoryError();
-	void        SetInternalTick (WORD tick) { m_internalTick = tick; }
+    void		DeassertHALT();
+    void		MemoryError();
+    void        SetInternalTick (WORD tick) { m_internalTick = tick; }
 
 public:
     static void Init();  // Initialize static tables
@@ -51,10 +51,10 @@ protected:  // Interrupt processing
     BOOL        m_RPLYrq;           // Hangup interrupt pending
     BOOL        m_RSVDrq;           // Reserved instruction interrupt pending
     BOOL        m_TBITrq;           // T-bit interrupt pending
-	BOOL		m_ACLOrq;           // Power down interrupt pending
+    BOOL		m_ACLOrq;           // Power down interrupt pending
     BOOL        m_HALTrq;           // HALT command or HALT signal
     BOOL        m_RPL2rq;           // Double hangup interrupt pending
-	BOOL		m_IRQ2rq;           // Timer event interrupt pending
+    BOOL		m_IRQ2rq;           // Timer event interrupt pending
     BOOL        m_BPT_rq;           // BPT command interrupt pending
     BOOL        m_IOT_rq;           // IOT command interrupt pending
     BOOL        m_EMT_rq;           // EMT command interrupt pending
@@ -93,18 +93,18 @@ public:  // Processor state
     BOOL        IsStopped() const { return m_okStopped; }
     // HALT flag (TRUE - HALT mode, FALSE - USER mode)
     BOOL        IsHaltMode() const 
-	{ 
-			BOOL mode = ((m_psw & 0x100) != 0); 
-			if (mode)
-				if(m_userspace)
-					return 0;
-			return mode;
-	}
+    { 
+            BOOL mode = ((m_psw & 0x100) != 0); 
+            if (mode)
+                if(m_userspace)
+                    return 0;
+            return mode;
+    }
 public:  // Processor control
     void        Start();     // Start processor
     void        Stop();      // Stop processor
     void        TickIRQ2();  // IRQ2 signal
-	void		PowerFail();
+    void		PowerFail();
     void        InterruptVIRQ(int que, WORD interrupt);  // External interrupt via VIRQ signal
     void        Execute();   // Execute one instruction - for debugger only
     
@@ -117,7 +117,7 @@ protected:  // Implementation
     void        TranslateInstruction();  // Execute the instruction
 protected:  // Implementation - instruction processing
     WORD        CalculateOperAddr (int meth, int reg);
-	WORD        CalculateOperAddrSrc (int meth, int reg);
+    WORD        CalculateOperAddrSrc (int meth, int reg);
     BYTE        GetByteSrc();
     BYTE        GetByteDest();
     void        SetByteDest(BYTE);
@@ -148,26 +148,26 @@ protected:  // PSW bits calculations
 
 protected:  // Implementation - instruction execution
     // No fields
-	WORD		GetWordAddr (BYTE meth, BYTE reg);
-	WORD		GetByteAddr (BYTE meth, BYTE reg);
+    WORD		GetWordAddr (BYTE meth, BYTE reg);
+    WORD		GetByteAddr (BYTE meth, BYTE reg);
 
     void        ExecuteUNKNOWN ();  // Нет такой инструкции - просто вызывается TRAP 10
     void        ExecuteHALT ();
     void        ExecuteWAIT ();
-	void		ExecuteRCPC	();
-	void		ExecuteRCPS ();
-	void		ExecuteWCPC	();
-	void		ExecuteWCPS	();
-	void		ExecuteMFUS ();
-	void		ExecuteMTUS ();
+    void		ExecuteRCPC	();
+    void		ExecuteRCPS ();
+    void		ExecuteWCPC	();
+    void		ExecuteWCPS	();
+    void		ExecuteMFUS ();
+    void		ExecuteMTUS ();
     void        ExecuteRTI ();
     void        ExecuteBPT ();
     void        ExecuteIOT ();
     void        ExecuteRESET ();
-	void		ExecuteSTEP	();
+    void		ExecuteSTEP	();
     void        ExecuteRSEL ();
     void        Execute000030 ();
-	void		ExecuteRUN	();
+    void		ExecuteRUN	();
     void        ExecuteRTT ();
     void        ExecuteNOP ();
     void        ExecuteCLC ();
@@ -248,10 +248,10 @@ protected:  // Implementation - instruction execution
     void        ExecuteJSR ();
     void        ExecuteXOR ();
     void        ExecuteSOB ();
-	//void		ExecuteMUL ();
-	//void		ExecuteDIV ();
-	//void		ExecuteASH ();
-	//void		ExecuteASHC ();
+    //void		ExecuteMUL ();
+    //void		ExecuteDIV ();
+    //void		ExecuteASH ();
+    //void		ExecuteASHC ();
 
     // Four fields
     void        ExecuteMOV ();
@@ -394,13 +394,13 @@ inline BOOL CProcessor::CheckAddForCarry (WORD a, WORD b)
 }
 inline BOOL CProcessor::CheckSubForCarry (BYTE a, BYTE b)
 {
-	WORD sum = (WORD)a - (WORD)b;
-	return HIBYTE (sum) != 0;
+    WORD sum = (WORD)a - (WORD)b;
+    return HIBYTE (sum) != 0;
 }
 inline BOOL CProcessor::CheckSubForCarry (WORD a, WORD b)
 {
-	DWORD sum = (DWORD)a - (DWORD)b;
-	return HIWORD (sum) != 0;
+    DWORD sum = (DWORD)a - (DWORD)b;
+    return HIWORD (sum) != 0;
 }
 
 
