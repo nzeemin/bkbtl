@@ -671,7 +671,6 @@ void CProcessor::FetchInstruction()
 {
     // —читываем очередную инструкцию
     WORD pc = GetPC();
-	//ASSERT((pc & 1) == 0); // it have to be word aligned
     pc = pc & ~1;
 
     m_instruction = GetWordExec(pc);
