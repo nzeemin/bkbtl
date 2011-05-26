@@ -30,20 +30,13 @@ const LPCTSTR CLASSNAME_TAPEVIEW        = _T("BKBTLTAPE");
 //////////////////////////////////////////////////////////////////////
 // ScreenView
 
-enum ScreenViewMode {
-    ColorScreen = 1,
-    BlackWhiteScreen = 2,
-};
-
 extern HWND g_hwndScreen;  // Screen View window handle
 
 void ScreenView_RegisterClass();
 void ScreenView_Init();
 void ScreenView_Done();
-ScreenViewMode ScreenView_GetMode();
-void ScreenView_SetMode(ScreenViewMode);
-int ScreenView_GetHeightMode();
-void ScreenView_SetHeightMode(int);
+int ScreenView_GetScreenMode();
+void ScreenView_SetScreenMode(int);
 void ScreenView_PrepareScreen();
 void ScreenView_ScanKeyboard();
 void ScreenView_ProcessKeyboard();

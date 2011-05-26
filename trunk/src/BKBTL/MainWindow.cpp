@@ -48,8 +48,8 @@ void MainWindow_DoDebugTeletype();
 void MainWindow_DoViewToolbar();
 void MainWindow_DoViewKeyboard();
 void MainWindow_DoViewTape();
-void MainWindow_DoViewColorScreen();
-void MainWindow_DoViewHeightMode(int newMode);
+void MainWindow_DoViewScreenColor();
+void MainWindow_DoViewScreenMode(int newMode);
 void MainWindow_DoEmulatorRun();
 void MainWindow_DoEmulatorAutostart();
 void MainWindow_DoEmulatorReset();
@@ -90,7 +90,7 @@ void MainWindow_RegisterClass()
 
     RegisterClassEx(&wcex);
 
-	ToolWindow_RegisterClass();
+    ToolWindow_RegisterClass();
     OverlappedWindow_RegisterClass();
 
     // Register view classes
@@ -101,7 +101,7 @@ void MainWindow_RegisterClass()
     MemoryMapView_RegisterClass();
     DisasmView_RegisterClass();
     ConsoleView_RegisterClass();
-	TapeView_RegisterClass();
+    TapeView_RegisterClass();
 }
 
 BOOL MainWindow_InitToolbar()
@@ -206,15 +206,8 @@ void MainWindow_RestoreSettings()
     }
 
     // Restore ScreenViewMode
-    int mode = Settings_GetScreenViewMode();
-    if (mode <= 0 || mode > 2) mode = ColorScreen;
-    ScreenView_SetMode((ScreenViewMode) mode);
-
-    // Restore ScreenHeightMode
-    int heimode = Settings_GetScreenHeightMode();
-    if (heimode < 1) heimode = 1;
-    if (heimode > 2) heimode = 2;
-    ScreenView_SetHeightMode(heimode);
+    int scrmode = Settings_GetScreenViewMode();
+    ScreenView_SetScreenMode(scrmode);
 }
 
 // Processes messages for the main window
@@ -293,18 +286,18 @@ void MainWindow_AdjustWindowSize()
     RECT rcStatus;  GetWindowRect(m_hwndStatusbar, &rcStatus);
     int cyStatus = rcStatus.bottom - rcStatus.top;
     int cyKeyboard = 0;
-	int cyTape = 0;
+    int cyTape = 0;
 
-	if (Settings_GetKeyboard())
+    if (Settings_GetKeyboard())
     {
         RECT rcKeyboard;  GetWindowRect(g_hwndKeyboard, &rcKeyboard);
         cyKeyboard = rcKeyboard.bottom - rcKeyboard.top;
     }
-	if (Settings_GetTape())
-	{
-		RECT rcTape;  GetWindowRect(g_hwndTape, &rcTape);
+    if (Settings_GetTape())
+    {
+        RECT rcTape;  GetWindowRect(g_hwndTape, &rcTape);
         cyTape = rcTape.bottom - rcTape.top;
-	}
+    }
 
     // Adjust main window size
     int xLeft = rcWorkArea.left;
@@ -323,8 +316,8 @@ void MainWindow_AdjustWindowSize()
             cyHeight += cyToolbar + 4;
         if (Settings_GetKeyboard())
             cyHeight += cyKeyboard;
-		if (Settings_GetTape())
-			cyHeight += cyTape + 4;
+        if (Settings_GetTape())
+            cyHeight += cyTape + 4;
     }
  
     SetWindowPos(g_hwnd, NULL, xLeft, yTop, cxWidth, cyHeight, SWP_NOZORDER);
@@ -343,17 +336,17 @@ void MainWindow_AdjustWindowLayout()
     int cyToolbar = rcToolbar.bottom - rcToolbar.top;
 
     int cyKeyboard = 0;
-	if (Settings_GetKeyboard())
+    if (Settings_GetKeyboard())
     {
         RECT rcKeyboard;  GetWindowRect(g_hwndKeyboard, &rcKeyboard);
         cyKeyboard = rcKeyboard.bottom - rcKeyboard.top;
     }
-	int cyTape = 0;
-	if (Settings_GetTape())
-	{
-		RECT rcTape;  GetWindowRect(g_hwndTape, &rcTape);
+    int cyTape = 0;
+    if (Settings_GetTape())
+    {
+        RECT rcTape;  GetWindowRect(g_hwndTape, &rcTape);
         cyTape = rcTape.bottom - rcTape.top;
-	}
+    }
     int yScreen = 0;
     int yKeyboard = yScreen + cyScreen;
     int yTape = yScreen + cyScreen + 4;
@@ -426,9 +419,9 @@ void MainWindow_ShowHideDebug()
         int cyConsoleHeight = rc.bottom - cyStatus - yConsoleTop - 4;
         int xDebugLeft = (rcScreen.right - rcScreen.left) + 8;
         int cxDebugWidth = rc.right - xDebugLeft - 4;
-        int cyDebugHeight = 190;
-		int yDisasmTop = 4 + cyDebugHeight + 4;
-		int cyDisasmHeight = 380;
+        int cyDebugHeight = 188;
+        int yDisasmTop = 4 + cyDebugHeight + 4;
+        int cyDisasmHeight = 328;
         int yMemoryTop = cyDebugHeight + 4 + cyDisasmHeight + 8;
         int cyMemoryHeight = rc.bottom - cyStatus - yMemoryTop - 4;
 
@@ -497,11 +490,11 @@ void MainWindow_ShowHideTape()
     }
     else
     {
-		RECT rcPrev;
-		if (Settings_GetKeyboard())
-			GetWindowRect(g_hwndKeyboard, &rcPrev);
-		else
-			GetWindowRect(g_hwndScreen, &rcPrev);
+        RECT rcPrev;
+        if (Settings_GetKeyboard())
+            GetWindowRect(g_hwndKeyboard, &rcPrev);
+        else
+            GetWindowRect(g_hwndScreen, &rcPrev);
 
         // Calculate children positions
         RECT rc;  GetClientRect(g_hwnd, &rc);
@@ -559,17 +552,18 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_VIEW_KEYBOARD, (Settings_GetKeyboard() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_TAPE, (Settings_GetTape() ? MF_CHECKED : MF_UNCHECKED));
     // View|Color Screen
-    CheckMenuItem(hMenu, ID_VIEW_RGBSCREEN, ((ScreenView_GetMode() == ColorScreen) ? MF_CHECKED : MF_UNCHECKED));
     MainWindow_SetToolbarImage(ID_VIEW_RGBSCREEN,
-        (ScreenView_GetMode() == ColorScreen) ? ToolbarImageColorScreen : ToolbarImageBWScreen);
-    // View|Normal Height and View|Double Height radio
-    UINT scrheimodecmd = 0;
-    switch (ScreenView_GetHeightMode())
+        (ScreenView_GetScreenMode() & 1) ? ToolbarImageColorScreen : ToolbarImageBWScreen);
+    // View|Screen Mode
+    UINT scrmodecmd = 0;
+    switch (ScreenView_GetScreenMode())
     {
-    case 1: scrheimodecmd = ID_VIEW_NORMALHEIGHT; break;
-    case 2: scrheimodecmd = ID_VIEW_DOUBLEHEIGHT; break;
+    case 0: scrmodecmd = ID_VIEW_SCREENMODE0; break;
+    case 1: scrmodecmd = ID_VIEW_SCREENMODE1; break;
+    case 2: scrmodecmd = ID_VIEW_SCREENMODE2; break;
+    case 3: scrmodecmd = ID_VIEW_SCREENMODE3; break;
     }
-    CheckMenuRadioItem(hMenu, ID_VIEW_NORMALHEIGHT, ID_VIEW_DOUBLEHEIGHT, scrheimodecmd, MF_BYCOMMAND);
+    CheckMenuRadioItem(hMenu, ID_VIEW_SCREENMODE0, ID_VIEW_SCREENMODE3, scrmodecmd, MF_BYCOMMAND);
 
     // Emulator menu options
     CheckMenuItem(hMenu, ID_EMULATOR_AUTOSTART, (Settings_GetAutostart() ? MF_CHECKED : MF_UNCHECKED));
@@ -654,13 +648,19 @@ bool MainWindow_DoCommand(int commandId)
         MainWindow_DoViewTape();
         break;
     case ID_VIEW_RGBSCREEN:
-        MainWindow_DoViewColorScreen();
+        MainWindow_DoViewScreenColor();
         break;
-    case ID_VIEW_NORMALHEIGHT:
-        MainWindow_DoViewHeightMode(1);
+    case ID_VIEW_SCREENMODE0:
+        MainWindow_DoViewScreenMode(0);
         break;
-    case ID_VIEW_DOUBLEHEIGHT:
-        MainWindow_DoViewHeightMode(2);
+    case ID_VIEW_SCREENMODE1:
+        MainWindow_DoViewScreenMode(1);
+        break;
+    case ID_VIEW_SCREENMODE2:
+        MainWindow_DoViewScreenMode(2);
+        break;
+    case ID_VIEW_SCREENMODE3:
+        MainWindow_DoViewScreenMode(3);
         break;
     case ID_EMULATOR_RUN:
         MainWindow_DoEmulatorRun();
@@ -744,7 +744,7 @@ bool MainWindow_DoCommand(int commandId)
 
 void MainWindow_DoViewDebug()
 {
-    //MainWindow_DoViewHeightMode(1);  // Switch to Normal Height mode
+    //MainWindow_DoViewScreenMode(1);  // Switch to Normal Height mode
 
     Settings_SetDebug(!Settings_GetDebug());
     MainWindow_ShowHideDebug();
@@ -773,27 +773,28 @@ void MainWindow_DoViewTape()
     MainWindow_ShowHideTape();
 }
 
-void MainWindow_DoViewColorScreen()
+void MainWindow_DoViewScreenColor()
 {
-    ScreenViewMode newMode = (ScreenView_GetMode() == ColorScreen) ? BlackWhiteScreen : ColorScreen;
-    ScreenView_SetMode(newMode);
+    int mode = ScreenView_GetScreenMode();
+    int newmode = mode ^ 1;
 
-    Settings_SetScreenViewMode(newMode);
+    ScreenView_SetScreenMode(newmode);
     MainWindow_UpdateMenu();
-    InvalidateRect(g_hwndScreen, NULL, TRUE);  // Update screen
+
+    Settings_SetScreenViewMode(newmode);
 }
 
-void MainWindow_DoViewHeightMode(int newMode)
+void MainWindow_DoViewScreenMode(int newMode)
 {
     //if (Settings_GetDebug() && newMode == 2) return;  // Deny switching to Double Height in Debug mode
 
-    ScreenView_SetHeightMode(newMode);
+    ScreenView_SetScreenMode(newMode);
 
     MainWindow_AdjustWindowSize();
     MainWindow_AdjustWindowLayout();
     MainWindow_UpdateMenu();
 
-    Settings_SetScreenHeightMode(newMode);
+    Settings_SetScreenViewMode(newMode);
 }
 
 void MainWindow_DoEmulatorRun()

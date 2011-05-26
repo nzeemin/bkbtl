@@ -48,7 +48,8 @@ void Emulator_Reset();
 int  Emulator_SystemFrame();
 void Emulator_ProcessJoystick();
 
-void Emulator_PrepareScreenRGB32(void* pBits, ScreenViewMode screenMode);
+void Emulator_GetScreenSize(int scrmode, int* pwid, int* phei);
+void Emulator_PrepareScreenRGB32(void* pBits, int screenMode);
 
 // Update cached values after Run or Step
 void Emulator_OnUpdate();

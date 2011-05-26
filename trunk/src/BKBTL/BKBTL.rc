@@ -97,12 +97,12 @@ BEGIN
     BEGIN
         MENUITEM "Toolbar",                     ID_VIEW_TOOLBAR
         MENUITEM "Keyboard",                    ID_VIEW_KEYBOARD
-        MENUITEM "Tape",                        32803
+        MENUITEM "Tape",                        ID_VIEW_TAPE
         MENUITEM SEPARATOR
-        MENUITEM "Color Screen",                ID_VIEW_RGBSCREEN
-        MENUITEM SEPARATOR
-        MENUITEM "Normal Height",               ID_VIEW_NORMALHEIGHT
-        MENUITEM "Double Height",               ID_VIEW_DOUBLEHEIGHT
+        MENUITEM "512 x 256 BW",                ID_VIEW_SCREENMODE0
+        MENUITEM "512 x 256 Color",             ID_VIEW_SCREENMODE1
+        MENUITEM "512 x 384 BW",                ID_VIEW_SCREENMODE2
+        MENUITEM "512 x 384 Color",             ID_VIEW_SCREENMODE3
     END
     POPUP "&Emulator"
     BEGIN
