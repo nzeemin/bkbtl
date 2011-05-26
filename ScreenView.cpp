@@ -29,11 +29,10 @@ HDRAWDIB m_hdd = NULL;
 BITMAPINFO m_bmpinfo;
 HBITMAP m_hbmp = NULL;
 DWORD * m_bits = NULL;
-int m_cxScreenWidth;
-int m_cyScreenHeight;
+int m_cxScreenWidth = BK_SCREEN_WIDTH;
+int m_cyScreenHeight = BK_SCREEN_HEIGHT;
 BYTE m_ScreenKeyState[256];
-ScreenViewMode m_ScreenMode = ColorScreen;
-int m_ScreenHeightMode = 1;  // 1 - Normal height, 2 - Double height
+int m_ScreenMode = 0;
 
 void ScreenView_CreateDisplay();
 void ScreenView_OnDraw(HDC hdc);
@@ -87,39 +86,33 @@ void ScreenView_Done()
     DrawDibClose( m_hdd );
 }
 
-ScreenViewMode ScreenView_GetMode()
-{
-    return m_ScreenMode;
-}
-void ScreenView_SetMode(ScreenViewMode newMode)
-{
-    m_ScreenMode = newMode;
-}
-
 void ScreenView_CreateDisplay()
 {
     ASSERT(g_hwnd != NULL);
 
-	m_cxScreenWidth = BK_SCREEN_WIDTH;
-	m_cyScreenHeight = BK_SCREEN_HEIGHT;
+    if (m_hbmp != NULL)
+    {
+        DeleteObject(m_hbmp);
+        m_hbmp = NULL;
+    }
 
-	HDC hdc = GetDC( g_hwnd );
+    HDC hdc = GetDC( g_hwnd );
 
-	m_bmpinfo.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
-	m_bmpinfo.bmiHeader.biWidth = BK_SCREEN_WIDTH;
-	m_bmpinfo.bmiHeader.biHeight = BK_SCREEN_HEIGHT;
-	m_bmpinfo.bmiHeader.biPlanes = 1;
-	m_bmpinfo.bmiHeader.biBitCount = 32;
-	m_bmpinfo.bmiHeader.biCompression = BI_RGB;
-	m_bmpinfo.bmiHeader.biSizeImage = 0;
-	m_bmpinfo.bmiHeader.biXPelsPerMeter = 0;
-	m_bmpinfo.bmiHeader.biYPelsPerMeter = 0;
-	m_bmpinfo.bmiHeader.biClrUsed = 0;
-	m_bmpinfo.bmiHeader.biClrImportant = 0;
-	
-	m_hbmp = CreateDIBSection( hdc, &m_bmpinfo, DIB_RGB_COLORS, (void **) &m_bits, NULL, 0 );
+    m_bmpinfo.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+    m_bmpinfo.bmiHeader.biWidth = BK_SCREEN_WIDTH;
+    m_bmpinfo.bmiHeader.biHeight = m_cyScreenHeight;
+    m_bmpinfo.bmiHeader.biPlanes = 1;
+    m_bmpinfo.bmiHeader.biBitCount = 32;
+    m_bmpinfo.bmiHeader.biCompression = BI_RGB;
+    m_bmpinfo.bmiHeader.biSizeImage = 0;
+    m_bmpinfo.bmiHeader.biXPelsPerMeter = 0;
+    m_bmpinfo.bmiHeader.biYPelsPerMeter = 0;
+    m_bmpinfo.bmiHeader.biClrUsed = 0;
+    m_bmpinfo.bmiHeader.biClrImportant = 0;
+    
+    m_hbmp = CreateDIBSection( hdc, &m_bmpinfo, DIB_RGB_COLORS, (void **) &m_bits, NULL, 0 );
 
-	ReleaseDC( g_hwnd, hdc );
+    ReleaseDC( g_hwnd, hdc );
 }
 
 // Create Screen View as child of Main Window
@@ -131,7 +124,7 @@ void CreateScreenView(HWND hwndParent, int x, int y, int cxWidth)
     int cyBorder = ::GetSystemMetrics(SM_CYBORDER);
     int xLeft = x;
     int yTop = y;
-    int cyScreenHeight = 4 + BK_SCREEN_HEIGHT * m_ScreenHeightMode + 4;
+    int cyScreenHeight = 4 + m_cyScreenHeight + 4;
     int cyHeight = cyScreenHeight;
 
     g_hwndScreen = CreateWindow(
@@ -185,17 +178,22 @@ LRESULT CALLBACK ScreenViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
     return (LRESULT)FALSE;
 }
 
-int ScreenView_GetHeightMode()
+int ScreenView_GetScreenMode()
 {
-    return m_ScreenHeightMode;
+    return m_ScreenMode;
 }
-void ScreenView_SetHeightMode(int newHeightMode)
+void ScreenView_SetScreenMode(int newMode)
 {
-    if (m_ScreenHeightMode == newHeightMode) return;
+    if (m_ScreenMode == newMode) return;
 
-    m_ScreenHeightMode = newHeightMode;
+    m_ScreenMode = newMode;
 
-    int cyHeight = BK_SCREEN_HEIGHT * m_ScreenHeightMode;
+    // Ask Emulator module for screen width and height
+    int cxWidth, cyHeight;
+    Emulator_GetScreenSize(newMode, &cxWidth, &cyHeight);
+    m_cyScreenHeight = cyHeight;
+    ScreenView_CreateDisplay();
+
     RECT rc;  ::GetWindowRect(g_hwndScreen, &rc);
     ::SetWindowPos(g_hwndScreen, NULL, 0,0, rc.right - rc.left, cyHeight, SWP_NOZORDER | SWP_NOMOVE);
 }
@@ -207,11 +205,8 @@ void ScreenView_OnDraw(HDC hdc)
     RECT rc;  ::GetClientRect(g_hwndScreen, &rc);
     int x = (rc.right - BK_SCREEN_WIDTH) / 2;
 
-    int dyDst = -1;
-    if (m_ScreenHeightMode > 1) dyDst = BK_SCREEN_HEIGHT * m_ScreenHeightMode;
-
     DrawDibDraw(m_hdd, hdc,
-        x, 4, -1, dyDst,
+        x, 4, -1, -1,
         &m_bmpinfo.bmiHeader, m_bits, 0,0,
         m_cxScreenWidth, m_cyScreenHeight,
         0);
@@ -401,13 +396,13 @@ void ScreenView_SaveScreenshot(LPCTSTR sFileName)
     hdr.bfType = 0x4d42;  // "BM"
     BITMAPINFOHEADER bih;
     ::ZeroMemory(&bih, sizeof(bih));
-	bih.biSize = sizeof( BITMAPINFOHEADER );
-	bih.biWidth = m_cxScreenWidth;
-	bih.biHeight = m_cyScreenHeight;
+    bih.biSize = sizeof( BITMAPINFOHEADER );
+    bih.biWidth = m_cxScreenWidth;
+    bih.biHeight = m_cyScreenHeight;
     bih.biSizeImage = bih.biWidth * bih.biHeight * 4;
-	bih.biPlanes = 1;
-	bih.biBitCount = 32;
-	bih.biCompression = BI_RGB;
+    bih.biPlanes = 1;
+    bih.biBitCount = 32;
+    bih.biCompression = BI_RGB;
     bih.biXPelsPerMeter = bih.biXPelsPerMeter = 2000;
     hdr.bfSize = (DWORD) sizeof(BITMAPFILEHEADER) + bih.biSize + bih.biSizeImage;
     hdr.bfOffBits = (DWORD) sizeof(BITMAPFILEHEADER) + bih.biSize;
