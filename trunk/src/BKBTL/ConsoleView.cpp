@@ -183,7 +183,7 @@ CProcessor* ConsoleView_GetCurrentProcessor()
 
 void ConsoleView_Print(LPCTSTR message)
 {
-    if (m_hwndConsoleLog == NULL) return;
+    if (m_hwndConsoleLog == INVALID_HANDLE_VALUE) return;
 
     // Put selection to the end of text
     SendMessage(m_hwndConsoleLog, EM_SETSEL, 0x100000, 0x100000);
@@ -194,7 +194,7 @@ void ConsoleView_Print(LPCTSTR message)
 }
 void ClearConsole()
 {
-    if (m_hwndConsoleLog == NULL) return;
+    if (m_hwndConsoleLog == INVALID_HANDLE_VALUE) return;
 
     SendMessage(m_hwndConsoleLog, WM_SETTEXT, 0, (LPARAM) _T(""));
 }

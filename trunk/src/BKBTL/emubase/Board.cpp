@@ -356,7 +356,7 @@ BOOL CMotherboard::SystemFrame()
             Tick50();  // 1/50 timer event
         }
 
-        if ((m_Configuration & BK_COPT_FDD) && (frameticks % 44 == 0))  // FDD tick
+        if ((m_Configuration & BK_COPT_FDD) && (frameticks % 38 == 0))  // FDD tick
         {
             if (m_pFloppyCtl != NULL)
                 m_pFloppyCtl->Periodic();
