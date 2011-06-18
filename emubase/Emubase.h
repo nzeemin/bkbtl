@@ -65,8 +65,6 @@ struct CFloppyDrive
 {
     FILE* fpFile;
     BOOL okReadOnly;    // Write protection flag
-    WORD track;         // Track number: from 0 to 79
-    WORD side;          // Disk side: 0 or 1
     WORD dataptr;       // Data offset within m_data - "head" position
     BYTE data[FLOPPY_RAWTRACKSIZE];  // Raw track image for the current track
     BYTE marker[FLOPPY_RAWMARKERSIZE];  // Marker positions
