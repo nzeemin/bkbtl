@@ -324,6 +324,7 @@ BOOL CMotherboard::SystemFrame()
     int frameProcTicks = (m_Configuration & BK_COPT_BK0011) ? 8 : 6;
     const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
     const int teletypeTicks = 20000 / (9600 / 25);
+    int floppyTicks = (m_Configuration & BK_COPT_BK0011) ? 38 : 44;
     int teletypeTxCount = 0;
 
     int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
@@ -356,7 +357,7 @@ BOOL CMotherboard::SystemFrame()
             Tick50();  // 1/50 timer event
         }
 
-        if ((m_Configuration & BK_COPT_FDD) && (frameticks % 38 == 0))  // FDD tick
+        if ((m_Configuration & BK_COPT_FDD) && (frameticks % floppyTicks == 0))  // FDD tick
         {
             if (m_pFloppyCtl != NULL)
                 m_pFloppyCtl->Periodic();
