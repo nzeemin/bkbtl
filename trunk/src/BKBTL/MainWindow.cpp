@@ -313,7 +313,7 @@ void MainWindow_AdjustWindowSize()
         cxWidth = cxScreen + cxFrame * 2 + 8;
         cyHeight = cyCaption + cyMenu + cyScreen + 4 + cyStatus + cyFrame * 2;
         if (Settings_GetToolbar())
-            cyHeight += cyToolbar + 4;
+            cyHeight += cyToolbar;
         if (Settings_GetKeyboard())
             cyHeight += cyKeyboard;
         if (Settings_GetTape())
@@ -347,7 +347,7 @@ void MainWindow_AdjustWindowLayout()
         RECT rcTape;  GetWindowRect(g_hwndTape, &rcTape);
         cyTape = rcTape.bottom - rcTape.top;
     }
-    int yScreen = 0;
+    int yScreen = 4;
     int yKeyboard = yScreen + cyScreen;
     int yTape = yScreen + cyScreen + 4;
     int yConsole = yScreen + cyScreen + 4;
@@ -360,10 +360,10 @@ void MainWindow_AdjustWindowLayout()
 
     if (Settings_GetToolbar())
     {
-        yScreen   += cyToolbar + 4;
-        yKeyboard += cyToolbar + 4;
-        yTape     += cyToolbar + 4;
-        yConsole  += cyToolbar + 4;
+        yScreen   += cyToolbar;
+        yKeyboard += cyToolbar;
+        yTape     += cyToolbar;
+        yConsole  += cyToolbar;
     }
 
     SetWindowPos(g_hwndScreen, NULL, 4, yScreen, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);

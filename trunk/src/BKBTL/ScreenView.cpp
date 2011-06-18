@@ -120,8 +120,6 @@ void CreateScreenView(HWND hwndParent, int x, int y, int cxWidth)
 {
     ASSERT(hwndParent != NULL);
 
-    int cxBorder = ::GetSystemMetrics(SM_CXBORDER);
-    int cyBorder = ::GetSystemMetrics(SM_CYBORDER);
     int xLeft = x;
     int yTop = y;
     int cyScreenHeight = 4 + m_cyScreenHeight + 4;
@@ -195,7 +193,7 @@ void ScreenView_SetScreenMode(int newMode)
     ScreenView_CreateDisplay();
 
     RECT rc;  ::GetWindowRect(g_hwndScreen, &rc);
-    ::SetWindowPos(g_hwndScreen, NULL, 0,0, rc.right - rc.left, cyHeight, SWP_NOZORDER | SWP_NOMOVE);
+    ::SetWindowPos(g_hwndScreen, NULL, 0,0, rc.right - rc.left, 4 + cyHeight + 4, SWP_NOZORDER | SWP_NOMOVE);
 }
 
 void ScreenView_OnDraw(HDC hdc)
