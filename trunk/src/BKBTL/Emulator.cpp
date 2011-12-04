@@ -163,7 +163,7 @@ BOOL Emulator_Init()
 
     if (m_okEmulatorSound)
     {
-	    SoundGen_Initialize();
+        SoundGen_Initialize(Settings_GetSoundVolume());
         g_pBoard->SetSoundGenCallback(Emulator_SoundGenCallback);
     }
 
@@ -397,7 +397,7 @@ void Emulator_SetSound(BOOL soundOnOff)
     {
         if (soundOnOff)
         {
-            SoundGen_Initialize();
+            SoundGen_Initialize(Settings_GetSoundVolume());
             g_pBoard->SetSoundGenCallback(Emulator_SoundGenCallback);
         }
         else
@@ -422,40 +422,40 @@ int Emulator_SystemFrame()
     ScreenView_ScanKeyboard();
     ScreenView_ProcessKeyboard();
     Emulator_ProcessJoystick();
-    
-	if (!g_pBoard->SystemFrame())
+
+    if (!g_pBoard->SystemFrame())
         return 0;
 
-	// Calculate frames per second
-	m_nFrameCount++;
-	DWORD dwCurrentTicks = GetTickCount();
-	long nTicksElapsed = dwCurrentTicks - m_dwTickCount;
-	if (nTicksElapsed >= 1200)
-	{
-		double dFramesPerSecond = m_nFrameCount * 1000.0 / nTicksElapsed;
-		TCHAR buffer[16];
-		swprintf_s(buffer, 16, _T("FPS: %05.2f"), dFramesPerSecond);
-		MainWindow_SetStatusbarText(StatusbarPartFPS, buffer);
+    // Calculate frames per second
+    m_nFrameCount++;
+    DWORD dwCurrentTicks = GetTickCount();
+    long nTicksElapsed = dwCurrentTicks - m_dwTickCount;
+    if (nTicksElapsed >= 1200)
+    {
+        double dFramesPerSecond = m_nFrameCount * 1000.0 / nTicksElapsed;
+        TCHAR buffer[16];
+        swprintf_s(buffer, 16, _T("FPS: %05.2f"), dFramesPerSecond);
+        MainWindow_SetStatusbarText(StatusbarPartFPS, buffer);
 
-		m_nFrameCount = 0;
-		m_dwTickCount = dwCurrentTicks;
-	}
+        m_nFrameCount = 0;
+        m_dwTickCount = dwCurrentTicks;
+    }
 
-	// Calculate emulator uptime (25 frames per second)
-	m_nUptimeFrameCount++;
-	if (m_nUptimeFrameCount >= 25)
-	{
-		m_dwEmulatorUptime++;
-		m_nUptimeFrameCount = 0;
+    // Calculate emulator uptime (25 frames per second)
+    m_nUptimeFrameCount++;
+    if (m_nUptimeFrameCount >= 25)
+    {
+        m_dwEmulatorUptime++;
+        m_nUptimeFrameCount = 0;
 
-		int seconds = (int) (m_dwEmulatorUptime % 60);
-		int minutes = (int) (m_dwEmulatorUptime / 60 % 60);
-		int hours   = (int) (m_dwEmulatorUptime / 3600 % 60);
+        int seconds = (int) (m_dwEmulatorUptime % 60);
+        int minutes = (int) (m_dwEmulatorUptime / 60 % 60);
+        int hours   = (int) (m_dwEmulatorUptime / 3600 % 60);
 
-		TCHAR buffer[20];
-		swprintf_s(buffer, 20, _T("Uptime: %02d:%02d:%02d"), hours, minutes, seconds);
-		MainWindow_SetStatusbarText(StatusbarPartUptime, buffer);
-	}
+        TCHAR buffer[20];
+        swprintf_s(buffer, 20, _T("Uptime: %02d:%02d:%02d"), hours, minutes, seconds);
+        MainWindow_SetStatusbarText(StatusbarPartUptime, buffer);
+    }
 
     return 1;
 }

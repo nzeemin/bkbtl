@@ -12,6 +12,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #include "stdafx.h"
 #include <commdlg.h>
+#include <commctrl.h>
 #include "Dialogs.h"
 #include "Emulator.h"
 #include "BKBTL.h"
@@ -25,6 +26,7 @@ INT_PTR CALLBACK LoadBinProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 void Dialogs_DoLoadBinPrepare(HWND hDlg, LPCTSTR strFileName);
 void Dialogs_DoLoadBinLoad(LPCTSTR strFileName);
 BOOL InputBoxValidate(HWND hDlg);
+INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 LPCTSTR m_strInputBoxTitle = NULL;
 LPCTSTR m_strInputBoxPrompt = NULL;
@@ -340,6 +342,51 @@ void Dialogs_DoLoadBinLoad(LPCTSTR strFileName)
         ScreenView_KeyEvent(060, TRUE);
         ScreenView_KeyEvent(060, FALSE);
     }
+}
+
+//////////////////////////////////////////////////////////////////////
+// Settings Dialog
+
+void ShowSettingsDialog()
+{
+    DialogBox(g_hInst, MAKEINTRESOURCE(IDD_SETTINGS), g_hwnd, SettingsProc);
+}
+
+INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        {
+            HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
+            SendMessage(hVolume, TBM_SETRANGEMIN, 0, (LPARAM)0);
+            SendMessage(hVolume, TBM_SETRANGEMAX, 0, (LPARAM)0xffff);
+            SendMessage(hVolume, TBM_SETTICFREQ, 0x1000, 0);
+            SendMessage(hVolume, TBM_SETPOS, TRUE, (LPARAM)Settings_GetSoundVolume());
+
+            return (INT_PTR)FALSE;
+        }
+    case WM_COMMAND:
+        switch (LOWORD(wParam))
+        {
+        case IDOK:
+            {
+                HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
+                DWORD volume = SendMessage(hVolume, TBM_GETPOS, 0, 0);
+                Settings_SetSoundVolume((WORD)volume);
+            }
+
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        case IDCANCEL:
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        default:
+            return (INT_PTR)FALSE;
+        }
+        break;
+    }
+    return (INT_PTR) FALSE;
 }
 
 
