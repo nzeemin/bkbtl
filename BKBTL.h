@@ -105,6 +105,8 @@ void Settings_SetRealSpeed(BOOL flag);
 BOOL Settings_GetRealSpeed();
 void Settings_SetSound(BOOL flag);
 BOOL Settings_GetSound();
+void Settings_SetSoundVolume(WORD value);
+WORD Settings_GetSoundVolume();
 void Settings_SetCovox(BOOL flag);
 BOOL Settings_GetCovox();
 void Settings_SetJoystick(int joystick);

@@ -63,6 +63,7 @@ void MainWindow_DoEmulatorFloppy(int slot);
 void MainWindow_DoEmulatorConf(BKConfiguration configuration);
 void MainWindow_DoFileScreenshot();
 void MainWindow_DoFileLoadBin();
+void MainWindow_DoFileSettings();
 void MainWindow_OnStatusbarClick(LPNMMOUSE lpnm);
 void MainWindow_OnStatusbarDrawItem(LPDRAWITEMSTRUCT);
 void MainWindow_OnToolbarGetInfoTip(LPNMTBGETINFOTIP);
@@ -736,6 +737,9 @@ bool MainWindow_DoCommand(int commandId)
     case ID_CONF_BK0011FDD:
         MainWindow_DoEmulatorConf(BK_CONF_BK0011_FDD);
         break;
+    case ID_FILE_SETTINGS:
+        MainWindow_DoFileSettings();
+        break;
     default:
         return false;
     }
@@ -901,6 +905,11 @@ void MainWindow_DoFileScreenshot()
 void MainWindow_DoFileLoadBin()
 {
     ShowLoadBinDialog();
+}
+
+void MainWindow_DoFileSettings()
+{
+    ShowSettingsDialog();
 }
 
 void MainWindow_DoEmulatorConf(BKConfiguration configuration)

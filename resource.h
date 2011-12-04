@@ -12,7 +12,6 @@
 #define IDI_SMALL                       108
 #define IDC_BKBTL                       109
 #define IDR_MAINFRAME                   128
-#define IDD_DIALOG1                     129
 #define IDD_INPUTBOX                    129
 #define IDI_DISKETTE                    138
 #define IDI_DISKETTEWP                  141
@@ -20,6 +19,7 @@
 #define IDB_TOOLBAR                     143
 #define IDD_CREATEDISK                  144
 #define IDD_LOADBIN                     145
+#define IDD_SETTINGS                    146
 #define IDC_EDIT1                       1000
 #define IDC_BUILDDATE                   1001
 #define IDC_EDITADDR                    1001
@@ -30,6 +30,7 @@
 #define IDC_EDITNAME                    1003
 #define IDC_BUTTONBROWSE                1004
 #define IDC_EDITFILE                    1005
+#define IDC_VOLUME                      1006
 #define ID_VIEW                         32771
 #define ID_VIEW_MEMORY                  32772
 #define ID_EMULATOR                     32773
@@ -55,28 +56,26 @@
 #define ID_FILE_CREATEDISK              32806
 #define ID_EMULATOR_CONFBK0010BASIC     32807
 #define ID_EMULATOR_CONF                32808
-#define ID_Menu                         32809
 #define ID_VIEW_MEMORYMAP               32810
 #define ID_FILE_LOADBIN                 32811
 #define ID_CONF_BK0010MONIT             32812
 #define ID_CONF_BK0010BASIC             32813
 #define ID_CONF_BK0010FOCAL             32814
 #define ID_CONF_BK0010FDD               32815
-#define ID_EMULATOR_BK0011              32818
-#define ID_CONF_BK0011                  32819
-#define ID_EMULATOR_BK0011M             32820
-#define ID_CONF_BK0011FDD               32821
-#define ID_EMULATOR_JOYSTICKNUMPAD      32822
-#define ID_EMULATOR_JOYSTICK1           32823
-#define ID_EMULATOR_JOYSTICK2           32824
-#define ID_EMULATOR_COVOX               32825
-#define ID_DEBUG_TELETYPE               32826
-#define ID_DEBUG_STEPOVER               32827
-#define ID_VIEW_RGBSCREEN               32830
-#define ID_VIEW_SCREENMODE0             32831
-#define ID_VIEW_SCREENMODE1             32832
-#define ID_VIEW_SCREENMODE2             32833
-#define ID_VIEW_SCREENMODE3             32834
+#define ID_CONF_BK0011                  32816
+#define ID_CONF_BK0011FDD               32817
+#define ID_EMULATOR_JOYSTICKNUMPAD      32820
+#define ID_EMULATOR_JOYSTICK1           32821
+#define ID_EMULATOR_JOYSTICK2           32822
+#define ID_EMULATOR_COVOX               32823
+#define ID_DEBUG_TELETYPE               32824
+#define ID_DEBUG_STEPOVER               32825
+#define ID_VIEW_RGBSCREEN               32826
+#define ID_VIEW_SCREENMODE0             32827
+#define ID_VIEW_SCREENMODE1             32828
+#define ID_VIEW_SCREENMODE2             32829
+#define ID_VIEW_SCREENMODE3             32830
+#define ID_FILE_SETTINGS                32831
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -84,9 +83,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        146
-#define _APS_NEXT_COMMAND_VALUE         32836
-#define _APS_NEXT_CONTROL_VALUE         1006
+#define _APS_NEXT_RESOURCE_VALUE        147
+#define _APS_NEXT_COMMAND_VALUE         32832
+#define _APS_NEXT_CONTROL_VALUE         1007
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
