@@ -128,6 +128,10 @@ LRESULT CALLBACK DebugViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, 
         break;
     case WM_KEYDOWN:
         return (LRESULT) DebugView_OnKeyDown(wParam, lParam);
+    case WM_SETFOCUS:
+    case WM_KILLFOCUS:
+        ::InvalidateRect(hWnd, NULL, TRUE);
+        break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -205,6 +209,13 @@ void DebugView_DoDraw(HDC hdc)
     SetBkColor(hdc, colorBkOld);
     SelectObject(hdc, hOldFont);
     DeleteObject(hFont);
+
+    if (::GetFocus() == m_hwndDebugViewer)
+    {
+        RECT rcClient;
+        GetClientRect(m_hwndDebugViewer, &rcClient);
+        DrawFocusRect(hdc, &rcClient);
+    }
 }
 
 void DebugView_DrawRectangle(HDC hdc, int x1, int y1, int x2, int y2)
