@@ -90,6 +90,7 @@ BEGIN
         MENUITEM "Save State…",                 ID_FILE_SAVESTATE, INACTIVE
         MENUITEM SEPARATOR
         MENUITEM "Screenshot",                  ID_FILE_SCREENSHOT
+        MENUITEM "Save Screenshot As...",       ID_FILE_SAVESCREENSHOTAS
         MENUITEM SEPARATOR
         MENUITEM "Settings",                    ID_FILE_SETTINGS
         MENUITEM SEPARATOR

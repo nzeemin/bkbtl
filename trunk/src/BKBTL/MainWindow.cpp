@@ -62,6 +62,7 @@ void MainWindow_DoFileLoadState();
 void MainWindow_DoEmulatorFloppy(int slot);
 void MainWindow_DoEmulatorConf(BKConfiguration configuration);
 void MainWindow_DoFileScreenshot();
+void MainWindow_DoFileScreenshotSaveAs();
 void MainWindow_DoFileLoadBin();
 void MainWindow_DoFileSettings();
 void MainWindow_OnStatusbarClick(LPNMMOUSE lpnm);
@@ -124,7 +125,7 @@ BOOL MainWindow_InitToolbar()
     addbitmap.nID = IDB_TOOLBAR;
     SendMessage(m_hwndToolbar, TB_ADDBITMAP, 2, (LPARAM) &addbitmap);
 
-    TBBUTTON buttons[11];
+    TBBUTTON buttons[13];
     ZeroMemory(buttons, sizeof(buttons));
     for (int i = 0; i < sizeof(buttons) / sizeof(TBBUTTON); i++)
     {
@@ -166,6 +167,10 @@ BOOL MainWindow_InitToolbar()
     buttons[10].iBitmap = ToolbarImageFloppySlot;
     buttons[10].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
     buttons[10].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("D"));
+    buttons[11].fsStyle = BTNS_SEP;
+    buttons[12].idCommand = ID_FILE_SCREENSHOT;
+    buttons[12].iBitmap = ToolbarImageScreenshot;
+    buttons[12].fsStyle = BTNS_BUTTON;
 
     SendMessage(m_hwndToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons); 
 
@@ -724,6 +729,9 @@ bool MainWindow_DoCommand(int commandId)
     case ID_FILE_SCREENSHOT:
         MainWindow_DoFileScreenshot();
         break;
+    case ID_FILE_SAVESCREENSHOTAS:
+        MainWindow_DoFileScreenshotSaveAs();
+        break;
     case ID_FILE_LOADBIN:
         MainWindow_DoFileLoadBin();
         break;
@@ -899,6 +907,20 @@ void MainWindow_DoFileSaveState()
 void MainWindow_DoFileScreenshot()
 {
     TCHAR bufFileName[MAX_PATH];
+    SYSTEMTIME st;
+    ::GetSystemTime(&st);
+    wsprintf(bufFileName, _T("%04d%02d%02d%02d%02d%02d%03d.png"),
+        st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+
+    if (!ScreenView_SaveScreenshot(bufFileName))
+    {
+        AlertWarning(_T("Failed to save screenshot bitmap."));
+    }
+}
+
+void MainWindow_DoFileScreenshotSaveAs()
+{
+    TCHAR bufFileName[MAX_PATH];
     BOOL okResult = ShowSaveDialog(g_hwnd,
         _T("Save screenshot as"),
         _T("PNG bitmaps (*.png)\0*.png\0BMP bitmaps (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0\0"),
@@ -1032,13 +1054,13 @@ void MainWindow_OnStatusbarDrawItem(LPDRAWITEMSTRUCT lpDrawItem)
 {
     HDC hdc = lpDrawItem->hDC;
 
-    // Номер привода дисковода
+    // Draw floppy drive number
     TCHAR text[2];
-    text[0] = _T('0') + lpDrawItem->itemID - StatusbarPartMZ0;
+    text[0] = _T('0') + (TCHAR)(lpDrawItem->itemID - StatusbarPartMZ0);
     text[1] = 0;
     ::DrawStatusText(hdc, &lpDrawItem->rcItem, text, SBT_NOBORDERS);
 
-    // Иконка диска
+    // Draw floppy disk icon
     UINT resourceId = (UINT) lpDrawItem->itemData;
     if (resourceId != 0)
     {
