@@ -68,6 +68,7 @@ enum ToolbarButtonImages
     ToolbarImageFloppyDiskWP = 9,
     ToolbarImageColorScreen = 10,
     ToolbarImageBWScreen = 11,
+    ToolbarImageScreenshot = 12,
 };
 
 enum StatusbarParts
