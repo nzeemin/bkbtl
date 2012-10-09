@@ -270,6 +270,9 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
 
 void MainWindow_AdjustWindowSize()
 {
+    const int MAX_DEBUG_WIDTH = 1450;
+    const int MAX_DEBUG_HEIGHT = 1400;
+
     // Get metrics
     RECT rcWorkArea;  SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
     int cxBorder  = ::GetSystemMetrics(SM_CXBORDER);
@@ -307,7 +310,9 @@ void MainWindow_AdjustWindowSize()
     if (Settings_GetDebug())
     {
         cxWidth = rcWorkArea.right - rcWorkArea.left;
+        if (cxWidth > MAX_DEBUG_WIDTH) cxWidth = MAX_DEBUG_WIDTH;
         cyHeight = rcWorkArea.bottom - rcWorkArea.top;
+        if (cyHeight > MAX_DEBUG_HEIGHT) cyHeight = MAX_DEBUG_HEIGHT;
     }
     else
     {
@@ -884,6 +889,7 @@ void MainWindow_DoFileSaveState()
     BOOL okResult = ShowSaveDialog(g_hwnd,
         _T("Save state image as"),
         _T("BK state images (*.bkst)\0*.bkst\0All Files (*.*)\0*.*\0\0"),
+        _T("bkst"),
         bufFileName);
     if (! okResult) return;
 
@@ -895,11 +901,15 @@ void MainWindow_DoFileScreenshot()
     TCHAR bufFileName[MAX_PATH];
     BOOL okResult = ShowSaveDialog(g_hwnd,
         _T("Save screenshot as"),
-        _T("Bitmaps (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0\0"),
+        _T("PNG bitmaps (*.png)\0*.png\0BMP bitmaps (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0\0"),
+        _T("png"),
         bufFileName);
     if (! okResult) return;
 
-    ScreenView_SaveScreenshot(bufFileName);
+    if (!ScreenView_SaveScreenshot(bufFileName))
+    {
+        AlertWarning(_T("Failed to save screenshot bitmap."));
+    }
 }
 
 void MainWindow_DoFileLoadBin()

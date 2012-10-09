@@ -141,7 +141,7 @@ BOOL InputBoxValidate(HWND hDlg) {
 //////////////////////////////////////////////////////////////////////
 
 
-BOOL ShowSaveDialog(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strFilter, TCHAR* bufFileName)
+BOOL ShowSaveDialog(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strFilter, LPCTSTR strDefExt, TCHAR* bufFileName)
 {
     *bufFileName = 0;
     OPENFILENAME ofn;
@@ -151,7 +151,8 @@ BOOL ShowSaveDialog(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strFilter, TCHAR* 
     ofn.hInstance = g_hInst;
     ofn.lpstrTitle = strTitle;
     ofn.lpstrFilter = strFilter;
-    ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+    ofn.lpstrDefExt = strDefExt;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
     ofn.lpstrFile = bufFileName;
     ofn.nMaxFile = MAX_PATH;
 

@@ -94,6 +94,10 @@ const LPCTSTR FILENAME_BKROM_BK11M_MSTD = _T("b11m_mstd.rom");
 //////////////////////////////////////////////////////////////////////
 // Colors
 
+const DWORD ScreenView_BWPalette[4] = {
+    0x000000, 0xFFFFFF, 0x000000, 0xFFFFFF
+};
+
 const DWORD ScreenView_ColorPalette[4] = {
     0x000000, 0x0000FF, 0x00FF00, 0xFF0000
 };
@@ -539,6 +543,16 @@ void Emulator_GetScreenSize(int scrmode, int* pwid, int* phei)
     ScreenModeStruct* pinfo = ScreenModeReference + scrmode;
     *pwid = pinfo->width;
     *phei = pinfo->height;
+}
+
+const DWORD * Emulator_GetPalette(int screenMode)
+{
+    if ((screenMode & 1) == 0)
+        return (const DWORD *)ScreenView_BWPalette;
+    if ((g_nEmulatorConfiguration & BK_COPT_BK0011) == 0)
+        return (const DWORD *)ScreenView_ColorPalette;
+    else
+        return (const DWORD *)ScreenView_ColorPalettes[g_pBoard->GetPalette()];
 }
 
 void Emulator_PrepareScreenRGB32(void* pImageBits, int screenMode)
