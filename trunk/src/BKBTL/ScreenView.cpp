@@ -16,6 +16,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "BKBTL.h"
 #include "Views.h"
 #include "Emulator.h"
+#include "util/BitmapFile.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -378,44 +379,25 @@ void ScreenView_KeyEvent(BYTE keyscan, BOOL pressed)
     ScreenView_PutKeyEventToQueue(MAKEWORD(keyscan, pressed ? 128 : 0));
 }
 
-void ScreenView_SaveScreenshot(LPCTSTR sFileName)
+BOOL ScreenView_SaveScreenshot(LPCTSTR sFileName)
 {
     ASSERT(sFileName != NULL);
     ASSERT(m_bits != NULL);
 
-    // Create file
-    HANDLE hFile = ::CreateFile(sFileName,
-            GENERIC_WRITE, FILE_SHARE_READ, NULL,
-            CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    //TODO: Check if hFile == INVALID_HANDLE_VALUE
+    DWORD* pBits = (DWORD*) ::malloc(BK_SCREEN_WIDTH * BK_SCREEN_HEIGHT * 4);
+    const DWORD* colors = Emulator_GetPalette(m_ScreenMode);
+    Emulator_PrepareScreenRGB32(pBits, m_ScreenMode);
 
-    BITMAPFILEHEADER hdr;
-    ::ZeroMemory(&hdr, sizeof(hdr));
-    hdr.bfType = 0x4d42;  // "BM"
-    BITMAPINFOHEADER bih;
-    ::ZeroMemory(&bih, sizeof(bih));
-    bih.biSize = sizeof( BITMAPINFOHEADER );
-    bih.biWidth = m_cxScreenWidth;
-    bih.biHeight = m_cyScreenHeight;
-    bih.biSizeImage = bih.biWidth * bih.biHeight * 4;
-    bih.biPlanes = 1;
-    bih.biBitCount = 32;
-    bih.biCompression = BI_RGB;
-    bih.biXPelsPerMeter = bih.biXPelsPerMeter = 2000;
-    hdr.bfSize = (DWORD) sizeof(BITMAPFILEHEADER) + bih.biSize + bih.biSizeImage;
-    hdr.bfOffBits = (DWORD) sizeof(BITMAPFILEHEADER) + bih.biSize;
+    LPCTSTR sFileNameExt = _tcsrchr(sFileName, _T('.'));
+    BOOL result = FALSE;
+    if (sFileNameExt != NULL && _tcsicmp(sFileNameExt, _T(".png")) == 0)
+        result = PngFile_SaveScreenshot(pBits, colors, sFileName);
+    else
+        result = BmpFile_SaveScreenshot(pBits, colors, sFileName);
 
-    DWORD dwBytesWritten = 0;
+    ::free(pBits);
 
-    WriteFile(hFile, &hdr, sizeof(BITMAPFILEHEADER), &dwBytesWritten, NULL);
-    //TODO: Check if dwBytesWritten != sizeof(BITMAPFILEHEADER)
-    WriteFile(hFile, &bih, sizeof(BITMAPINFOHEADER), &dwBytesWritten, NULL);
-    //TODO: Check if dwBytesWritten != sizeof(BITMAPINFOHEADER)
-    WriteFile(hFile, m_bits, bih.biSizeImage, &dwBytesWritten, NULL);
-    //TODO: Check if dwBytesWritten != bih.biSizeImage
-
-    // Close file
-    CloseHandle(hFile);
+    return result;
 }
 
 

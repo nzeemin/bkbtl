@@ -344,6 +344,14 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath=".\util\BitmapFile.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\util\BitmapFile.h"
+			>
+		</File>
+		<File
 			RelativePath=".\BKBTL.cpp"
 			>
 		</File>
