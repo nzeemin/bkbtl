@@ -141,6 +141,10 @@ LRESULT CALLBACK MemoryViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
         return (LRESULT) MemoryView_OnMouseWheel(wParam, lParam);
     case WM_VSCROLL:
         return (LRESULT) MemoryView_OnVScroll(wParam, lParam);
+    case WM_SETFOCUS:
+    case WM_KILLFOCUS:
+        ::InvalidateRect(hWnd, NULL, TRUE);
+        break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -163,7 +167,7 @@ void MemoryView_OnDraw(HDC hdc)
     m_cyLineMemory = cyLine;
 
     const TCHAR* ADDRESS_LINE = _T(" address  0      2      4      6      10     12     14     16");
-    TextOut(hdc, 0, 0, ADDRESS_LINE, (int) wcslen(ADDRESS_LINE));
+    TextOut(hdc, 0, 0, ADDRESS_LINE, (int) _tcslen(ADDRESS_LINE));
 
     RECT rcClip;
     GetClipBox(hdc, &rcClip);
@@ -237,6 +241,14 @@ void MemoryView_OnDraw(HDC hdc)
     SetBkColor(hdc, colorBkOld);
     SelectObject(hdc, hOldFont);
     DeleteObject(hFont);
+
+    if (::GetFocus() == m_hwndMemoryViewer)
+    {
+        RECT rcFocus = rcClient;
+        rcFocus.top += cyLine;
+        rcFocus.right = cxChar * (63 + 22);
+        DrawFocusRect(hdc, &rcFocus);
+    }
 }
 
 LPCTSTR MemoryView_GetMemoryModeName()

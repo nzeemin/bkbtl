@@ -38,7 +38,7 @@ WORD m_wDisasmBaseAddr = 0;
 WORD m_wDisasmNextBaseAddr = 0;
 
 void DisasmView_DoDraw(HDC hdc);
-void DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x, int y);
+int  DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x, int y);
 BOOL DisasmView_OnKeyDown(WPARAM vkey, LPARAM lParam);
 void DisasmView_SetBaseAddr(WORD base);
 void DisasmView_DoSubtitles();
@@ -147,6 +147,10 @@ LRESULT CALLBACK DisasmViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
         break;
     case WM_KEYDOWN:
         return (LRESULT) DisasmView_OnKeyDown(wParam, lParam);
+    case WM_SETFOCUS:
+    case WM_KILLFOCUS:
+        ::InvalidateRect(hWnd, NULL, TRUE);
+        break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -417,12 +421,24 @@ void DisasmView_DoDraw(HDC hdc)
 
     // Draw disasseble for the current processor
     WORD prevPC = g_wEmulatorPrevCpuPC;
-    DisasmView_DrawDisassemble(hdc, pDisasmPU, m_wDisasmBaseAddr, prevPC, 0, 2 + 0 * cyLine);
+    int yFocus = DisasmView_DrawDisassemble(hdc, pDisasmPU, m_wDisasmBaseAddr, prevPC, 0, 2 + 0 * cyLine);
 
 	SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
     SelectObject(hdc, hOldFont);
     DeleteObject(hFont);
+
+    if (::GetFocus() == m_hwndDisasmViewer)
+    {
+        RECT rcFocus;
+        GetClientRect(m_hwndDisasmViewer, &rcFocus);
+        if (yFocus >= 0)
+        {
+            rcFocus.top = yFocus;
+            rcFocus.bottom = yFocus + cyLine;
+        }
+        DrawFocusRect(hdc, &rcFocus);
+    }
 }
 
 DisasmSubtitleItem* DisasmView_FindSubtitle(WORD address, int typemask)
@@ -438,8 +454,9 @@ DisasmSubtitleItem* DisasmView_FindSubtitle(WORD address, int typemask)
     return NULL;
 }
 
-void DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x, int y)
+int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x, int y)
 {
+    int result = -1;
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
     COLORREF colorText = GetSysColor(COLOR_WINDOWTEXT);
 
@@ -488,7 +505,10 @@ void DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD prev
 
         // Current position
         if (address == current)
+        {
             TextOut(hdc, x + 1 * cxChar, y, _T("  >"), 3);
+            result = y;  // Remember line for the focus rect
+        }
         if (address == proccurrent)
         {
             BOOL okPCchanged = DebugView_IsRegisterChanged(7);
@@ -553,6 +573,8 @@ void DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD prev
     }
 
     m_wDisasmNextBaseAddr = wNextBaseAddr;
+    
+    return result;
 }
 
 
