@@ -92,7 +92,10 @@ void CMotherboard::Reset ()
     m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0200;
     m_Port177716mem = 0000002;
     m_Port177716tap = 0;
-    m_timer = m_timerreload = m_timerdivider = 0;
+    
+    m_timer = 0177777;
+    m_timerdivider = 0;
+    m_timerreload = 011000;
     m_timerflags = 0177400;
 
     ResetDevices();
@@ -238,9 +241,9 @@ void CMotherboard::ExecuteCPU()
 
 void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437.5 Hz = 42.67 мкс (BK-0010)
 {
-    if ((m_timerflags & 1) == 1)  // Timer is off, nothing to do
+    if ((m_timerflags & 1) == 1)  // STOP, the timer stopped
         return;
-    if ((m_timerflags & 16) == 0)  // Not RUN
+    if ((m_timerflags & 16) == 0)  // Not RUN, the timer paused
         return;
 
     m_timerdivider++;
@@ -261,35 +264,32 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437
             flag = (m_timerdivider >= 64);
             break;
     }
-
     if (!flag)  // Nothing happened
         return; 
 
     m_timerdivider = 0;
     m_timer--;
-    if (m_timer != 0)
-        return;
+    if (m_timer == 0)
+    {
+        if ((m_timerflags & 2) == 0)  // If not WRAPAROUND
+        {
+            if ((m_timerflags & 8) != 0)  // If ONESHOT and not WRAPAROUND then reset RUN bit
+                m_timerflags &= ~16;
 
-    if ((m_timerflags & 4) != 0)  // If EXPENABLE
-    {
-        m_timerflags |= 128;  // Set EXPIRY bit
-        //DebugPrint(_T("Timer\r\n"));
-    }
-    if (m_timerflags & 8 && (m_timerflags & 2) == 0)  // If ONESHOT and not WRAPAROUND then reset RUN bit
-        m_timerflags &= ~16;
-    else
-    {
-        if ((m_timerflags & 2) == 0)  // If not WRAPAROUND then reload
             m_timer = m_timerreload;
+        }
+
+        if ((m_timerflags & 4) != 0)  // If EXPENABLE
+            m_timerflags |= 128;  // Set EXPIRY bit
     }
 }
 
-void CMotherboard::SetTimerReload(WORD val)	 // Sets timer reload value
+void CMotherboard::SetTimerReload(WORD val)	 // Sets timer reload value, write to port 177706
 {
     //DebugPrintFormat(_T("SetTimerReload %06o\r\n"), val);
     m_timerreload = val;
 }
-void CMotherboard::SetTimerState(WORD val) // Sets timer state
+void CMotherboard::SetTimerState(WORD val) // Sets timer state, write to port 177712
 {
     //DebugPrintFormat(_T("SetTimerState %06o\r\n"), val);
     if ((val & 1) && ((m_timerflags & 1) == 0) ||
@@ -752,18 +752,10 @@ WORD CMotherboard::GetPortWord(WORD address)
     case 0177706:  // System Timer counter start value -- регистр установки таймера
         return m_timerreload;
     case 0177710:  // System Timer Counter -- регистр счетчика таймера
-        {
-            if (m_timerflags & 0200)
-                m_timerflags &= ~0200;  // Clear it
-            return m_timer;
-        }
+        return m_timer;
     case 0177712:  // System Timer Manage -- регистр управления таймера
-        {
-            WORD res = m_timerflags;
-            //m_timerflags &= ~010;  // Clear overflow
-            //m_timerflags &= ~040;  // Clear external int
-            return res;
-        }
+        return m_timerflags;
+
     case 0177660:  // Keyboard status register
         return m_Port177660;
     case 0177662:  // Keyboard register
