@@ -196,9 +196,9 @@ void DebugView_DoDraw(HDC hdc)
     WORD* arrR = m_wDebugCpuR;
     BOOL* arrRChanged = m_okDebugCpuRChanged;
 
-    TextOut(hdc, cxChar * 1, 2 + 1 * cyLine, _T("CPU"), 3);
+    //TextOut(hdc, cxChar * 1, 2 + 1 * cyLine, _T("CPU"), 3);
 
-	DebugView_DrawProcessor(hdc, pDebugPU, cxChar * 6, 2 + 1 * cyLine, arrR, arrRChanged);
+	DebugView_DrawProcessor(hdc, pDebugPU, cxChar * 2, 2 + 1 * cyLine, arrR, arrRChanged);
 
     // Draw stack for the current processor
     DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, 35 * cxChar, 2 + 0 * cyLine);
@@ -233,7 +233,7 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
     COLORREF colorText = GetSysColor(COLOR_WINDOWTEXT);
 
-    DebugView_DrawRectangle(hdc, x - cxChar, y - 8, x + cxChar + 26 * cxChar, y + 8 + cyLine * 12);
+    DebugView_DrawRectangle(hdc, x - cxChar, y - 8, x + cxChar + 31 * cxChar, y + 8 + cyLine * 12);
 
     // Registers
     for (int r = 0; r < 8; r++) {
@@ -244,7 +244,8 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
 
         WORD value = arrR[r]; //pProc->GetReg(r);
         DrawOctalValue(hdc, x + cxChar * 3, y + r * cyLine, value);
-        DrawBinaryValue(hdc, x + cxChar * 10, y + r * cyLine, value);
+        DrawHexValue(hdc, x + cxChar * 10, y + r * cyLine, value);
+        DrawBinaryValue(hdc, x + cxChar * 15, y + r * cyLine, value);
     }
     ::SetTextColor(hdc, colorText);
 
@@ -253,8 +254,9 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
     TextOut(hdc, x, y + 9 * cyLine, _T("PS"), 2);
     WORD psw = arrR[8]; // pProc->GetPSW();
     DrawOctalValue(hdc, x + cxChar * 3, y + 9 * cyLine, psw);
-    TextOut(hdc, x + cxChar * 10, y + 8 * cyLine, _T("       HP  TNZVC"), 16);
-    DrawBinaryValue(hdc, x + cxChar * 10, y + 9 * cyLine, psw);
+    DrawHexValue(hdc, x + cxChar * 10, y + 9 * cyLine, psw);
+    TextOut(hdc, x + cxChar * 15, y + 8 * cyLine, _T("       HP  TNZVC"), 16);
+    DrawBinaryValue(hdc, x + cxChar * 15, y + 9 * cyLine, psw);
 
     ::SetTextColor(hdc, colorText);
 

@@ -125,7 +125,7 @@ BOOL MainWindow_InitToolbar()
     addbitmap.nID = IDB_TOOLBAR;
     SendMessage(m_hwndToolbar, TB_ADDBITMAP, 2, (LPARAM) &addbitmap);
 
-    TBBUTTON buttons[13];
+    TBBUTTON buttons[11];
     ZeroMemory(buttons, sizeof(buttons));
     for (int i = 0; i < sizeof(buttons) / sizeof(TBBUTTON); i++)
     {
@@ -141,36 +141,34 @@ BOOL MainWindow_InitToolbar()
     buttons[1].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
     buttons[1].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Reset"));
     buttons[2].fsStyle = BTNS_SEP;
-    buttons[3].idCommand = ID_VIEW_RGBSCREEN;
-    buttons[3].iBitmap = ToolbarImageColorScreen;
+    buttons[3].idCommand = ID_EMULATOR_FLOPPY0;
+    buttons[3].iBitmap = ToolbarImageFloppySlot;
     buttons[3].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
-    buttons[3].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Color"));
-    buttons[4].fsStyle = BTNS_SEP;
-    buttons[5].idCommand = ID_EMULATOR_SOUND;
-    buttons[5].iBitmap = 8;
+    buttons[3].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("A"));
+    buttons[4].idCommand = ID_EMULATOR_FLOPPY1;
+    buttons[4].iBitmap = ToolbarImageFloppySlot;
+    buttons[4].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
+    buttons[4].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("B"));
+    buttons[5].idCommand = ID_EMULATOR_FLOPPY2;
+    buttons[5].iBitmap = ToolbarImageFloppySlot;
     buttons[5].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
-    buttons[5].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Sound"));
-    buttons[6].fsStyle = BTNS_SEP;
-    buttons[7].idCommand = ID_EMULATOR_FLOPPY0;
-    buttons[7].iBitmap = ToolbarImageFloppySlot;
-    buttons[7].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
-    buttons[7].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("A"));
-    buttons[8].idCommand = ID_EMULATOR_FLOPPY1;
-    buttons[8].iBitmap = ToolbarImageFloppySlot;
+    buttons[5].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("C"));
+    buttons[6].idCommand = ID_EMULATOR_FLOPPY3;
+    buttons[6].iBitmap = ToolbarImageFloppySlot;
+    buttons[6].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
+    buttons[6].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("D"));
+    buttons[7].fsStyle = BTNS_SEP;
+    buttons[8].idCommand = ID_VIEW_RGBSCREEN;
+    buttons[8].iBitmap = ToolbarImageColorScreen;
     buttons[8].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
-    buttons[8].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("B"));
-    buttons[9].idCommand = ID_EMULATOR_FLOPPY2;
-    buttons[9].iBitmap = ToolbarImageFloppySlot;
+    buttons[8].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Color"));
+    buttons[9].idCommand = ID_EMULATOR_SOUND;
+    buttons[9].iBitmap = 8;
     buttons[9].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
-    buttons[9].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("C"));
-    buttons[10].idCommand = ID_EMULATOR_FLOPPY3;
-    buttons[10].iBitmap = ToolbarImageFloppySlot;
-    buttons[10].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
-    buttons[10].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("D"));
-    buttons[11].fsStyle = BTNS_SEP;
-    buttons[12].idCommand = ID_FILE_SCREENSHOT;
-    buttons[12].iBitmap = ToolbarImageScreenshot;
-    buttons[12].fsStyle = BTNS_BUTTON;
+    buttons[9].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Sound"));
+    buttons[10].idCommand = ID_FILE_SCREENSHOT;
+    buttons[10].iBitmap = ToolbarImageScreenshot;
+    buttons[10].fsStyle = BTNS_BUTTON;
 
     SendMessage(m_hwndToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons); 
 
@@ -556,7 +554,7 @@ void MainWindow_UpdateMenu()
     // Emulator|Run check
     CheckMenuItem(hMenu, ID_EMULATOR_RUN, (g_okEmulatorRunning ? MF_CHECKED : MF_UNCHECKED));
     SendMessage(m_hwndToolbar, TB_CHECKBUTTON, ID_EMULATOR_RUN, (g_okEmulatorRunning ? 1 : 0));
-    MainWindow_SetToolbarImage(ID_EMULATOR_RUN, g_okEmulatorRunning ? ToolbarImageRun : ToolbarImagePause);
+    //MainWindow_SetToolbarImage(ID_EMULATOR_RUN, g_okEmulatorRunning ? ToolbarImageRun : ToolbarImagePause);
     // View|Debug check
     CheckMenuItem(hMenu, ID_VIEW_TOOLBAR, (Settings_GetToolbar() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_DEBUG, (Settings_GetDebug() ? MF_CHECKED : MF_UNCHECKED));
