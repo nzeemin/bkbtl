@@ -92,6 +92,9 @@ void CreateDebugView(HWND hwndParent, int x, int y, int width, int height)
             WS_CHILD | WS_VISIBLE,
             0, 0, rcClient.right, rcClient.bottom,
             g_hwndDebug, NULL, g_hInst, NULL);
+
+    memset(m_wDebugCpuR, 255, sizeof(m_wDebugCpuR));
+    memset(m_okDebugCpuRChanged, 1, sizeof(m_okDebugCpuRChanged));
 }
 
 LRESULT CALLBACK DebugViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -287,7 +290,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
                 current + idx * 2 - 14, pProc->IsHaltMode(), okExec, &addrtype);
     }
 
-    WORD address = current - 10;
+    WORD address = current - 14;
     for (int index = 0; index < 14; index++) {  // Рисуем строки
         // Адрес
         DrawOctalValue(hdc, x + 4 * cxChar, y, address);
