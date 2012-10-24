@@ -28,6 +28,7 @@ CMotherboard::CMotherboard ()
     m_TapeWriteCallback = NULL;
     m_nTapeSampleRate = 0;
     m_SoundGenCallback = NULL;
+    m_TeletypeCallback = NULL;
 
     // Allocate memory for RAM and ROM
     m_pRAM = (BYTE*) ::malloc(128 * 1024);  ::memset(m_pRAM, 0, 128 * 1024);
@@ -89,7 +90,7 @@ void CMotherboard::Reset ()
     m_Port177662wr = 047400;
     m_Port177664 = 01330;
     m_Port177714in = m_Port177714out = 0;
-    m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0200;
+    m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0300;
     m_Port177716mem = 0000002;
     m_Port177716tap = 0;
     
@@ -408,7 +409,8 @@ BOOL CMotherboard::SystemFrame()
                 teletypeTxCount--;
                 if (teletypeTxCount == 0)  // Translation countdown finished - the byte translated
                 {
-                    (*m_TeletypeCallback)(m_Port177566 & 0xff);
+                    if (m_TeletypeCallback != NULL)
+                        (*m_TeletypeCallback)(m_Port177566 & 0xff);
                     m_Port177564 |= 0200;
                     if (m_Port177564 & 0100)
                     {
