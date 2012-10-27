@@ -31,7 +31,7 @@ CMotherboard::CMotherboard ()
     m_TeletypeCallback = NULL;
 
     // Allocate memory for RAM and ROM
-    m_pRAM = (BYTE*) ::malloc(128 * 1024);  ::memset(m_pRAM, 0, 128 * 1024);
+    m_pRAM = (BYTE*) ::malloc(128 * 1024);  //::memset(m_pRAM, 0, 128 * 1024);
     m_pROM = (BYTE*) ::malloc(64 * 1024);  ::memset(m_pROM, 0, 64 * 1024);
 
     SetConfiguration(BK_CONF_BK0010_BASIC);  // Default configuration
@@ -66,6 +66,19 @@ void CMotherboard::SetConfiguration(WORD conf)
     // Clean RAM/ROM
     ::memset(m_pRAM, 0, 128 * 1024);
     ::memset(m_pROM, 0, 64 * 1024);
+
+    // Pre-fill RAM with "uninitialized" values
+    WORD * pMemory = (WORD *) m_pRAM;
+	WORD val = 0;
+	BYTE flag = 0;
+	for (DWORD i = 0; i < 128 * 1024; i += 2, flag--)
+	{
+		*pMemory = val;  pMemory++;
+		if (flag == 192)
+			flag = 0;
+        else
+		    val = ~val;
+	}
 
     if (m_pFloppyCtl == NULL && (conf & BK_COPT_FDD) != 0)
     {
