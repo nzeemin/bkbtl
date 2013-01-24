@@ -17,8 +17,8 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 
 
-const TCHAR m_Settings_RegKeyName[] = _T("Software\\BKBTL");
-HKEY m_Settings_RegKey = (HKEY) INVALID_HANDLE_VALUE;
+const TCHAR m_Settings_IniAppName[] = _T("BKBTL");
+TCHAR m_Settings_IniPath[MAX_PATH];
 
 BOOL m_Settings_Toolbar = TRUE;
 BOOL m_Settings_Debug = FALSE;
@@ -33,7 +33,7 @@ BOOL m_Settings_Covox = FALSE;
 BOOL m_Settings_Covox_Valid = FALSE;
 BOOL m_Settings_Joystick = FALSE;
 BOOL m_Settings_Joystick_Valid = FALSE;
-BOOL m_Settings_Keyboard = FALSE;
+BOOL m_Settings_Keyboard = TRUE;
 BOOL m_Settings_Keyboard_Valid = FALSE;
 BOOL m_Settings_Tape = FALSE;
 BOOL m_Settings_Tape_Valid = FALSE;
@@ -44,59 +44,52 @@ BOOL m_Settings_Tape_Valid = FALSE;
 
 void Settings_Init()
 {
-    LONG lResult;
-    lResult = ::RegCreateKeyEx(HKEY_CURRENT_USER, m_Settings_RegKeyName, 0, NULL, 0, KEY_ALL_ACCESS,
-            NULL, &m_Settings_RegKey, NULL);
+    // Prepare m_Settings_IniPath: get .exe file path and change extension to .ini
+    ::GetModuleFileName(GetModuleHandle(NULL), m_Settings_IniPath, MAX_PATH);
+    TCHAR* pExt = m_Settings_IniPath + _tcslen(m_Settings_IniPath) - 3;
+    *pExt++ = _T('i');
+    *pExt++ = _T('n');
+    *pExt++ = _T('i');
 }
 void Settings_Done()
 {
-    ::RegCloseKey(m_Settings_RegKey);
 }
 
 BOOL Settings_SaveStringValue(LPCTSTR sName, LPCTSTR sValue)
 {
-    LONG lResult;
-    if (sValue == NULL)
-        lResult = ::RegSetValueEx(m_Settings_RegKey, sName, 0, REG_SZ, (const BYTE*) "", sizeof(TCHAR));
-    else
-        lResult = ::RegSetValueEx(m_Settings_RegKey, sName, 0, REG_SZ, (const BYTE*) sValue,
-                (lstrlen(sValue) + 1) * sizeof(TCHAR));
-    return (lResult == ERROR_SUCCESS);
+    BOOL result = WritePrivateProfileString(
+        m_Settings_IniAppName, sName, sValue, m_Settings_IniPath);
+    return result;
 }
 BOOL Settings_LoadStringValue(LPCTSTR sName, LPTSTR sBuffer, int nBufferLengthChars)
 {
-    DWORD dwType;
-    DWORD dwBufLength = nBufferLengthChars * sizeof(TCHAR);
-    LONG lResult;
-    lResult = ::RegQueryValueEx(m_Settings_RegKey, sName, NULL, &dwType, (LPBYTE) sBuffer, &dwBufLength);
-    if (lResult == ERROR_SUCCESS && dwType == REG_SZ)
+    DWORD result = GetPrivateProfileString(
+        m_Settings_IniAppName, sName, NULL, sBuffer, nBufferLengthChars, m_Settings_IniPath);
+    if (result > 0)
         return TRUE;
-    else
-    {
-        sBuffer[0] = '\0';
-        return FALSE;
-    }
+
+    sBuffer[0] = _T('\0');
+    return FALSE;
 }
 
 BOOL Settings_SaveDwordValue(LPCTSTR sName, DWORD dwValue)
 {
-    LONG lResult;
-    lResult = ::RegSetValueEx(m_Settings_RegKey, sName, 0, REG_DWORD, (const BYTE*) (&dwValue), sizeof(DWORD));
-    return (lResult == ERROR_SUCCESS);
+    TCHAR buffer[12];
+    wsprintf(buffer, _T("%lu"), dwValue);
+
+    return Settings_SaveStringValue(sName, buffer);
 }
 BOOL Settings_LoadDwordValue(LPCTSTR sName, DWORD* dwValue)
 {
-    DWORD dwType;
-    DWORD dwBufLength = sizeof(DWORD);
-    LONG lResult;
-    lResult = ::RegQueryValueEx(m_Settings_RegKey, sName, NULL, &dwType, (LPBYTE) dwValue, &dwBufLength);
-    if (lResult == ERROR_SUCCESS && dwType == REG_DWORD)
-        return TRUE;
-    else
-    {
-        *dwValue = 0;
+    TCHAR buffer[12];
+    if (!Settings_LoadStringValue(sName, buffer, 12))
         return FALSE;
-    }
+
+    int result = swscanf(buffer, _T("%lu"), dwValue);
+    if (result == 0)
+        return FALSE;
+
+    return TRUE;
 }
 
 void Settings_SetConfiguration(int configuration)
@@ -105,7 +98,7 @@ void Settings_SetConfiguration(int configuration)
 }
 int Settings_GetConfiguration()
 {
-    DWORD dwValue;
+    DWORD dwValue = 0;
     Settings_LoadDwordValue(_T("Configuration"), &dwValue);
     return (int) dwValue;
 }
@@ -142,7 +135,7 @@ void Settings_SetScreenViewMode(int mode)
 }
 int Settings_GetScreenViewMode()
 {
-    DWORD dwValue;
+    DWORD dwValue = 0;
     Settings_LoadDwordValue(_T("ScreenViewMode"), &dwValue);
     return (int) dwValue;
 }
@@ -153,7 +146,7 @@ void Settings_SetScreenHeightMode(int mode)
 }
 int Settings_GetScreenHeightMode()
 {
-    DWORD dwValue;
+    DWORD dwValue = 0;
     Settings_LoadDwordValue(_T("ScreenHeightMode"), &dwValue);
     return (int) dwValue;
 }
@@ -180,9 +173,6 @@ BOOL Settings_GetDebug()
     if (!m_Settings_Debug_Valid)
     {
         DWORD dwValue = (DWORD) FALSE;
-#if !defined(PRODUCT)
-        dwValue = (DWORD) TRUE;
-#endif
         Settings_LoadDwordValue(_T("Debug"), &dwValue);
         m_Settings_Debug = (BOOL) dwValue;
         m_Settings_Debug_Valid = TRUE;
@@ -301,7 +291,7 @@ BOOL Settings_GetKeyboard()
 {
     if (!m_Settings_Keyboard_Valid)
     {
-        DWORD dwValue = (DWORD) FALSE;
+        DWORD dwValue = (DWORD) TRUE;
         Settings_LoadDwordValue(_T("Keyboard"), &dwValue);
         m_Settings_Keyboard = (BOOL) dwValue;
         m_Settings_Keyboard_Valid = TRUE;
