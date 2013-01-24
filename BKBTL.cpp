@@ -163,9 +163,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     Joystick_SelectJoystick(Settings_GetJoystick());
     if (!Emulator_Init())
         return FALSE;
-    Emulator_SetSound(Settings_GetSound());
-    if (!Emulator_InitConfiguration((BKConfiguration)Settings_GetConfiguration()))
+
+    int conf = Settings_GetConfiguration();
+    if (conf == 0) conf = BK_CONF_BK0010_BASIC;
+    if (!Emulator_InitConfiguration((BKConfiguration)conf))
         return FALSE;
+
+    Emulator_SetSound(Settings_GetSound());
     Emulator_SetCovox(Settings_GetCovox());
 
     // Create main window    
