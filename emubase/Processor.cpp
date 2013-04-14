@@ -284,7 +284,7 @@ void CProcessor::Execute()
             BOOL intrMode;  // TRUE = HALT mode interrupt, FALSE = USER mode interrupt
             if (m_HALTrq)  // HALT command
             {
-                intrVector = 0004;  intrMode = TRUE;
+                intrVector = 0002;  intrMode = TRUE;
                 m_HALTrq = FALSE;
             }
             else if (m_BPT_rq)  // BPT command
