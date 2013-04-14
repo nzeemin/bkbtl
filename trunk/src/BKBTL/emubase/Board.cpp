@@ -67,18 +67,18 @@ void CMotherboard::SetConfiguration(WORD conf)
     ::memset(m_pRAM, 0, 128 * 1024);
     ::memset(m_pROM, 0, 64 * 1024);
 
-    // Pre-fill RAM with "uninitialized" values
-    WORD * pMemory = (WORD *) m_pRAM;
-	WORD val = 0;
-	BYTE flag = 0;
-	for (DWORD i = 0; i < 128 * 1024; i += 2, flag--)
-	{
-		*pMemory = val;  pMemory++;
-		if (flag == 192)
-			flag = 0;
-        else
-		    val = ~val;
-	}
+    //// Pre-fill RAM with "uninitialized" values
+    //WORD * pMemory = (WORD *) m_pRAM;
+    //WORD val = 0;
+    //BYTE flag = 0;
+    //for (DWORD i = 0; i < 128 * 1024; i += 2, flag--)
+    //{
+    //    *pMemory = val;  pMemory++;
+    //    if (flag == 192)
+    //        flag = 0;
+    //    else
+    //        val = ~val;
+    //}
 
     if (m_pFloppyCtl == NULL && (conf & BK_COPT_FDD) != 0)
     {

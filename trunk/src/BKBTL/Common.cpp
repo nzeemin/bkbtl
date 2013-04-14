@@ -77,20 +77,42 @@ const LPCTSTR TRACELOG_NEWLINE = _T("\r\n");
 
 HANDLE Common_LogFile = NULL;
 
-void DebugLog(LPCTSTR message)
+void DebugLogCreateFile()
 {
     if (Common_LogFile == NULL)
     {
-        // Create file
         Common_LogFile = CreateFile(TRACELOG_FILE_NAME,
                 GENERIC_WRITE, FILE_SHARE_READ, NULL,
                 CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     }
+}
+
+void DebugLogClear()
+{
+    DebugLogCreateFile();
+
+    if (Common_LogFile != NULL)
+    {
+        // Trunkate to zero length
+        ::SetFilePointer(Common_LogFile, 0, 0, 0);
+        ::SetEndOfFile(Common_LogFile);
+    }
+}
+
+void DebugLog(LPCTSTR message)
+{
+    DebugLogCreateFile();
+
     SetFilePointer(Common_LogFile, 0, NULL, FILE_END);
 
     DWORD dwLength = lstrlen(message) * sizeof(TCHAR);
+
+    char ascii[256];  *ascii = 0;
+    WideCharToMultiByte(CP_ACP, 0, message, dwLength, ascii, 256, NULL, NULL);
+
     DWORD dwBytesWritten = 0;
-    WriteFile(Common_LogFile, message, dwLength, &dwBytesWritten, NULL);
+    //WriteFile(Common_LogFile, message, dwLength, &dwBytesWritten, NULL);
+    WriteFile(Common_LogFile, ascii, strlen(ascii), &dwBytesWritten, NULL);
 
     //dwLength = lstrlen(TRACELOG_NEWLINE) * sizeof(TCHAR);
     //WriteFile(Common_LogFile, TRACELOG_NEWLINE, dwLength, &dwBytesWritten, NULL);
