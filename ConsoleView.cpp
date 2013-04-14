@@ -60,7 +60,7 @@ void ConsoleView_RegisterClass()
     wcex.hInstance		= g_hInst;
     wcex.hIcon			= NULL;
     wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground	= (HBRUSH)(COLOR_BTNFACE+1);
+    wcex.hbrBackground	= (HBRUSH)(COLOR_BTNFACE + 1);
     wcex.lpszMenuName	= NULL;
     wcex.lpszClassName	= CLASSNAME_CONSOLEVIEW;
     wcex.hIconSm		= NULL;
@@ -78,7 +78,7 @@ void CreateConsoleView(HWND hwndParent, int x, int y, int width, int height)
             WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN,
             x, y, width, height,
             hwndParent, NULL, g_hInst, NULL);
-	SetWindowText(g_hwndConsole, _T("Debug Console"));
+    SetWindowText(g_hwndConsole, _T("Debug Console"));
 
     // ToolWindow subclassing
     m_wndprocConsoleToolWindow = (WNDPROC) LongToPtr( SetWindowLongPtr(
@@ -131,7 +131,7 @@ void ConsoleView_AdjustWindowLayout()
 LRESULT CALLBACK ConsoleViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
-	LRESULT lResult;
+    LRESULT lResult;
     switch (message)
     {
     case WM_DESTROY:
@@ -145,7 +145,7 @@ LRESULT CALLBACK ConsoleViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
     case WM_SIZE:
         lResult = CallWindowProc(m_wndprocConsoleToolWindow, hWnd, message, wParam, lParam);
         ConsoleView_AdjustWindowLayout();
-		return lResult;
+        return lResult;
     default:
         return CallWindowProc(m_wndprocConsoleToolWindow, hWnd, message, wParam, lParam);
     }
@@ -229,24 +229,24 @@ void PrintRegister(LPCTSTR strName, WORD value)
 
 void SaveMemoryDump(CProcessor *pProc)
 {
-	BYTE buf[65536];
-	for(int i = 0; i < 65536; i++)
-	{
-		buf[i] = g_pBoard->GetByte(i, 1);
-	}
+    BYTE buf[65536];
+    for (int i = 0; i < 65536; i++)
+    {
+        buf[i] = g_pBoard->GetByte(i, 1);
+    }
 
     // Create file
-	HANDLE file;
+    HANDLE file;
     file = CreateFile(_T("memdump.bin"),
             GENERIC_WRITE, FILE_SHARE_READ, NULL,
             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    
+
     //SetFilePointer(Common_LogFile, 0, NULL, FILE_END);
 
     DWORD dwLength = 65536;
     DWORD dwBytesWritten = 0;
     WriteFile(file, buf, dwLength, &dwBytesWritten, NULL);
-	CloseHandle(file);
+    CloseHandle(file);
 }
 
 // Print memory dump
@@ -260,21 +260,23 @@ void PrintMemoryDump(CProcessor* pProc, WORD address, int lines)
     {
         WORD dump[8];
         for (int i = 0; i < 8; i++)
-            dump[i] = g_pBoard->GetWord(address + i*2, okHaltMode);
+            dump[i] = g_pBoard->GetWord(address + i * 2, okHaltMode);
 
-        TCHAR buffer[2+6+2 + 7*8 + 1 + 16 + 1 + 2];
+        TCHAR buffer[2 + 6 + 2 + 7 * 8 + 1 + 16 + 1 + 2];
         TCHAR* pBuf = buffer;
         *pBuf = _T(' ');  pBuf++;
         *pBuf = _T(' ');  pBuf++;
         PrintOctalValue(pBuf, address);  pBuf += 6;
         *pBuf = _T(' ');  pBuf++;
         *pBuf = _T(' ');  pBuf++;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++)
+        {
             PrintOctalValue(pBuf, dump[i]);  pBuf += 6;
             *pBuf = _T(' ');  pBuf++;
         }
         *pBuf = _T(' ');  pBuf++;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++)
+        {
             WORD word = dump[i];
             BYTE ch1 = LOBYTE(word);
             TCHAR wch1 = Translate_BK_Unicode(ch1);
@@ -304,7 +306,7 @@ int PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okSh
     WORD memory[nWindowSize + 2];
     int addrtype;
     for (int i = 0; i < nWindowSize + 2; i++)
-        memory[i] = g_pBoard->GetWordView(address + i*2, okHaltMode, TRUE, &addrtype);
+        memory[i] = g_pBoard->GetWordView(address + i * 2, okHaltMode, TRUE, &addrtype);
 
     TCHAR bufaddr[7];
     TCHAR bufvalue[7];
@@ -312,7 +314,8 @@ int PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okSh
 
     int lastLength = 0;
     int length = 0;
-    for (int index = 0; index < nWindowSize; index++) {  // Рисуем строки
+    for (int index = 0; index < nWindowSize; index++)    // Рисуем строки
+    {
         PrintOctalValue(bufaddr, address);
         WORD value = memory[index];
         PrintOctalValue(bufvalue, value);
@@ -373,13 +376,12 @@ void ConsoleView_ShowHelp()
             _T("  m          Memory dump at current address\r\n")
             _T("  mXXXXXX    Memory dump at address XXXXXX\r\n")
             _T("  mrN        Memory dump at address from register N; N=0..7\r\n")
-            _T("  r          Show register values\r\n") 
-            _T("  rN         Show value of register N; N=0..7,ps\r\n") 
-            _T("  rN XXXXXX  Set register N to value XXXXXX; N=0..7,ps\r\n") 
-            _T("  s          Step Into; executes one instruction\r\n") 
-            _T("  so         Step Over; executes and stops after the current instruction\r\n") 
-            _T("  u          Save memory dump to file memdumpXPU.bin\r\n")
-        );
+            _T("  r          Show register values\r\n")
+            _T("  rN         Show value of register N; N=0..7,ps\r\n")
+            _T("  rN XXXXXX  Set register N to value XXXXXX; N=0..7,ps\r\n")
+            _T("  s          Step Into; executes one instruction\r\n")
+            _T("  so         Step Over; executes and stops after the current instruction\r\n")
+            _T("  u          Save memory dump to file memdumpXPU.bin\r\n"));
 }
 
 void DoConsoleCommand()
@@ -472,7 +474,7 @@ void DoConsoleCommand()
             PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
 
             //pProc->Execute();
-		    g_pBoard->DebugTicks();
+            g_pBoard->DebugTicks();
 
             okUpdateAllViews = TRUE;
         }
@@ -505,9 +507,9 @@ void DoConsoleCommand()
                 ConsoleView_Print(MESSAGE_UNKNOWN_COMMAND);
         }
         break;
-	case _T('u'):
-		SaveMemoryDump(pProc);
-		break;
+    case _T('u'):
+        SaveMemoryDump(pProc);
+        break;
     case _T('m'):
         if (command[1] == 0)  // "m" - dump memory at current address
         {
@@ -533,8 +535,8 @@ void DoConsoleCommand()
         else
             ConsoleView_Print(MESSAGE_UNKNOWN_COMMAND);
         break;
-    //TODO: "mXXXXXX YYYYYY" - set memory cell at XXXXXX to value YYYYYY
-    //TODO: "mrN YYYYYY" - set memory cell at address from rN to value YYYYYY
+        //TODO: "mXXXXXX YYYYYY" - set memory cell at XXXXXX to value YYYYYY
+        //TODO: "mrN YYYYYY" - set memory cell at address from rN to value YYYYYY
     case _T('g'):
         if (command[1] == 0)
         {
@@ -559,7 +561,8 @@ void DoConsoleCommand()
 
     PrintConsolePrompt();
 
-    if (okUpdateAllViews) {
+    if (okUpdateAllViews)
+    {
         MainWindow_UpdateAllViews();
     }
 }

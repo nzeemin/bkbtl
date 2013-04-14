@@ -78,7 +78,7 @@ void TeletypeView_AdjustWindowLayout()
 LRESULT CALLBACK TeletypeViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
-	LRESULT lResult;
+    LRESULT lResult;
     switch (message)
     {
     case WM_DESTROY:
@@ -87,7 +87,7 @@ LRESULT CALLBACK TeletypeViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     case WM_SIZE:
         lResult = CallWindowProc(m_wndprocTeletypeToolWindow, hWnd, message, wParam, lParam);
         TeletypeView_AdjustWindowLayout();
-		return lResult;
+        return lResult;
     default:
         return CallWindowProc(m_wndprocTeletypeToolWindow, hWnd, message, wParam, lParam);
     }

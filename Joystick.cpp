@@ -86,7 +86,7 @@ UINT Joystick_GetJoystickState()
     if (joyinfo.wButtons & JOY_BUTTON2) state |= JOYSTICK_BUTTON2;
     if (joyinfo.wButtons & JOY_BUTTON3) state |= JOYSTICK_BUTTON3;
     if (joyinfo.wButtons & JOY_BUTTON4) state |= JOYSTICK_BUTTON4;
-    
+
     // Position
     UINT xCenter = (g_JoystickCaps.wXmax - g_JoystickCaps.wXmin) / 2 + g_JoystickCaps.wXmin;
     UINT xLeft = (g_JoystickCaps.wXmin + xCenter) / 2;

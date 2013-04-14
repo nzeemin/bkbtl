@@ -67,7 +67,8 @@ struct ScreenModeStruct
     int height;
     PREPARE_SCREEN_CALLBACK callback;
 }
-static ScreenModeReference[] = {
+static ScreenModeReference[] =
+{
     { 512, 256, Emulator_PrepareScreenBW512x256 },
     { 512, 256, Emulator_PrepareScreenColor512x256 },
     { 512, 384, Emulator_PrepareScreenBW512x384 },
@@ -94,15 +95,18 @@ const LPCTSTR FILENAME_BKROM_BK11M_MSTD = _T("b11m_mstd.rom");
 //////////////////////////////////////////////////////////////////////
 // Colors
 
-const DWORD ScreenView_BWPalette[4] = {
+const DWORD ScreenView_BWPalette[4] =
+{
     0x000000, 0xFFFFFF, 0x000000, 0xFFFFFF
 };
 
-const DWORD ScreenView_ColorPalette[4] = {
+const DWORD ScreenView_ColorPalette[4] =
+{
     0x000000, 0x0000FF, 0x00FF00, 0xFF0000
 };
 
-const DWORD ScreenView_ColorPalettes[16][4] = {
+const DWORD ScreenView_ColorPalettes[16][4] =
+{
     //                                     Palette#     01           10          11
     0x000000, 0x0000FF, 0x00FF00, 0xFF0000,  // 00    синий   |   зеленый  |  красный
     0x000000, 0xFFFF00, 0xFF00FF, 0xFF0000,  // 01   желтый   |  сиреневый |  красный
@@ -118,7 +122,7 @@ const DWORD ScreenView_ColorPalettes[16][4] = {
     0x000000, 0x00FFFF, 0xFFFF00, 0xFF0000,  // 11   голубой  |   желтый   |  красный
     0x000000, 0xFF0000, 0x00FF00, 0x00FFFF,  // 12   красный  |   зеленый  |  голубой
     0x000000, 0x00FFFF, 0xFFFF00, 0xFFFFFF,  // 13   голубой  |   желтый   |   белый
-    0x000000, 0xFFFF00, 0x00FF00, 0xFFFFFF,  // 14   желтый   |   зеленый  |   белый 
+    0x000000, 0xFFFF00, 0x00FF00, 0xFFFFFF,  // 14   желтый   |   зеленый  |   белый
     0x000000, 0x00FFFF, 0x00FF00, 0xFFFFFF,  // 15   голубой  |   зеленый  |   белый
 };
 
@@ -674,7 +678,7 @@ void CALLBACK Emulator_PrepareScreenBW512x384(const BYTE* pVideoBuffer, int okSm
             BYTE* pBits0 = (BYTE*)((DWORD*)pImageBits + (383 - y + 2) * 512);
             for (int x = 0; x < 512 * 4; x++)
             {
-                *pBits1 = (BYTE)((((WORD)*pBits0) + ((WORD)*pBits2)) / 2);
+                *pBits1 = (BYTE)((((WORD) * pBits0) + ((WORD) * pBits2)) / 2);
                 pBits2++;  pBits1++;  pBits0++;
             }
         }
@@ -724,7 +728,7 @@ void CALLBACK Emulator_PrepareScreenColor512x384(const BYTE* pVideoBuffer, int o
             BYTE* pBits0 = (BYTE*)((DWORD*)pImageBits + (383 - y + 2) * 512);
             for (int x = 0; x < 512 * 4; x++)
             {
-                *pBits1 = (BYTE)((((WORD)*pBits0) + ((WORD)*pBits2)) / 2);
+                *pBits1 = (BYTE)((((WORD) * pBits0) + ((WORD) * pBits2)) / 2);
                 pBits2++;  pBits1++;  pBits0++;
             }
         }
@@ -802,7 +806,7 @@ void Emulator_LoadImage(LPCTSTR sFilePath)
     DWORD dwBytesRead = 0;
     ReadFile(hFile, bufHeader, BKIMAGE_HEADER_SIZE, &dwBytesRead, NULL);
     //TODO: Check if dwBytesRead != BKIMAGE_HEADER_SIZE
-    
+
     //TODO: Check version and size
 
     // Allocate memory

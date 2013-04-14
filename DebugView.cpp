@@ -61,7 +61,7 @@ void DebugView_RegisterClass()
     wcex.hInstance		= g_hInst;
     wcex.hIcon			= NULL;
     wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName	= NULL;
     wcex.lpszClassName	= CLASSNAME_DEBUGVIEW;
     wcex.hIconSm		= NULL;
@@ -78,7 +78,7 @@ void CreateDebugView(HWND hwndParent, int x, int y, int width, int height)
             WS_CHILD | WS_VISIBLE,
             x, y, width, height,
             hwndParent, NULL, g_hInst, NULL);
-	DebugView_UpdateWindowText();
+    DebugView_UpdateWindowText();
 
     // ToolWindow subclassing
     m_wndprocDebugToolWindow = (WNDPROC) LongToPtr( SetWindowLongPtr(
@@ -86,7 +86,7 @@ void CreateDebugView(HWND hwndParent, int x, int y, int width, int height)
 
     RECT rcClient;  GetClientRect(g_hwndDebug, &rcClient);
 
-	m_hwndDebugViewer = CreateWindowEx(
+    m_hwndDebugViewer = CreateWindowEx(
             WS_EX_STATICEDGE,
             CLASSNAME_DEBUGVIEW, NULL,
             WS_CHILD | WS_VISIBLE,
@@ -156,7 +156,7 @@ BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM lParam)
 
 void DebugView_UpdateWindowText()
 {
-	::SetWindowText(g_hwndDebug, _T("Debug"));
+    ::SetWindowText(g_hwndDebug, _T("Debug"));
 }
 
 
@@ -169,7 +169,8 @@ void DebugView_OnUpdate()
     ASSERT(pCPU != NULL);
 
     // Get new register values and set change flags
-    for (int r = 0; r < 8; r++) {
+    for (int r = 0; r < 8; r++)
+    {
         WORD value = pCPU->GetReg(r);
         m_okDebugCpuRChanged[r] = (m_wDebugCpuR[r] != value);
         m_wDebugCpuR[r] = value;
@@ -201,7 +202,7 @@ void DebugView_DoDraw(HDC hdc)
 
     //TextOut(hdc, cxChar * 1, 2 + 1 * cyLine, _T("CPU"), 3);
 
-	DebugView_DrawProcessor(hdc, pDebugPU, cxChar * 2, 2 + 1 * cyLine, arrR, arrRChanged);
+    DebugView_DrawProcessor(hdc, pDebugPU, cxChar * 2, 2 + 1 * cyLine, arrR, arrRChanged);
 
     // Draw stack for the current processor
     DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, 35 * cxChar, 2 + 0 * cyLine);
@@ -239,7 +240,8 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
     DebugView_DrawRectangle(hdc, x - cxChar, y - 8, x + cxChar + 31 * cxChar, y + 8 + cyLine * 12);
 
     // Registers
-    for (int r = 0; r < 8; r++) {
+    for (int r = 0; r < 8; r++)
+    {
         ::SetTextColor(hdc, arrRChanged[r] ? COLOR_RED : colorText);
 
         LPCTSTR strRegName = REGISTER_NAME[r];
@@ -284,26 +286,29 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
 
     // Читаем из памяти процессора в буфер
     WORD memory[16];
-    for (int idx = 0; idx < 16; idx++) {
+    for (int idx = 0; idx < 16; idx++)
+    {
         int addrtype;
         memory[idx] = g_pBoard->GetWordView(
                 current + idx * 2 - 14, pProc->IsHaltMode(), okExec, &addrtype);
     }
 
     WORD address = current - 14;
-    for (int index = 0; index < 14; index++) {  // Рисуем строки
+    for (int index = 0; index < 14; index++)    // Рисуем строки
+    {
         // Адрес
         DrawOctalValue(hdc, x + 4 * cxChar, y, address);
 
         // Значение по адресу
         WORD value = memory[index];
         WORD wChanged = Emulator_GetChangeRamStatus(address);
-        ::SetTextColor(hdc, (wChanged != 0) ? RGB(255,0,0) : colorText);
+        ::SetTextColor(hdc, (wChanged != 0) ? RGB(255, 0, 0) : colorText);
         DrawOctalValue(hdc, x + 12 * cxChar, y, value);
         ::SetTextColor(hdc, colorText);
 
         // Текущая позиция
-        if (address == current) {
+        if (address == current)
+        {
             TextOut(hdc, x + 2 * cxChar, y, _T(">>"), 2);
             ::SetTextColor(hdc, m_okDebugCpuRChanged[reg] ? COLOR_RED : colorText);
             TextOut(hdc, x, y, REGISTER_NAME[reg], 2);
@@ -319,7 +324,7 @@ void DebugView_DrawPorts(HDC hdc, CMotherboard* pBoard, int x, int y)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
 
-	TextOut(hdc, x, y, _T("Port"), 6);
+    TextOut(hdc, x, y, _T("Port"), 6);
 
     WORD value;
     y += cyLine;
