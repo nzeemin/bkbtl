@@ -63,7 +63,7 @@ void MemoryMapView_RegisterClass()
     wcex.hInstance		= g_hInst;
     wcex.hIcon			= NULL;
     wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName	= NULL;
     wcex.lpszClassName	= CLASSNAME_MEMORYMAPVIEW;
     wcex.hIconSm		= NULL;
@@ -93,8 +93,8 @@ void CreateMemoryMapView(int x, int y)
             g_hwndMemoryMap, GWLP_WNDPROC, PtrToLong(MemoryMapViewWndProc)) );
 
     RECT rcClient;  GetClientRect(g_hwndMemoryMap, &rcClient);
-    
-	m_hwndMemoryMapViewer = CreateWindow(
+
+    m_hwndMemoryMapViewer = CreateWindow(
             CLASSNAME_MEMORYMAPVIEW, NULL,
             WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | WS_TABSTOP,
             0, 0, rcClient.right, rcClient.bottom,
@@ -121,7 +121,7 @@ void MemoryMapView_InitBitmap()
     m_bmpinfoMemoryMap.bmiHeader.biYPelsPerMeter = 0;
     m_bmpinfoMemoryMap.bmiHeader.biClrUsed = 0;
     m_bmpinfoMemoryMap.bmiHeader.biClrImportant = 0;
-	
+
     m_hMemoryMapBitmap = CreateDIBSection( hdc, &m_bmpinfoMemoryMap, DIB_RGB_COLORS, (void **) &m_pMemoryMap_bits, NULL, 0 );
 
     ReleaseDC( g_hwnd, hdc );
@@ -223,10 +223,10 @@ void MemoryMapView_Scroll(int dx, int dy)
     int newypos = m_nMemoryMap_ypos + dy;
 
     int maxpos = 256 * (m_nMemoryMap_scale - 2);  //INCORRECT
-    if (newxpos < 0) newxpos = 0; 
-    if (newxpos > maxpos) newxpos = maxpos; 
-    if (newypos < 0) newypos = 0; 
-    if (newypos > maxpos) newypos = maxpos; 
+    if (newxpos < 0) newxpos = 0;
+    if (newxpos > maxpos) newxpos = maxpos;
+    if (newypos < 0) newypos = 0;
+    if (newypos > maxpos) newypos = maxpos;
 
     m_nMemoryMap_xpos = newxpos;
     m_nMemoryMap_ypos = newypos;
@@ -282,9 +282,9 @@ BOOL MemoryMapView_OnHScroll(WPARAM wParam, LPARAM lParam)
     case SB_PAGEUP:
         MemoryMapView_Scroll(32, 0);  //TODO
         break;
-    //case SB_THUMBPOSITION:
-    //    MemoryMapView_ScrollTo(scrollpos * 16);
-    //    break;
+        //case SB_THUMBPOSITION:
+        //    MemoryMapView_ScrollTo(scrollpos * 16);
+        //    break;
     }
 
     return FALSE;
@@ -307,9 +307,9 @@ BOOL MemoryMapView_OnVScroll(WPARAM wParam, LPARAM lParam)
     case SB_PAGEUP:
         MemoryMapView_Scroll(0, -32);  //TODO
         break;
-    //case SB_THUMBPOSITION:
-    //    MemoryMapView_ScrollTo(scrollpos * 16);
-    //    break;
+        //case SB_THUMBPOSITION:
+        //    MemoryMapView_ScrollTo(scrollpos * 16);
+        //    break;
     }
 
     return FALSE;
@@ -322,11 +322,11 @@ void MemoryMapView_OnDraw(HDC hdc)
     MemoryMapView_PrepareBitmap();
 
     DrawDibDraw(m_hMemoryMapDrawDib, hdc,
-        -m_nMemoryMap_xpos * m_nMemoryMap_scale, -m_nMemoryMap_ypos * m_nMemoryMap_scale,
-        256 * m_nMemoryMap_scale, 256 * m_nMemoryMap_scale,
-        &m_bmpinfoMemoryMap.bmiHeader, m_pMemoryMap_bits, 0,0,
-        256, 256,
-        0);
+            -m_nMemoryMap_xpos * m_nMemoryMap_scale, -m_nMemoryMap_ypos * m_nMemoryMap_scale,
+            256 * m_nMemoryMap_scale, 256 * m_nMemoryMap_scale,
+            &m_bmpinfoMemoryMap.bmiHeader, m_pMemoryMap_bits, 0, 0,
+            256, 256,
+            0);
 }
 
 void MemoryMapView_RedrawMap()
@@ -355,10 +355,10 @@ void MemoryMapView_PrepareBitmap()
             switch (addrtype & ADDRTYPE_MASK)
             {
             case ADDRTYPE_IO:
-                color1 = color2 = RGB(128,0,128);
+                color1 = color2 = RGB(128, 0, 128);
                 break;
             case ADDRTYPE_DENY:
-                color1 = color2 = RGB(0,0,128);
+                color1 = color2 = RGB(0, 0, 128);
                 break;
             case ADDRTYPE_ROM:
                 val = (value & 0xff00) >> 8;

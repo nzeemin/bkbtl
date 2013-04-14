@@ -85,7 +85,7 @@ void MainWindow_RegisterClass()
     wcex.hInstance		= g_hInst;
     wcex.hIcon			= LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_BKBTL));
     wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground	= (HBRUSH)(COLOR_BTNFACE+1);
+    wcex.hbrBackground	= (HBRUSH)(COLOR_BTNFACE + 1);
     wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_BKBTL);
     wcex.lpszClassName	= g_szWindowClass;
     wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -108,17 +108,17 @@ void MainWindow_RegisterClass()
 
 BOOL MainWindow_InitToolbar()
 {
-    m_hwndToolbar = CreateWindowEx(0, TOOLBARCLASSNAME, NULL, 
-        WS_CHILD | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_LIST | TBSTYLE_TOOLTIPS | CCS_NOPARENTALIGN | CCS_NODIVIDER,
-        4, 4, 0, 0, g_hwnd,
-        (HMENU) 102,
-        g_hInst, NULL); 
+    m_hwndToolbar = CreateWindowEx(0, TOOLBARCLASSNAME, NULL,
+            WS_CHILD | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_LIST | TBSTYLE_TOOLTIPS | CCS_NOPARENTALIGN | CCS_NODIVIDER,
+            4, 4, 0, 0, g_hwnd,
+            (HMENU) 102,
+            g_hInst, NULL);
     if (! m_hwndToolbar)
         return FALSE;
 
     SendMessage(m_hwndToolbar, TB_SETEXTENDEDSTYLE, 0, (LPARAM) (DWORD) TBSTYLE_EX_MIXEDBUTTONS);
-    SendMessage(m_hwndToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0); 
-    SendMessage(m_hwndToolbar, TB_SETBUTTONSIZE, 0, (LPARAM) MAKELONG (26, 26)); 
+    SendMessage(m_hwndToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0);
+    SendMessage(m_hwndToolbar, TB_SETBUTTONSIZE, 0, (LPARAM) MAKELONG (26, 26));
 
     TBADDBITMAP addbitmap;
     addbitmap.hInst = g_hInst;
@@ -170,7 +170,7 @@ BOOL MainWindow_InitToolbar()
     buttons[10].iBitmap = ToolbarImageScreenshot;
     buttons[10].fsStyle = BTNS_BUTTON;
 
-    SendMessage(m_hwndToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons); 
+    SendMessage(m_hwndToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons);
 
     if (Settings_GetToolbar())
         ShowWindow(m_hwndToolbar, SW_SHOW);
@@ -188,7 +188,7 @@ BOOL MainWindow_InitStatusbar()
     int statusbarParts[2];
     statusbarParts[0] = 350;
     statusbarParts[1] = -1;
-    SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts)/sizeof(int), (LPARAM) statusbarParts);
+    SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts) / sizeof(int), (LPARAM) statusbarParts);
 
     return TRUE;
 }
@@ -328,7 +328,7 @@ void MainWindow_AdjustWindowSize()
         if (Settings_GetTape())
             cyHeight += cyTape + 4;
     }
- 
+
     SetWindowPos(g_hwnd, NULL, xLeft, yTop, cxWidth, cyHeight, SWP_NOZORDER);
 }
 
@@ -379,13 +379,13 @@ void MainWindow_AdjustWindowLayout()
 
     if (Settings_GetKeyboard())
     {
-        SetWindowPos(g_hwndKeyboard, NULL, 4, yKeyboard, 0,0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);
+        SetWindowPos(g_hwndKeyboard, NULL, 4, yKeyboard, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);
         yTape     += cyKeyboard;
         yConsole  += cyKeyboard;
     }
     if (Settings_GetTape())
     {
-        SetWindowPos(g_hwndTape, NULL, 4, yTape, 0,0, SWP_NOZORDER | SWP_NOSIZE);
+        SetWindowPos(g_hwndTape, NULL, 4, yTape, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         yConsole  += cyTape + 4;
     }
     if (Settings_GetDebug())
@@ -562,7 +562,7 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_VIEW_TAPE, (Settings_GetTape() ? MF_CHECKED : MF_UNCHECKED));
     // View|Color Screen
     MainWindow_SetToolbarImage(ID_VIEW_RGBSCREEN,
-        (ScreenView_GetScreenMode() & 1) ? ToolbarImageColorScreen : ToolbarImageBWScreen);
+            (ScreenView_GetScreenMode() & 1) ? ToolbarImageColorScreen : ToolbarImageBWScreen);
     // View|Screen Mode
     UINT scrmodecmd = 0;
     switch (ScreenView_GetScreenMode())
@@ -609,21 +609,21 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY2, (g_pBoard->IsFloppyImageAttached(2) ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY3, (g_pBoard->IsFloppyImageAttached(3) ? MF_CHECKED : MF_UNCHECKED));
     MainWindow_SetStatusbarBitmap(StatusbarPartMZ0,
-        g_pBoard->IsFloppyImageAttached(0) ? ((g_pBoard->IsFloppyReadOnly(0)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
+            g_pBoard->IsFloppyImageAttached(0) ? ((g_pBoard->IsFloppyReadOnly(0)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
     MainWindow_SetStatusbarBitmap(StatusbarPartMZ1,
-        g_pBoard->IsFloppyImageAttached(1) ? ((g_pBoard->IsFloppyReadOnly(1)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
+            g_pBoard->IsFloppyImageAttached(1) ? ((g_pBoard->IsFloppyReadOnly(1)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
     MainWindow_SetStatusbarBitmap(StatusbarPartMZ2,
-        g_pBoard->IsFloppyImageAttached(2) ? ((g_pBoard->IsFloppyReadOnly(2)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
+            g_pBoard->IsFloppyImageAttached(2) ? ((g_pBoard->IsFloppyReadOnly(2)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
     MainWindow_SetStatusbarBitmap(StatusbarPartMZ3,
-        g_pBoard->IsFloppyImageAttached(3) ? ((g_pBoard->IsFloppyReadOnly(3)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
+            g_pBoard->IsFloppyImageAttached(3) ? ((g_pBoard->IsFloppyReadOnly(3)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
     MainWindow_SetToolbarImage(ID_EMULATOR_FLOPPY0,
-        g_pBoard->IsFloppyImageAttached(0) ? (g_pBoard->IsFloppyReadOnly(0) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
+            g_pBoard->IsFloppyImageAttached(0) ? (g_pBoard->IsFloppyReadOnly(0) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
     MainWindow_SetToolbarImage(ID_EMULATOR_FLOPPY1,
-        g_pBoard->IsFloppyImageAttached(1) ? (g_pBoard->IsFloppyReadOnly(1) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
+            g_pBoard->IsFloppyImageAttached(1) ? (g_pBoard->IsFloppyReadOnly(1) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
     MainWindow_SetToolbarImage(ID_EMULATOR_FLOPPY2,
-        g_pBoard->IsFloppyImageAttached(2) ? (g_pBoard->IsFloppyReadOnly(2) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
+            g_pBoard->IsFloppyImageAttached(2) ? (g_pBoard->IsFloppyReadOnly(2) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
     MainWindow_SetToolbarImage(ID_EMULATOR_FLOPPY3,
-        g_pBoard->IsFloppyImageAttached(3) ? (g_pBoard->IsFloppyReadOnly(3) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
+            g_pBoard->IsFloppyImageAttached(3) ? (g_pBoard->IsFloppyReadOnly(3) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
 }
 
 // Process menu command
@@ -893,10 +893,10 @@ void MainWindow_DoFileSaveState()
 {
     TCHAR bufFileName[MAX_PATH];
     BOOL okResult = ShowSaveDialog(g_hwnd,
-        _T("Save state image as"),
-        _T("BK state images (*.bkst)\0*.bkst\0All Files (*.*)\0*.*\0\0"),
-        _T("bkst"),
-        bufFileName);
+            _T("Save state image as"),
+            _T("BK state images (*.bkst)\0*.bkst\0All Files (*.*)\0*.*\0\0"),
+            _T("bkst"),
+            bufFileName);
     if (! okResult) return;
 
     Emulator_SaveImage(bufFileName);
@@ -908,7 +908,7 @@ void MainWindow_DoFileScreenshot()
     SYSTEMTIME st;
     ::GetSystemTime(&st);
     wsprintf(bufFileName, _T("%04d%02d%02d%02d%02d%02d%03d.png"),
-        st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+            st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 
     if (!ScreenView_SaveScreenshot(bufFileName))
     {
@@ -920,10 +920,10 @@ void MainWindow_DoFileScreenshotSaveAs()
 {
     TCHAR bufFileName[MAX_PATH];
     BOOL okResult = ShowSaveDialog(g_hwnd,
-        _T("Save screenshot as"),
-        _T("PNG bitmaps (*.png)\0*.png\0BMP bitmaps (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0\0"),
-        _T("png"),
-        bufFileName);
+            _T("Save screenshot as"),
+            _T("PNG bitmaps (*.png)\0*.png\0BMP bitmaps (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0\0"),
+            _T("png"),
+            bufFileName);
     if (! okResult) return;
 
     if (!ScreenView_SaveScreenshot(bufFileName))
@@ -947,11 +947,11 @@ void MainWindow_DoEmulatorConf(BKConfiguration configuration)
     // Check if configuration changed
     if (g_nEmulatorConfiguration == configuration)
         return;
-    
+
     // Ask user -- we have to reset machine to change configuration
     if (!AlertOkCancel(_T("Reset required after configuration change.\nAre you agree?")))
         return;
-    
+
     // Change configuration
     Emulator_InitConfiguration(configuration);
 

@@ -68,7 +68,7 @@ void MemoryView_RegisterClass()
     wcex.hInstance		= g_hInst;
     wcex.hIcon			= NULL;
     wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName	= NULL;
     wcex.lpszClassName	= CLASSNAME_MEMORYVIEW;
     wcex.hIconSm		= NULL;
@@ -85,7 +85,7 @@ void CreateMemoryView(HWND hwndParent, int x, int y, int width, int height)
             WS_CHILD | WS_VISIBLE,
             x, y, width, height,
             hwndParent, NULL, g_hInst, NULL);
-	MemoryView_UpdateWindowText();
+    MemoryView_UpdateWindowText();
 
     // ToolWindow subclassing
     m_wndprocMemoryToolWindow = (WNDPROC) LongToPtr( SetWindowLongPtr(
@@ -93,7 +93,7 @@ void CreateMemoryView(HWND hwndParent, int x, int y, int width, int height)
 
     RECT rcClient;  GetClientRect(g_hwndMemory, &rcClient);
 
-	m_hwndMemoryViewer = CreateWindowEx(
+    m_hwndMemoryViewer = CreateWindowEx(
             WS_EX_STATICEDGE,
             CLASSNAME_MEMORYVIEW, NULL,
             WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_TABSTOP,
@@ -177,12 +177,14 @@ void MemoryView_OnDraw(HDC hdc)
 
     WORD address = m_wBaseAddress;
     int y = 1 * cyLine;
-    for (;;) {  // Draw lines
+    for (;;)    // Draw lines
+    {
         DrawOctalValue(hdc, 2 * cxChar, y, address);
 
         int x = 10 * cxChar;
         TCHAR wchars[16];
-        for (int j = 0; j < 8; j++) {  // Draw words as octal value
+        for (int j = 0; j < 8; j++)    // Draw words as octal value
+        {
             // Get word from memory
             WORD word = 0;
             int addrtype;
@@ -202,15 +204,15 @@ void MemoryView_OnDraw(HDC hdc)
             //            word = g_pBoard->GetROMWord(address - 0100000);
             //        break;
             //    case MEMMODE_CPU:
-                    okHalt = g_pBoard->GetCPU()->IsHaltMode();
-                    word = g_pBoard->GetWordView(address, okHalt, FALSE, &addrtype);
-                    wChanged = Emulator_GetChangeRamStatus(address);
+            okHalt = g_pBoard->GetCPU()->IsHaltMode();
+            word = g_pBoard->GetWordView(address, okHalt, FALSE, &addrtype);
+            wChanged = Emulator_GetChangeRamStatus(address);
             //        break;
             //}
 
             if ((addrtype & (ADDRTYPE_IO | ADDRTYPE_DENY)) == 0)
             {
-                ::SetTextColor(hdc, (wChanged != 0) ? RGB(255,0,0) : colorText);
+                ::SetTextColor(hdc, (wChanged != 0) ? RGB(255, 0, 0) : colorText);
                 DrawOctalValue(hdc, x, y, word);
             }
 
@@ -253,23 +255,23 @@ void MemoryView_OnDraw(HDC hdc)
 
 LPCTSTR MemoryView_GetMemoryModeName()
 {
-  //  switch (m_Mode) {
-  //      case MEMMODE_RAM0:  return _T("RAM0");
-  //      case MEMMODE_RAM1:  return _T("RAM1");
-  //      case MEMMODE_RAM2:  return _T("RAM2");
-  //      case MEMMODE_ROM:   return _T("ROM");
-  //      case MEMMODE_CPU:   return _T("CPU");
-		//default:
-		//	return _T("UKWN");  // Unknown mode
-  //  }
+    //  switch (m_Mode) {
+    //      case MEMMODE_RAM0:  return _T("RAM0");
+    //      case MEMMODE_RAM1:  return _T("RAM1");
+    //      case MEMMODE_RAM2:  return _T("RAM2");
+    //      case MEMMODE_ROM:   return _T("ROM");
+    //      case MEMMODE_CPU:   return _T("CPU");
+    //default:
+    //	return _T("UKWN");  // Unknown mode
+    //  }
     return _T("");  //STUB
 }
 
 void MemoryView_UpdateWindowText()
 {
-	//TCHAR buffer[64];
-	//swprintf_s(buffer, 64, _T("Memory - %s"), MemoryView_GetMemoryModeName());
-	::SetWindowText(g_hwndMemory, _T("Memory"));
+    //TCHAR buffer[64];
+    //swprintf_s(buffer, 64, _T("Memory - %s"), MemoryView_GetMemoryModeName());
+    ::SetWindowText(g_hwndMemory, _T("Memory"));
 }
 
 BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM lParam)
@@ -294,14 +296,14 @@ BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM lParam)
     case VK_DOWN:
         MemoryView_Scroll(16);
         break;
-  //  case VK_SPACE:
-  //      if (m_Mode == MEMMODE_LAST)
-  //          m_Mode = 0;
-  //      else
-  //          m_Mode++;
-  //      InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
-		//MemoryView_UpdateWindowText();
-  //      break;
+        //  case VK_SPACE:
+        //      if (m_Mode == MEMMODE_LAST)
+        //          m_Mode = 0;
+        //      else
+        //          m_Mode++;
+        //      InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
+        //MemoryView_UpdateWindowText();
+        //      break;
     case VK_PRIOR:
         MemoryView_Scroll(-m_nPageSize * 16);
         break;
@@ -377,7 +379,7 @@ void MemoryView_Scroll(int nDelta)
     m_wBaseAddress += nDelta;
     m_wBaseAddress = m_wBaseAddress & ((WORD)~1);
     InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
-    
+
     MemoryView_UpdateScrollPos();
 }
 void MemoryView_UpdateScrollPos()

@@ -90,7 +90,7 @@ void CMotherboard::SetConfiguration(WORD conf)
     }
 }
 
-void CMotherboard::Reset () 
+void CMotherboard::Reset ()
 {
     m_pCPU->Stop();
 
@@ -106,7 +106,7 @@ void CMotherboard::Reset ()
     m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0300;
     m_Port177716mem = 0000002;
     m_Port177716tap = 0;
-    
+
     m_timer = 0177777;
     m_timerdivider = 0;
     m_timerreload = 011000;
@@ -174,50 +174,50 @@ void CMotherboard::DetachFloppyImage(int slot)
 
 WORD CMotherboard::GetRAMWord(WORD offset)
 {
-    return *((WORD*)(m_pRAM + offset)); 
+    return *((WORD*)(m_pRAM + offset));
 }
 WORD CMotherboard::GetRAMWord(BYTE chunk, WORD offset)
 {
     DWORD dwOffset = (((DWORD)chunk & 7) << 14) + offset;
-    return *((WORD*)(m_pRAM + dwOffset)); 
+    return *((WORD*)(m_pRAM + dwOffset));
 }
-BYTE CMotherboard::GetRAMByte(WORD offset) 
-{ 
-    return m_pRAM[offset]; 
+BYTE CMotherboard::GetRAMByte(WORD offset)
+{
+    return m_pRAM[offset];
 }
-BYTE CMotherboard::GetRAMByte(BYTE chunk, WORD offset) 
-{ 
+BYTE CMotherboard::GetRAMByte(BYTE chunk, WORD offset)
+{
     DWORD dwOffset = (((DWORD)chunk & 7) << 14) + offset;
-    return m_pRAM[dwOffset]; 
+    return m_pRAM[dwOffset];
 }
-void CMotherboard::SetRAMWord(WORD offset, WORD word) 
+void CMotherboard::SetRAMWord(WORD offset, WORD word)
 {
     *((WORD*)(m_pRAM + offset)) = word;
 }
-void CMotherboard::SetRAMWord(BYTE chunk, WORD offset, WORD word) 
+void CMotherboard::SetRAMWord(BYTE chunk, WORD offset, WORD word)
 {
     DWORD dwOffset = (((DWORD)chunk & 7) << 14) + offset;
     *((WORD*)(m_pRAM + dwOffset)) = word;
 }
-void CMotherboard::SetRAMByte(WORD offset, BYTE byte) 
+void CMotherboard::SetRAMByte(WORD offset, BYTE byte)
 {
-    m_pRAM[offset] = byte; 
+    m_pRAM[offset] = byte;
 }
-void CMotherboard::SetRAMByte(BYTE chunk, WORD offset, BYTE byte) 
+void CMotherboard::SetRAMByte(BYTE chunk, WORD offset, BYTE byte)
 {
     DWORD dwOffset = (((DWORD)chunk & 7) << 14) + offset;
-    m_pRAM[dwOffset] = byte; 
+    m_pRAM[dwOffset] = byte;
 }
 
 WORD CMotherboard::GetROMWord(WORD offset)
 {
     ASSERT(offset < 1024 * 64);
-    return *((WORD*)(m_pROM + offset)); 
+    return *((WORD*)(m_pROM + offset));
 }
-BYTE CMotherboard::GetROMByte(WORD offset) 
-{ 
+BYTE CMotherboard::GetROMByte(WORD offset)
+{
     ASSERT(offset < 1024 * 64);
-    return m_pROM[offset]; 
+    return m_pROM[offset];
 }
 
 
@@ -261,25 +261,25 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23437
         return;
 
     m_timerdivider++;
-    
+
     BOOL flag = FALSE;
     switch ((m_timerflags >> 5) & 3)  // bits 5,6 -- prescaler
     {
-        case 0:  // 32 мкс
-            flag = TRUE;
-            break;
-        case 1:  // 32 * 16 = 512 мкс
-            flag = (m_timerdivider >= 16);
-            break;
-        case 2: // 32 * 4 = 128 мкс
-            flag = (m_timerdivider >= 4);
-            break;
-        case 3:  // 32 * 16 * 4 = 2048 мкс, 8129 тактов процессора
-            flag = (m_timerdivider >= 64);
-            break;
+    case 0:  // 32 мкс
+        flag = TRUE;
+        break;
+    case 1:  // 32 * 16 = 512 мкс
+        flag = (m_timerdivider >= 16);
+        break;
+    case 2: // 32 * 4 = 128 мкс
+        flag = (m_timerdivider >= 4);
+        break;
+    case 3:  // 32 * 16 * 4 = 2048 мкс, 8129 тактов процессора
+        flag = (m_timerdivider >= 64);
+        break;
     }
     if (!flag)  // Nothing happened
-        return; 
+        return;
 
     m_timerdivider = 0;
     m_timer--;
@@ -427,7 +427,7 @@ BOOL CMotherboard::SystemFrame()
                     m_Port177564 |= 0200;
                     if (m_Port177564 & 0100)
                     {
-                         m_pCPU->InterruptVIRQ(1, 064);
+                        m_pCPU->InterruptVIRQ(1, 064);
                     }
                 }
             }
@@ -672,7 +672,7 @@ int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, W
         BOOL okRom = (m_MemoryMap >> memoryBlock) & 1;  // 1 - ROM, 0 - RAM
         if (okRom)
             address -= 0100000;
-        
+
         *pOffset = address;
         return (okRom) ? ADDRTYPE_ROM : ADDRTYPE_RAM;
     }
@@ -784,11 +784,11 @@ WORD CMotherboard::GetPortWord(WORD address)
         return m_Port177714in;
 
     case 0177716:  // System register
-    {
-        WORD value = m_Port177716;
-        m_Port177716 &= ~4;  // Reset bit 2
-        return value;
-    }
+        {
+            WORD value = m_Port177716;
+            m_Port177716 &= ~4;  // Reset bit 2
+            return value;
+        }
 
     case 0177130:
         if ((m_Configuration & BK_COPT_FDD) == 0)
@@ -822,12 +822,12 @@ WORD CMotherboard::GetPortWord(WORD address)
         }
         return 0;
 
-    default: 
+    default:
         m_pCPU->MemoryError();
         return 0;
     }
 
-    return 0; 
+    return 0;
 }
 
 // Read word from port for debugger
@@ -924,7 +924,7 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 
     case 0177700: case 0177702: case 0177704:  // Unknown something
         break;
-    
+
     case 0177706:  // System Timer reload value -- регистр установки таймера
         SetTimerReload(word);
         break;
@@ -1152,11 +1152,11 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 ////				wsprintf(buffer,_T(" Block %d Len %d\n"),trk*20+side*10+sector-1,par);
 ////				DebugPrint(buffer);
 ////#endif
-//				
+//
 //				m_floppystate=FLOPPY_FSM_WAITFORLSB;
 //			}
 //			break;
-//	
+//
 //	}
 //}
 
@@ -1169,7 +1169,7 @@ WORD CMotherboard::GetKeyboardRegister(void)
 
     WORD mem000042 = GetRAMWord(000042);
     res |= (mem000042 & 0100000) == 0 ? KEYB_LAT : KEYB_RUS;
-    
+
     return res;
 }
 
@@ -1181,9 +1181,9 @@ void CMotherboard::DoSound(void)
     BOOL bSoundBit = (m_Port177716tap & 0100) != 0;
 
     if (bSoundBit)
-        (*m_SoundGenCallback)(0x1fff,0x1fff);
+        (*m_SoundGenCallback)(0x1fff, 0x1fff);
     else
-        (*m_SoundGenCallback)(0x0000,0x0000);
+        (*m_SoundGenCallback)(0x0000, 0x0000);
 }
 
 void CMotherboard::SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate)

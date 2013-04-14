@@ -80,7 +80,7 @@ void DisasmView_RegisterClass()
     wcex.hInstance		= g_hInst;
     wcex.hIcon			= NULL;
     wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName	= NULL;
     wcex.lpszClassName	= CLASSNAME_DISASMVIEW;
     wcex.hIconSm		= NULL;
@@ -97,7 +97,7 @@ void CreateDisasmView(HWND hwndParent, int x, int y, int width, int height)
             WS_CHILD | WS_VISIBLE,
             x, y, width, height,
             hwndParent, NULL, g_hInst, NULL);
-	::SetWindowText(g_hwndDisasm, _T("Disassemble"));
+    ::SetWindowText(g_hwndDisasm, _T("Disassemble"));
 
     // ToolWindow subclassing
     m_wndprocDisasmToolWindow = (WNDPROC) LongToPtr( SetWindowLongPtr(
@@ -105,7 +105,7 @@ void CreateDisasmView(HWND hwndParent, int x, int y, int width, int height)
 
     RECT rcClient;  GetClientRect(g_hwndDisasm, &rcClient);
 
-	m_hwndDisasmViewer = CreateWindowEx(
+    m_hwndDisasmViewer = CreateWindowEx(
             WS_EX_STATICEDGE,
             CLASSNAME_DISASMVIEW, NULL,
             WS_CHILD | WS_VISIBLE,
@@ -186,9 +186,9 @@ BOOL DisasmView_OnKeyDown(WPARAM vkey, LPARAM lParam)
 void DisasmView_UpdateWindowText()
 {
     if (m_okDisasmSubtitles)
-	    ::SetWindowText(g_hwndDisasm, _T("Disassemble - Subtitles"));
+        ::SetWindowText(g_hwndDisasm, _T("Disassemble - Subtitles"));
     else
-	    ::SetWindowText(g_hwndDisasm, _T("Disassemble"));
+        ::SetWindowText(g_hwndDisasm, _T("Disassemble"));
 }
 
 void DisasmView_ResizeSubtitleArray(int newSize)
@@ -307,7 +307,7 @@ BOOL DisasmView_ParseSubtitles()
     {
         // Line starts
         if (*pText == 0) break;
-        if (*pText == _T('\n') || *pText == _T('\r')) 
+        if (*pText == _T('\n') || *pText == _T('\r'))
         {
             pText++;
             continue;
@@ -334,7 +334,7 @@ BOOL DisasmView_ParseSubtitles()
 
             // Пропускаем разделители
             while (*pText != 0 &&
-                (*pText == _T(' ') || *pText == _T('\t') || *pText == _T('$') || *pText == _T(':')))
+                   (*pText == _T(' ') || *pText == _T('\t') || *pText == _T('$') || *pText == _T(':')))
                 pText++;
             BOOL okDirective = (*pText == _T('.'));
 
@@ -356,8 +356,8 @@ BOOL DisasmView_ParseSubtitles()
 
             // Сохраняем комментарий в массиве
             DisasmView_AddSubtitle(address,
-                (okDirective ? SUBTYPE_COMMENT | SUBTYPE_DATA : SUBTYPE_COMMENT),
-                pCommentStart);
+                    (okDirective ? SUBTYPE_COMMENT | SUBTYPE_DATA : SUBTYPE_COMMENT),
+                    pCommentStart);
 
             if (*pText == 0) break;
             *pText = 0;  // Обозначаем конец комментария
@@ -393,7 +393,7 @@ void DisasmView_OnUpdate()
 {
     CProcessor* pDisasmPU = g_pBoard->GetCPU();
     ASSERT(pDisasmPU != NULL);
-	m_wDisasmBaseAddr = pDisasmPU->GetPC();
+    m_wDisasmBaseAddr = pDisasmPU->GetPC();
 }
 
 void DisasmView_SetBaseAddr(WORD base)
@@ -423,7 +423,7 @@ void DisasmView_DoDraw(HDC hdc)
     WORD prevPC = g_wEmulatorPrevCpuPC;
     int yFocus = DisasmView_DrawDisassemble(hdc, pDisasmPU, m_wDisasmBaseAddr, prevPC, 0, 2 + 0 * cyLine);
 
-	SetTextColor(hdc, colorOld);
+    SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
     SelectObject(hdc, hOldFont);
     DeleteObject(hFont);
@@ -450,7 +450,7 @@ DisasmSubtitleItem* DisasmView_FindSubtitle(WORD address, int typemask)
             return pItem;
         pItem++;
     }
-    
+
     return NULL;
 }
 
@@ -466,7 +466,8 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previ
     // Читаем из памяти процессора в буфер
     const int nWindowSize = 30;
     WORD memory[nWindowSize + 2];
-    for (int idx = 0; idx < nWindowSize; idx++) {
+    for (int idx = 0; idx < nWindowSize; idx++)
+    {
         int addrtype;
         memory[idx] = g_pBoard->GetWordView(
                 current + idx * 2 - 10, pProc->IsHaltMode(), TRUE, &addrtype);
@@ -573,7 +574,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previ
     }
 
     m_wDisasmNextBaseAddr = wNextBaseAddr;
-    
+
     return result;
 }
 
