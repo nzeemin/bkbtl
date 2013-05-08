@@ -172,20 +172,20 @@ void CMotherboard::DetachFloppyImage(int slot)
 
 // Работа с памятью //////////////////////////////////////////////////
 
-WORD CMotherboard::GetRAMWord(WORD offset)
+WORD CMotherboard::GetRAMWord(WORD offset) const
 {
     return *((WORD*)(m_pRAM + offset));
 }
-WORD CMotherboard::GetRAMWord(BYTE chunk, WORD offset)
+WORD CMotherboard::GetRAMWord(BYTE chunk, WORD offset) const
 {
     DWORD dwOffset = (((DWORD)chunk & 7) << 14) + offset;
     return *((WORD*)(m_pRAM + dwOffset));
 }
-BYTE CMotherboard::GetRAMByte(WORD offset)
+BYTE CMotherboard::GetRAMByte(WORD offset) const
 {
     return m_pRAM[offset];
 }
-BYTE CMotherboard::GetRAMByte(BYTE chunk, WORD offset)
+BYTE CMotherboard::GetRAMByte(BYTE chunk, WORD offset) const
 {
     DWORD dwOffset = (((DWORD)chunk & 7) << 14) + offset;
     return m_pRAM[dwOffset];
@@ -209,12 +209,12 @@ void CMotherboard::SetRAMByte(BYTE chunk, WORD offset, BYTE byte)
     m_pRAM[dwOffset] = byte;
 }
 
-WORD CMotherboard::GetROMWord(WORD offset)
+WORD CMotherboard::GetROMWord(WORD offset) const
 {
     ASSERT(offset < 1024 * 64);
     return *((WORD*)(m_pROM + offset));
 }
-BYTE CMotherboard::GetROMByte(WORD offset)
+BYTE CMotherboard::GetROMByte(WORD offset) const
 {
     ASSERT(offset < 1024 * 64);
     return m_pROM[offset];
@@ -518,7 +518,7 @@ void CMotherboard::SetPrinterInPort(BYTE data)
 // Motherboard: memory management
 
 // Read word from memory for debugger
-WORD CMotherboard::GetWordView(WORD address, BOOL okHaltMode, BOOL okExec, int* pAddrType)
+WORD CMotherboard::GetWordView(WORD address, BOOL okHaltMode, BOOL okExec, int* pAddrType) const
 {
     WORD offset;
     int addrtype = TranslateAddress(address, okHaltMode, okExec, &offset);
@@ -652,7 +652,7 @@ const BYTE* CMotherboard::GetVideoBuffer()
     }
 }
 
-int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, WORD* pOffset)
+int CMotherboard::TranslateAddress(WORD address, BOOL okHaltMode, BOOL okExec, WORD* pOffset) const
 {
     // При подключенном блоке дисковода, его ПЗУ занимает адреса 160000-167776, при этом адреса 170000-177776 остаются под порты.
     // Без подключенного дисковода, порты занимают адреса 177600-177776.
@@ -831,7 +831,7 @@ WORD CMotherboard::GetPortWord(WORD address)
 }
 
 // Read word from port for debugger
-WORD CMotherboard::GetPortView(WORD address)
+WORD CMotherboard::GetPortView(WORD address) const
 {
     switch (address)
     {

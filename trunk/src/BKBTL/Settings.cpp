@@ -92,6 +92,100 @@ BOOL Settings_LoadDwordValue(LPCTSTR sName, DWORD* dwValue)
     return TRUE;
 }
 
+BOOL Settings_SaveBinaryValue(LPCTSTR sName, const void * pData, int size)
+{
+    TCHAR* buffer = (TCHAR*) ::malloc((size * 2 + 1) * sizeof(TCHAR));
+    const BYTE* p = (const BYTE*) pData;
+    TCHAR* buf = buffer;
+    for (int i = 0; i < size; i++)
+    {
+        int a = *p;
+        wsprintf(buf, _T("%02X"), a);
+        p++;
+        buf += 2;
+    }
+
+    BOOL result = Settings_SaveStringValue(sName, buffer);
+
+    free(buffer);
+
+    return result;
+}
+
+BOOL Settings_LoadBinaryValue(LPCTSTR sName, void * pData, int size)
+{
+    size_t buffersize = (size * 2 + 1) * sizeof(TCHAR);
+    TCHAR* buffer = (TCHAR*) ::malloc(buffersize);
+    if (!Settings_LoadStringValue(sName, buffer, buffersize))
+    {
+        free(buffer);
+        return FALSE;
+    }
+
+    BYTE* p = (BYTE*) pData;
+    TCHAR* buf = buffer;
+    for (int i = 0; i < size; i++)
+    {
+        BYTE v = 0;
+
+        TCHAR ch = *buf;
+        if (ch >= _T('0') && ch <= _T('9'))
+            v = ch - _T('0');
+        else if (ch >= _T('A') && ch <= _T('F'))
+            v = ch - _T('A') + 10;
+        else  // Not hex
+        {
+            free(buffer);
+            return FALSE;
+        }
+        buf++;
+
+        v = v << 4;
+
+        ch = *buf;
+        if (ch >= _T('0') && ch <= _T('9'))
+            v |= ch - _T('0');
+        else if (ch >= _T('A') && ch <= _T('F'))
+            v |= ch - _T('A') + 10;
+        else  // Not hex
+        {
+            free(buffer);
+            return FALSE;
+        }
+        buf++;
+
+        *p = v;
+        p++;
+    }
+
+    free(buffer);
+
+    return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+
+
+#define SETTINGS_GETSET_DWORD(PARAMNAME, PARAMNAMESTR, OUTTYPE, DEFVALUE) \
+    OUTTYPE m_Settings_##PARAMNAME = DEFVALUE; \
+    BOOL m_Settings_##PARAMNAME##_Valid = FALSE; \
+    void Settings_Set##PARAMNAME(OUTTYPE newvalue) { \
+        m_Settings_##PARAMNAME = newvalue; \
+        m_Settings_##PARAMNAME##_Valid = TRUE; \
+        Settings_SaveDwordValue(PARAMNAMESTR, (DWORD) newvalue); \
+    } \
+    OUTTYPE Settings_Get##PARAMNAME##() { \
+        if (!m_Settings_##PARAMNAME##_Valid) { \
+            DWORD dwValue = (DWORD) DEFVALUE; \
+            Settings_LoadDwordValue(PARAMNAMESTR, &dwValue); \
+            m_Settings_##PARAMNAME = (OUTTYPE) dwValue; \
+            m_Settings_##PARAMNAME##_Valid = TRUE; \
+        } \
+        return m_Settings_##PARAMNAME; \
+    }
+
+
 void Settings_SetConfiguration(int configuration)
 {
     Settings_SaveDwordValue(_T("Configuration"), (DWORD) configuration);

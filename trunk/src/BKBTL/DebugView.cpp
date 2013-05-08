@@ -37,7 +37,7 @@ void DebugView_DoDraw(HDC hdc);
 BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM lParam);
 void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged);
 void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, int x, int y);
-void DebugView_DrawPorts(HDC hdc, CMotherboard* pBoard, int x, int y);
+void DebugView_DrawPorts(HDC hdc, const CMotherboard* pBoard, int x, int y);
 void DebugView_UpdateWindowText();
 
 
@@ -97,18 +97,32 @@ void CreateDebugView(HWND hwndParent, int x, int y, int width, int height)
     memset(m_okDebugCpuRChanged, 1, sizeof(m_okDebugCpuRChanged));
 }
 
+// Adjust position of client windows
+void DebugView_AdjustWindowLayout()
+{
+    RECT rc;  GetClientRect(g_hwndDebug, &rc);
+
+    if (m_hwndDebugViewer != (HWND) INVALID_HANDLE_VALUE)
+        SetWindowPos(m_hwndDebugViewer, NULL, 0, 0, rc.right, rc.bottom, SWP_NOZORDER);
+}
+
 LRESULT CALLBACK DebugViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
+    LRESULT lResult;
     switch (message)
     {
     case WM_DESTROY:
         g_hwndDebug = (HWND) INVALID_HANDLE_VALUE;  // We are closed! Bye-bye!..
         return CallWindowProc(m_wndprocDebugToolWindow, hWnd, message, wParam, lParam);
+    case WM_SIZE:
+        lResult = CallWindowProc(m_wndprocDebugToolWindow, hWnd, message, wParam, lParam);
+        DebugView_AdjustWindowLayout();
+        return lResult;
     default:
         return CallWindowProc(m_wndprocDebugToolWindow, hWnd, message, wParam, lParam);
     }
-    return (LRESULT)FALSE;
+    //return (LRESULT)FALSE;
 }
 
 LRESULT CALLBACK DebugViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -141,7 +155,7 @@ LRESULT CALLBACK DebugViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, 
     return (LRESULT)FALSE;
 }
 
-BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM lParam)
+BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
 {
     switch (vkey)
     {
@@ -245,7 +259,7 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
         ::SetTextColor(hdc, arrRChanged[r] ? COLOR_RED : colorText);
 
         LPCTSTR strRegName = REGISTER_NAME[r];
-        TextOut(hdc, x, y + r * cyLine, strRegName, (int) wcslen(strRegName));
+        TextOut(hdc, x, y + r * cyLine, strRegName, (int) _tcslen(strRegName));
 
         WORD value = arrR[r]; //pProc->GetReg(r);
         DrawOctalValue(hdc, x + cxChar * 3, y + r * cyLine, value);
@@ -320,7 +334,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     }
 }
 
-void DebugView_DrawPorts(HDC hdc, CMotherboard* pBoard, int x, int y)
+void DebugView_DrawPorts(HDC hdc, const CMotherboard* pBoard, int x, int y)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
 
