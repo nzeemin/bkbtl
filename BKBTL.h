@@ -24,11 +24,11 @@ extern TCHAR g_szWindowClass[MAX_LOADSTRING];      // Main window class name
 
 extern HINSTANCE g_hInst; // current instance
 
-extern HWND g_hwnd;  // Main window handle
-
 
 //////////////////////////////////////////////////////////////////////
+// Main Window
 
+extern HWND g_hwnd;  // Main window handle
 
 void MainWindow_RegisterClass();
 void MainWindow_RestoreSettings();

@@ -113,18 +113,32 @@ void CreateDisasmView(HWND hwndParent, int x, int y, int width, int height)
             g_hwndDisasm, NULL, g_hInst, NULL);
 }
 
+// Adjust position of client windows
+void DisasmView_AdjustWindowLayout()
+{
+    RECT rc;  GetClientRect(g_hwndDisasm, &rc);
+
+    if (m_hwndDisasmViewer != (HWND) INVALID_HANDLE_VALUE)
+        SetWindowPos(m_hwndDisasmViewer, NULL, 0, 0, rc.right, rc.bottom, SWP_NOZORDER);
+}
+
 LRESULT CALLBACK DisasmViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
+    LRESULT lResult;
     switch (message)
     {
     case WM_DESTROY:
         g_hwndDisasm = (HWND) INVALID_HANDLE_VALUE;  // We are closed! Bye-bye!..
         return CallWindowProc(m_wndprocDisasmToolWindow, hWnd, message, wParam, lParam);
+    case WM_SIZE:
+        lResult = CallWindowProc(m_wndprocDisasmToolWindow, hWnd, message, wParam, lParam);
+        DisasmView_AdjustWindowLayout();
+        return lResult;
     default:
         return CallWindowProc(m_wndprocDisasmToolWindow, hWnd, message, wParam, lParam);
     }
-    return (LRESULT)FALSE;
+    //return (LRESULT)FALSE;
 }
 
 LRESULT CALLBACK DisasmViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -157,7 +171,7 @@ LRESULT CALLBACK DisasmViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
     return (LRESULT)FALSE;
 }
 
-BOOL DisasmView_OnKeyDown(WPARAM vkey, LPARAM lParam)
+BOOL DisasmView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
 {
     switch (vkey)
     {
@@ -232,19 +246,10 @@ void DisasmView_DoSubtitles()
 
     // File Open dialog
     TCHAR bufFileName[MAX_PATH];
-    *bufFileName = 0;
-    OPENFILENAME ofn;
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = g_hwnd;
-    ofn.hInstance = g_hInst;
-    ofn.lpstrTitle = _T("Open Disassemble Subtitles");
-    ofn.lpstrFilter = _T("Subtitles (*.lst)\0*.lst\0All Files (*.*)\0*.*\0\0");
-    ofn.Flags = OFN_FILEMUSTEXIST;
-    ofn.lpstrFile = bufFileName;
-    ofn.nMaxFile = sizeof(bufFileName) / sizeof(TCHAR);
-
-    BOOL okResult = GetOpenFileName(&ofn);
+    BOOL okResult = ShowOpenDialog(g_hwnd,
+            _T("Open Disassemble Subtitles"),
+            _T("Subtitles (*.lst)\0*.lst\0All Files (*.*)\0*.*\0\0"),
+            bufFileName);
     if (! okResult) return;
 
     // Load subtitles text from the file
@@ -490,7 +495,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previ
                 LPCTSTR strBlockSubtitle = pSubItem->comment;
 
                 ::SetTextColor(hdc, COLOR_SUBTITLE);
-                TextOut(hdc, x + 21 * cxChar, y, strBlockSubtitle, (int) wcslen(strBlockSubtitle));
+                TextOut(hdc, x + 21 * cxChar, y, strBlockSubtitle, (int) _tcslen(strBlockSubtitle));
                 ::SetTextColor(hdc, colorText);
 
                 y += cyLine;
@@ -535,7 +540,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previ
                 LPCTSTR strSubtitle = pSubItem->comment;
 
                 ::SetTextColor(hdc, COLOR_SUBTITLE);
-                TextOut(hdc, x + 52 * cxChar, y, strSubtitle, (int) wcslen(strSubtitle));
+                TextOut(hdc, x + 52 * cxChar, y, strSubtitle, (int) _tcslen(strSubtitle));
                 ::SetTextColor(hdc, colorText);
 
                 // Строку с субтитром мы можем использовать как опорную для дизассемблера
@@ -560,8 +565,8 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previ
             }
             if (index + length <= nWindowSize)
             {
-                TextOut(hdc, x + 21 * cxChar, y, strInstr, (int) wcslen(strInstr));
-                TextOut(hdc, x + 29 * cxChar, y, strArg, (int) wcslen(strArg));
+                TextOut(hdc, x + 21 * cxChar, y, strInstr, (int) _tcslen(strInstr));
+                TextOut(hdc, x + 29 * cxChar, y, strArg, (int) _tcslen(strArg));
             }
             ::SetTextColor(hdc, colorText);
             if (wNextBaseAddr == 0)

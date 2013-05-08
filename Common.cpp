@@ -67,7 +67,7 @@ void DebugPrintFormat(LPCTSTR pszFormat, ...)
 
     va_list ptr;
     va_start(ptr, pszFormat);
-    _vsnwprintf_s(buffer, 512, 512 - 1, pszFormat, ptr);
+    _vsntprintf_s(buffer, 512, 512 - 1, pszFormat, ptr);
     va_end(ptr);
 
     DebugPrint(buffer);
@@ -127,12 +127,11 @@ void DebugLogFormat(LPCTSTR pszFormat, ...)
 
     va_list ptr;
     va_start(ptr, pszFormat);
-    _vsnwprintf_s(buffer, 512, 512 - 1, pszFormat, ptr);
+    _vsntprintf_s(buffer, 512, 512 - 1, pszFormat, ptr);
     va_end(ptr);
 
     DebugLog(buffer);
 }
-
 
 #endif // !defined(PRODUCT)
 
@@ -195,7 +194,7 @@ void PrintOctalValue(TCHAR* buffer, WORD value)
     for (int p = 0; p < 6; p++)
     {
         int digit = value & 7;
-        buffer[5 - p] = _T('0') + digit;
+        buffer[5 - p] = _T('0') + (TCHAR)digit;
         value = (value >> 3);
     }
     buffer[6] = 0;
@@ -236,8 +235,8 @@ BOOL ParseOctalValue(LPCTSTR text, WORD* pValue)
         if (ch == 0) break;
         if (ch < _T('0') || ch > _T('7')) return FALSE;
         value = (value << 3);
-        int digit = ch - _T('0');
-        value += digit;
+        TCHAR digit = ch - _T('0');
+        value = value + digit;
     }
     *pValue = value;
     return TRUE;
@@ -247,7 +246,7 @@ void DrawOctalValue(HDC hdc, int x, int y, WORD value)
 {
     TCHAR buffer[7];
     PrintOctalValue(buffer, value);
-    TextOut(hdc, x, y, buffer, (int) wcslen(buffer));
+    TextOut(hdc, x, y, buffer, (int) _tcslen(buffer));
 }
 void DrawHexValue(HDC hdc, int x, int y, WORD value)
 {

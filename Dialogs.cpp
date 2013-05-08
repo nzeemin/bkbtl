@@ -153,7 +153,7 @@ BOOL ShowSaveDialog(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strFilter, LPCTSTR
     ofn.lpstrTitle = strTitle;
     ofn.lpstrFilter = strFilter;
     ofn.lpstrDefExt = strDefExt;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
     ofn.lpstrFile = bufFileName;
     ofn.nMaxFile = MAX_PATH;
 

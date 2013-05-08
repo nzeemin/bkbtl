@@ -158,6 +158,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     ics.dwICC = ICC_WIN95_CLASSES;
     InitCommonControlsEx(&ics);
 
+#if !defined(PRODUCT)
+    DebugLogClear();
+#endif
     Settings_Init();
     Joystick_Init();
     Joystick_SelectJoystick(Settings_GetJoystick());
