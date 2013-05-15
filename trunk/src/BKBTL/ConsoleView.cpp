@@ -25,7 +25,8 @@ HWND g_hwndConsole = (HWND) INVALID_HANDLE_VALUE;  // Console View window handle
 WNDPROC m_wndprocConsoleToolWindow = NULL;  // Old window proc address of the ToolWindow
 
 HWND m_hwndConsoleLog = (HWND) INVALID_HANDLE_VALUE;  // Console log window - read-only edit control
-HWND m_hwndConsoleEdit = (HWND) INVALID_HANDLE_VALUE;  // Console prompt - edit control
+HWND m_hwndConsoleEdit = (HWND) INVALID_HANDLE_VALUE;  // Console line - edit control
+HWND m_hwndConsolePrompt = (HWND) INVALID_HANDLE_VALUE;  // Console prompt - static control
 HFONT m_hfontConsole = NULL;
 WNDPROC m_wndprocConsoleEdit = NULL;  // Old window proc address of the console prompt
 
@@ -90,18 +91,26 @@ void CreateConsoleView(HWND hwndParent, int x, int y, int width, int height)
             WS_EX_CLIENTEDGE,
             _T("EDIT"), NULL,
             WS_CHILD | WS_VISIBLE,
-            0, rcConsole.bottom - 20,
-            rcConsole.right, 20,
+            90, rcConsole.bottom - 20,
+            rcConsole.right - 90, 20,
             g_hwndConsole, NULL, g_hInst, NULL);
     m_hwndConsoleLog = CreateWindowEx(
             WS_EX_CLIENTEDGE,
             _T("EDIT"), NULL,
             WS_CHILD | WS_VSCROLL | WS_VISIBLE | ES_READONLY | ES_MULTILINE,
             0, 0,
-            rcConsole.right, rcConsole.bottom - 24,
+            rcConsole.right, rcConsole.bottom - 20,
+            g_hwndConsole, NULL, g_hInst, NULL);
+    m_hwndConsolePrompt = CreateWindowEx(
+            0,
+            _T("STATIC"), NULL,
+            WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE | SS_CENTER | SS_NOPREFIX,
+            0, rcConsole.bottom - 20,
+            90, 20,
             g_hwndConsole, NULL, g_hInst, NULL);
 
     m_hfontConsole = CreateMonospacedFont();
+    SendMessage(m_hwndConsolePrompt, WM_SETFONT, (WPARAM) m_hfontConsole, 0);
     SendMessage(m_hwndConsoleEdit, WM_SETFONT, (WPARAM) m_hfontConsole, 0);
     SendMessage(m_hwndConsoleLog, WM_SETFONT, (WPARAM) m_hfontConsole, 0);
 
@@ -121,9 +130,12 @@ void CreateConsoleView(HWND hwndParent, int x, int y, int width, int height)
 void ConsoleView_AdjustWindowLayout()
 {
     RECT rc;  GetClientRect(g_hwndConsole, &rc);
+    int promptWidth = 65;
 
+    if (m_hwndConsolePrompt != (HWND) INVALID_HANDLE_VALUE)
+        SetWindowPos(m_hwndConsolePrompt, NULL, 0, rc.bottom - 20, promptWidth, 20, SWP_NOZORDER);
     if (m_hwndConsoleEdit != (HWND) INVALID_HANDLE_VALUE)
-        SetWindowPos(m_hwndConsoleEdit, NULL, 0, rc.bottom - 20, rc.right, 20, SWP_NOZORDER);
+        SetWindowPos(m_hwndConsoleEdit, NULL, promptWidth, rc.bottom - 20, rc.right - promptWidth, 20, SWP_NOZORDER);
     if (m_hwndConsoleLog != (HWND) INVALID_HANDLE_VALUE)
         SetWindowPos(m_hwndConsoleLog, NULL, 0, 0, rc.right, rc.bottom - 24, SWP_NOZORDER);
 }
@@ -149,7 +161,7 @@ LRESULT CALLBACK ConsoleViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
     default:
         return CallWindowProc(m_wndprocConsoleToolWindow, hWnd, message, wParam, lParam);
     }
-    return (LRESULT)FALSE;
+    //return (LRESULT)FALSE;
 }
 
 LRESULT CALLBACK ConsoleEditWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -206,7 +218,7 @@ void PrintConsolePrompt()
     PrintOctalValue(bufferAddr, pProc->GetPC());
     TCHAR buffer[14];
     wsprintf(buffer, _T("%s> "), bufferAddr);
-    ConsoleView_Print(buffer);
+    ::SetWindowText(m_hwndConsolePrompt, buffer);
 }
 
 // Print register name, octal value and binary value
@@ -314,7 +326,7 @@ int PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okSh
 
     int lastLength = 0;
     int length = 0;
-    for (int index = 0; index < nWindowSize; index++)    // Рисуем строки
+    for (int index = 0; index < nWindowSize; index++)  // Рисуем строки
     {
         PrintOctalValue(bufaddr, address);
         WORD value = memory[index];
@@ -394,8 +406,11 @@ void DoConsoleCommand()
     if (command[0] == 0) return;  // Nothing to do
 
     // Echo command to the log
-    ConsoleView_Print(command);
-    ConsoleView_Print(_T("\r\n"));
+    TCHAR buffer[36];
+    ::GetWindowText(m_hwndConsolePrompt, buffer, 14);
+    ConsoleView_Print(buffer);
+    wsprintf(buffer, _T(" %s\r\n"), command);
+    ConsoleView_Print(buffer);
 
     BOOL okUpdateAllViews = FALSE;  // Flag - need to update all debug views
     CProcessor* pProc = ConsoleView_GetCurrentProcessor();
@@ -418,6 +433,7 @@ void DoConsoleCommand()
                 WORD value = pProc->GetReg(r);
                 PrintRegister(name, value);
             }
+            PrintRegister(_T("PS"), pProc->GetPSW());
         }
         else if (command[1] >= _T('0') && command[1] <= _T('7'))  // "r0".."r7"
         {
@@ -472,8 +488,8 @@ void DoConsoleCommand()
         if (command[1] == 0)  // "s" - Step Into, execute one instruction
         {
             PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
-
             //pProc->Execute();
+
             g_pBoard->DebugTicks();
 
             okUpdateAllViews = TRUE;
@@ -481,7 +497,7 @@ void DoConsoleCommand()
         else if (command[1] == _T('o'))  // "so" - Step Over
         {
             int instrLength = PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
-            WORD bpaddress = pProc->GetPC() + instrLength * 2;
+            WORD bpaddress = (WORD)(pProc->GetPC() + instrLength * 2);
 
             Emulator_SetCPUBreakpoint(bpaddress);
             Emulator_Start();
