@@ -69,6 +69,12 @@ void DebugView_RegisterClass()
     RegisterClassEx(&wcex);
 }
 
+void DebugView_Init()
+{
+    memset(m_wDebugCpuR, 255, sizeof(m_wDebugCpuR));
+    memset(m_okDebugCpuRChanged, 1, sizeof(m_okDebugCpuRChanged));
+}
+
 void CreateDebugView(HWND hwndParent, int x, int y, int width, int height)
 {
     ASSERT(hwndParent != NULL);
@@ -92,9 +98,6 @@ void CreateDebugView(HWND hwndParent, int x, int y, int width, int height)
             WS_CHILD | WS_VISIBLE,
             0, 0, rcClient.right, rcClient.bottom,
             g_hwndDebug, NULL, g_hInst, NULL);
-
-    memset(m_wDebugCpuR, 255, sizeof(m_wDebugCpuR));
-    memset(m_okDebugCpuRChanged, 1, sizeof(m_okDebugCpuRChanged));
 }
 
 // Adjust position of client windows
