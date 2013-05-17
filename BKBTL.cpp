@@ -199,6 +199,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     MainWindow_ShowHideDebug();
     MainWindow_AdjustWindowSize();
 
+    DebugView_Init();
     ScreenView_Init();
 
     ShowWindow(g_hwnd, nCmdShow);
