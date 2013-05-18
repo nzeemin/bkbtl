@@ -163,6 +163,7 @@ public:
     WORD        GetKeyboardRegister(void);
     WORD        GetPrinterOutPort() const { return m_Port177714out; }
     void        SetPrinterInPort(BYTE data);
+    BOOL        IsTapeMotorOn() const { return (m_Port177716tap & 0200) == 0; }
 public:  // Floppy
     BOOL        AttachFloppyImage(int slot, LPCTSTR sFileName);
     void        DetachFloppyImage(int slot);
