@@ -16,6 +16,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "BKBTL.h"
 #include "Emulator.h"
 #include "Views.h"
+#include "Dialogs.h"
 #include "emubase\Emubase.h"
 #include "SoundGen.h"
 #include "Joystick.h"
@@ -43,9 +44,19 @@ BYTE* g_pEmulatorChangedRam;  // RAM change flags
 WORD g_wEmulatorCpuPC = 0177777;      // Current PC value
 WORD g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
 
+void Emulator_FakeTape_StartReadFile();
 
 void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R);
 void CALLBACK Emulator_TeletypeCallback(BYTE symbol);
+
+enum
+{
+    TAPEMODE_STOPPED = 0,
+    TAPEMODE_STARTED = 1,
+    TAPEMODE_READING = 2,
+    TAPEMODE_FINISHED = -1
+} m_EmulatorTapeMode = TAPEMODE_STOPPED;
+int m_EmulatorTapeCount = 0;
 
 //Прототип функции преобразования экрана
 // Input:
@@ -176,6 +187,8 @@ BOOL Emulator_Init()
     }
 
     g_pBoard->SetTeletypeCallback(Emulator_TeletypeCallback);
+
+    m_EmulatorTapeMode = TAPEMODE_STOPPED;
 
     return TRUE;
 }
@@ -383,6 +396,8 @@ void Emulator_Reset()
     m_nUptimeFrameCount = 0;
     m_dwEmulatorUptime = 0;
 
+    m_EmulatorTapeMode = TAPEMODE_STOPPED;
+
     MainWindow_UpdateAllViews();
 }
 
@@ -465,7 +480,176 @@ int Emulator_SystemFrame()
         MainWindow_SetStatusbarText(StatusbarPartUptime, buffer);
     }
 
+    BOOL okTapeMotor = g_pBoard->IsTapeMotorOn();
+    if (Settings_GetTape())
+    {
+        m_EmulatorTapeMode = okTapeMotor ? TAPEMODE_FINISHED : TAPEMODE_STOPPED;
+    }
+    else  // Fake tape mode
+    {
+        switch (m_EmulatorTapeMode)
+        {
+        case TAPEMODE_STOPPED:
+            if (okTapeMotor)
+            {
+                m_EmulatorTapeMode = TAPEMODE_STARTED;
+                m_EmulatorTapeCount = 10;  // wait 2/5 sec
+            }
+            break;
+        case TAPEMODE_STARTED:
+            if (!okTapeMotor)
+                m_EmulatorTapeMode = TAPEMODE_STOPPED;
+            else
+            {
+                m_EmulatorTapeCount--;
+                if (m_EmulatorTapeCount <= 0)
+                {
+                    WORD pc = g_pBoard->GetCPU()->GetPC();
+                    // Check if BK-0010 and PC=116722,116724 for tape reading
+                    if ((g_nEmulatorConfiguration & 1) == BK_COPT_BK0010 &&
+                        (pc == 0116722 || pc == 0116724))
+                    {
+                        Emulator_FakeTape_StartReadFile();
+                        m_EmulatorTapeMode = TAPEMODE_FINISHED;
+                    }
+                    // Check if BK-0011 and PC=155676,155700 for tape reading
+                    else if ((g_nEmulatorConfiguration & 1) == BK_COPT_BK0011 &&
+                            (pc == 0155676 || pc == 0155700))
+                    {
+                        Emulator_FakeTape_StartReadFile();
+                        m_EmulatorTapeMode = TAPEMODE_FINISHED;
+                    }
+                }
+            }
+            break;
+        case TAPEMODE_FINISHED:
+            if (!okTapeMotor)
+                m_EmulatorTapeMode = TAPEMODE_STOPPED;
+            break;
+        }
+    }
+
     return 1;
+}
+
+void Emulator_FakeTape_StartReadFile()
+{
+    // Retrieve EMT 36 file name
+    TCHAR filename[24];
+    WORD nameaddr = 0326; //g_pBoard->GetRAMWord(0306) + 6;
+    for (int i = 0; i < 16; i++)
+    {
+        BYTE ch = g_pBoard->GetRAMByte(nameaddr + i);
+        filename[i] = (ch < 32) ? 0 : Translate_BK_Unicode(ch);
+    }
+    filename[16] = 0;
+    // Trim trailing spaces
+    for (int i = 15; i >= 0 && filename[i] == _T(' '); i--)
+        filename[i] = 0;
+    TCHAR* pdot = NULL;
+    if (*filename != 0)
+    {
+        // Check if we have filename extension
+        pdot = _tcsrchr(filename, _T('.'));
+        if (pdot == NULL)  // Have no dot so append default '.BIN' extension
+            _tcsncat(filename, _T(".BIN"), 4);
+        else
+        {
+            // We have dot in string so cut off spaces before the dot
+            if (pdot != filename)
+            {
+                TCHAR* pspace = pdot;
+                while (pspace > filename && *(pspace - 1) == _T(' '))
+                    pspace--;
+                if (pspace < pdot)
+                    _tcscpy(pspace, pdot);
+            }
+        }
+    }
+
+    FILE* fpFile = NULL;
+    // First, if the filename specified, try to find it
+    if (*filename != 0)
+        fpFile = ::_tfsopen(filename, _T("rb"), _SH_DENYWR);
+    // If file not found then ask user for the file
+    if (fpFile == NULL)
+    {
+        TCHAR title[36];
+        _sntprintf(title, 36, _T("Reading tape %s"), filename);
+        TCHAR filter[36];
+        pdot = _tcsrchr(filename, _T('.'));  // Find the extension
+        if (pdot == NULL)
+            memcpy(filter, _T("*.BIN\0*.BIN"), 12 * sizeof(TCHAR));
+        else
+        {
+            //TODO: Now we assume extension always 4-char
+            filter[0] = _T('*');
+            _tcsncpy(filter + 1, pdot, 4);
+            filter[5] = 0;
+            filter[6] = _T('*');
+            _tcsncpy(filter + 7, pdot, 4);
+            filter[11] = 0;
+        }
+        memcpy(filter + 12, _T("*.*\0*.*\0"), 9 * sizeof(TCHAR));
+        TCHAR filepath[MAX_PATH];
+        if (ShowOpenDialog(g_hwnd, title, filter, filepath))
+        {
+            fpFile = ::_tfsopen(filepath, _T("rb"), _SH_DENYWR);
+        }
+    }
+
+    BYTE result = 2;  // EMT36 result = checksum error
+    BYTE* pData = NULL;
+    if (fpFile != NULL)
+    {
+        for (;;)  // For breaks only
+        {
+            // Read the file header
+            WORD header[2];
+            if (::fread(header, 1, 4, fpFile) != 4)
+                break;  // Reading error
+            WORD filestart = header[0];
+            WORD filesize = header[1];
+
+            g_pBoard->SetRAMWord(0350, filesize);
+            g_pBoard->SetRAMWord(0346, filestart);
+            //TODO: Copy 16-char file name from 0326..0345 to 0352..0371
+
+            if (filesize == 0)
+                break;  // Wrong Length
+
+            // Read the file
+            pData = (BYTE*)malloc(filesize);
+            if (::fread(pData, 1, filesize, fpFile) != filesize)
+                break;  // Reading error
+
+            // Copy to memory
+            WORD start = g_pBoard->GetRAMWord(0322);
+            if (start == 0)
+                start = filestart;
+            for (int i = 0; i < filesize; i++)
+            {
+                g_pBoard->SetRAMByte(start + i, pData[i]);
+            }
+
+            result = 0;  // EMT36 result = OK
+            break;
+        }
+    }
+
+    if (pData != NULL)
+        free(pData);
+
+    // Report EMT36 result
+    g_pBoard->SetRAMByte(0321, result);
+
+    // Execute RTS twice -- return from EMT36
+    CProcessor* pCPU = g_pBoard->GetCPU();
+    pCPU->SetPC(g_pBoard->GetRAMWord(pCPU->GetSP()));
+    pCPU->SetSP(pCPU->GetSP() + 2);
+    pCPU->SetPC(g_pBoard->GetRAMWord(pCPU->GetSP()));
+    pCPU->SetSP(pCPU->GetSP() + 2);
+    //TODO: Set flags
 }
 
 void Emulator_ProcessJoystick()

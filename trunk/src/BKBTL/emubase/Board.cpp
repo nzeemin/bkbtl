@@ -105,7 +105,7 @@ void CMotherboard::Reset ()
     m_Port177714in = m_Port177714out = 0;
     m_Port177716 = ((m_Configuration & BK_COPT_BK0011) ? 0140000 : 0100000) | 0300;
     m_Port177716mem = 0000002;
-    m_Port177716tap = 0;
+    m_Port177716tap = 0200;
 
     m_timer = 0177777;
     m_timerdivider = 0;
@@ -256,7 +256,10 @@ void CMotherboard::ExecuteCPU()
 void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 ìêñ (BK-0011), 23437.5 Hz = 42.67 ìêñ (BK-0010)
 {
     if ((m_timerflags & 1) == 1)  // STOP, the timer stopped
+    {
+        m_timer = m_timerreload;
         return;
+    }
     if ((m_timerflags & 16) == 0)  // Not RUN, the timer paused
         return;
 
@@ -306,9 +309,7 @@ void CMotherboard::SetTimerReload(WORD val)	 // Sets timer reload value, write t
 void CMotherboard::SetTimerState(WORD val) // Sets timer state, write to port 177712
 {
     //DebugPrintFormat(_T("SetTimerState %06o\r\n"), val);
-    if ((val & 1) && ((m_timerflags & 1) == 0) ||
-        ((val & 16) == 0) && ((m_timerflags & 16) == 1))
-        m_timer = m_timerreload;
+    m_timer = m_timerreload;
 
     m_timerflags = 0177400 | val;
 }

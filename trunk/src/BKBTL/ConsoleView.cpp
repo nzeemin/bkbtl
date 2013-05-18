@@ -40,6 +40,7 @@ void DoConsoleCommand();
 void ConsoleView_AdjustWindowLayout();
 LRESULT CALLBACK ConsoleEditWndProc(HWND, UINT, WPARAM, LPARAM);
 void ConsoleView_ShowHelp();
+void ConsoleView_GotoMonitor();
 
 
 const LPCTSTR MESSAGE_UNKNOWN_COMMAND = _T("  Unknown command.\r\n");
@@ -378,6 +379,32 @@ void ConsoleView_StepOver()
     DoConsoleCommand();
 }
 
+void ConsoleView_GotoMonitor()
+{
+    if ((g_nEmulatorConfiguration & BK_COPT_ROM_BASIC) != 0)
+    {
+        ScreenView_KeyEvent(0115, TRUE);  // M
+        ScreenView_KeyEvent(0115, FALSE);
+        ScreenView_KeyEvent(0117, TRUE);  // O
+        ScreenView_KeyEvent(0117, FALSE);
+        //ScreenView_KeyEvent(0012, TRUE);  // ENTER
+        //ScreenView_KeyEvent(0012, FALSE);
+    }
+    else if ((g_nEmulatorConfiguration & BK_COPT_ROM_FOCAL) != 0)
+    {
+        ScreenView_KeyEvent(0120, TRUE);  // P
+        ScreenView_KeyEvent(0120, FALSE);
+        ScreenView_KeyEvent(0040, TRUE);  // SPACE
+        ScreenView_KeyEvent(0040, FALSE);
+        ScreenView_KeyEvent(0115, TRUE);  // M
+        ScreenView_KeyEvent(0115, FALSE);
+        //ScreenView_KeyEvent(0012, TRUE);  // ENTER
+        //ScreenView_KeyEvent(0012, FALSE);
+    }
+
+    SetFocus(g_hwndScreen);  // Move focus to the screen
+}
+
 void ConsoleView_ShowHelp()
 {
     ConsoleView_Print(_T("Console command list:\r\n")
@@ -547,6 +574,10 @@ void DoConsoleCommand()
             int r = command[2] - _T('0');
             WORD address = pProc->GetReg(r);
             PrintMemoryDump(pProc, address, 8);
+        }
+        else if (command[1] == _T('o'))
+        {
+            ConsoleView_GotoMonitor();
         }
         else
             ConsoleView_Print(MESSAGE_UNKNOWN_COMMAND);
