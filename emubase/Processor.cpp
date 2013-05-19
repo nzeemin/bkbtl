@@ -204,7 +204,7 @@ CProcessor::CProcessor (CMotherboard* pBoard)
     m_waitmode = FALSE;
     m_userspace = FALSE;
     m_stepmode = FALSE;
-    m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = FALSE;
+    m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ1rq = m_IRQ2rq = FALSE;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = FALSE;
     //m_VIRQrq = FALSE;
     m_haltpin = FALSE;
@@ -217,7 +217,7 @@ void CProcessor::Start ()
     m_userspace = FALSE;
     m_stepmode = FALSE;
     m_waitmode = FALSE;
-    m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = FALSE;
+    m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ1rq = m_IRQ2rq = FALSE;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = FALSE;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 
@@ -236,7 +236,7 @@ void CProcessor::Stop ()
     m_waitmode = FALSE;
     m_psw = 0340;
     m_internalTick = 0;
-    m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = FALSE;
+    m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = m_IRQ2rq = FALSE;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = FALSE;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
     m_haltpin = FALSE;
@@ -346,6 +346,13 @@ void CProcessor::Execute()
                 intrVector = 0000100;  intrMode = FALSE;
                 m_IRQ2rq = FALSE;
             }
+            else if (m_IRQ1rq /*TODO: masking*/)  //TODO: fix priority
+            {
+                SetWord(0177716, m_pBoard->GetSelRegister() | 010);  // Set bit 3 of SEL1
+                MemoryError();  // Instead of this should be writing PSW->0177676, PC->0177674
+                m_IRQ1rq = FALSE;
+                continue;
+            }
             else if (m_virqrq > 0 && (m_psw & 0200) != 0200)  // VIRQ, priority 7
             {
                 intrMode = FALSE;
@@ -427,15 +434,17 @@ void CProcessor::AssertHALT()
 {
     m_haltpin = TRUE;
 }
-
 void CProcessor::DeassertHALT()
 {
     m_haltpin = FALSE;
 }
-
 void CProcessor::MemoryError()
 {
     m_RPLYrq = TRUE;
+}
+void CProcessor::AssertIRQ1()
+{
+    m_IRQ1rq = TRUE;
 }
 
 
