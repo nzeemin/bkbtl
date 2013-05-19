@@ -28,6 +28,7 @@ public:  // Constructor / initialization
     void        AssertHALT();
     void		DeassertHALT();
     void		MemoryError();
+    void        AssertIRQ1();
     void        SetInternalTick (WORD tick) { m_internalTick = tick; }
 
 public:
@@ -61,10 +62,11 @@ protected:  // Interrupt processing
     BOOL        m_RPLYrq;           // Hangup interrupt pending
     BOOL        m_RSVDrq;           // Reserved instruction interrupt pending
     BOOL        m_TBITrq;           // T-bit interrupt pending
-    BOOL		m_ACLOrq;           // Power down interrupt pending
+    BOOL        m_ACLOrq;           // Power down interrupt pending
     BOOL        m_HALTrq;           // HALT command or HALT signal
     BOOL        m_RPL2rq;           // Double hangup interrupt pending
-    BOOL		m_IRQ2rq;           // Timer event interrupt pending
+    BOOL        m_IRQ1rq;
+    BOOL        m_IRQ2rq;           // Timer event interrupt pending
     BOOL        m_BPT_rq;           // BPT command interrupt pending
     BOOL        m_IOT_rq;           // IOT command interrupt pending
     BOOL        m_EMT_rq;           // EMT command interrupt pending

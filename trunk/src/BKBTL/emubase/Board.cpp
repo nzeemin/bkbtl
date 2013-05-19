@@ -472,7 +472,7 @@ void CMotherboard::KeyboardEvent(BYTE scancode, BOOL okPressed, BOOL okAr2)
     {
         if (okPressed)
         {
-            m_pCPU->InterruptVIRQ(1, 0000004);
+            m_pCPU->AssertIRQ1();
         }
         return;
     }
@@ -941,6 +941,7 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
         break;
 
     case 0177716:  // System register - memory management, tape management
+        m_Port177716 |= 4;  // Set bit 2
         if (word & 04000)
         {
             m_Port177716mem = word;
