@@ -27,7 +27,8 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #define COLOR_BLUE      RGB(0,0,255)
 #define COLOR_SUBTITLE  RGB(0,128,0)
 #define COLOR_VALUE     RGB(128,128,128)
-#define COLOR_JUMP      RGB(64,255,64)
+#define COLOR_JUMP      RGB(80,192,224)
+#define COLOR_CURRENT   RGB(255,255,224)
 
 
 HWND g_hwndDisasm = (HWND) INVALID_HANDLE_VALUE;  // Disasm View window handle
@@ -451,7 +452,7 @@ void DisasmView_DoDraw(HDC hdc)
 
     CProcessor* pDisasmPU = g_pBoard->GetCPU();
 
-    // Draw disasseble for the current processor
+    // Draw disassembly for the current processor
     WORD prevPC = g_wEmulatorPrevCpuPC;
     int yFocus = DisasmView_DrawDisassemble(hdc, pDisasmPU, m_wDisasmBaseAddr, prevPC, 0, 2 + 0 * cyLine);
 
@@ -492,22 +493,26 @@ BOOL DisasmView_CheckForJump(const WORD* memory, WORD address, int* pDelta)
 
     // BR, BNE, BEQ, BGE, BLT, BGT, BLE
     // BPL, BMI, BHI, BLOS, BVC, BVS, BHIS, BLO
-    if ((instr & 0077400) >= 0000400 && (instr & 0077400) < 0004000)
+    if ((instr & 0177400) >= 0000400 && (instr & 0177400) < 0004000 ||
+        (instr & 0177400) >= 0100000 && (instr & 0177400) < 0104000)
     {
         *pDelta = ((int)(char)(instr & 0xff)) + 1;
         return TRUE;
     }
 
     // SOB
-    WORD probe = (instr & ~(WORD)0777);
-    if (probe == PI_SOB)
+    if ((instr & ~(WORD)0777) == PI_SOB)
     {
         *pDelta = -(GetDigit(instr, 1) * 4 + GetDigit(instr, 0)) + 1;
         return TRUE;
     }
-    //TODO: JSR
 
-    //TODO: JMP
+    // CALL, JMP
+    if (instr == 0004767 || instr == 0000167)
+    {
+        *pDelta = ((short)(memory[1]) + 4) / 2;
+        return TRUE;
+    }
 
     return FALSE;
 }
@@ -520,6 +525,15 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previ
 
     WORD proccurrent = pProc->GetPC();
     WORD current = base;
+
+    // Draw current line background
+    if (!m_okDisasmSubtitles)  //NOTE: Subtitles can move lines down
+    {
+        HGDIOBJ oldBrush = SelectObject(hdc, CreateSolidBrush(COLOR_CURRENT));
+        int yCurrent = (proccurrent - (current - 5)) * cyLine;
+        PatBlt(hdc, 0, yCurrent, 1000, cyLine, PATCOPY);
+        SelectObject(hdc, oldBrush);
+    }
 
     // Читаем из памяти процессора в буфер
     const int nWindowSize = 30;
@@ -617,7 +631,8 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previ
                 length = DisassembleInstruction(memory + index, address, strInstr, strArg);
 
                 int delta;
-                if (DisasmView_CheckForJump(memory + index, address, &delta) &&
+                if (!m_okDisasmSubtitles &&  //NOTE: Subtitles can move lines down
+                    DisasmView_CheckForJump(memory + index, address, &delta) &&
                     abs(delta) < 32)
                 {
                     DisasmView_DrawJump(hdc, y, delta, x + (30 + _tcslen(strArg)) * cxChar, cyLine);

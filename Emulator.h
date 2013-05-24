@@ -47,6 +47,7 @@ void Emulator_Stop();
 void Emulator_Reset();
 int  Emulator_SystemFrame();
 void Emulator_ProcessJoystick();
+DWORD Emulator_GetUptime();  // BK uptime, in seconds
 
 void Emulator_GetScreenSize(int scrmode, int* pwid, int* phei);
 const DWORD * Emulator_GetPalette(int screenMode);

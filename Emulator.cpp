@@ -44,7 +44,8 @@ BYTE* g_pEmulatorChangedRam;  // RAM change flags
 WORD g_wEmulatorCpuPC = 0177777;      // Current PC value
 WORD g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
 
-void Emulator_FakeTape_StartReadFile();
+void Emulator_FakeTape_ReadFile();
+void Emulator_FakeTape_WriteFile();
 
 void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R);
 void CALLBACK Emulator_TeletypeCallback(BYTE symbol);
@@ -509,14 +510,21 @@ int Emulator_SystemFrame()
                     if ((g_nEmulatorConfiguration & 1) == BK_COPT_BK0010 &&
                         (pc == 0116722 || pc == 0116724))
                     {
-                        Emulator_FakeTape_StartReadFile();
+                        Emulator_FakeTape_ReadFile();
                         m_EmulatorTapeMode = TAPEMODE_FINISHED;
                     }
                     // Check if BK-0011 and PC=155676,155700 for tape reading
                     else if ((g_nEmulatorConfiguration & 1) == BK_COPT_BK0011 &&
                             (pc == 0155676 || pc == 0155700))
                     {
-                        Emulator_FakeTape_StartReadFile();
+                        Emulator_FakeTape_ReadFile();
+                        m_EmulatorTapeMode = TAPEMODE_FINISHED;
+                    }
+                    // Check for tape save start on BK-0010
+                    else if ((g_nEmulatorConfiguration & 1) == BK_COPT_BK0010 &&
+                            (pc == 0116414 || pc == 0116426))
+                    {
+                        Emulator_FakeTape_WriteFile();
                         m_EmulatorTapeMode = TAPEMODE_FINISHED;
                     }
                 }
@@ -532,10 +540,8 @@ int Emulator_SystemFrame()
     return 1;
 }
 
-void Emulator_FakeTape_StartReadFile()
+void Emulator_GetEmt36FileName(TCHAR* filename)
 {
-    // Retrieve EMT 36 file name
-    TCHAR filename[24];
     WORD nameaddr = 0326; //g_pBoard->GetRAMWord(0306) + 6;
     for (int i = 0; i < 16; i++)
     {
@@ -566,6 +572,12 @@ void Emulator_FakeTape_StartReadFile()
             }
         }
     }
+}
+
+void Emulator_FakeTape_ReadFile()
+{
+    TCHAR filename[24];
+    Emulator_GetEmt36FileName(filename);
 
     FILE* fpFile = NULL;
     // First, if the filename specified, try to find it
@@ -577,7 +589,7 @@ void Emulator_FakeTape_StartReadFile()
         TCHAR title[36];
         _sntprintf(title, 36, _T("Reading tape %s"), filename);
         TCHAR filter[36];
-        pdot = _tcsrchr(filename, _T('.'));  // Find the extension
+        TCHAR* pdot = _tcsrchr(filename, _T('.'));  // Find the extension
         if (pdot == NULL)
             memcpy(filter, _T("*.BIN\0*.BIN"), 12 * sizeof(TCHAR));
         else
@@ -635,6 +647,65 @@ void Emulator_FakeTape_StartReadFile()
             result = 0;  // EMT36 result = OK
             break;
         }
+        fclose(fpFile);
+    }
+
+    if (pData != NULL)
+        free(pData);
+
+    // Report EMT36 result
+    g_pBoard->SetRAMByte(0321, result);
+
+    // Execute RTS twice -- return from EMT36
+    CProcessor* pCPU = g_pBoard->GetCPU();
+    pCPU->SetPC(g_pBoard->GetRAMWord(pCPU->GetSP()));
+    pCPU->SetSP(pCPU->GetSP() + 2);
+    pCPU->SetPC(g_pBoard->GetRAMWord(pCPU->GetSP()));
+    pCPU->SetSP(pCPU->GetSP() + 2);
+    //TODO: Set flags
+}
+
+void Emulator_FakeTape_WriteFile()
+{
+    TCHAR filename[24];
+    Emulator_GetEmt36FileName(filename);
+
+    FILE* fpFile = NULL;
+    // First, if the filename specified, try to open if
+    if (*filename != 0)
+        fpFile = ::_tfsopen(filename, _T("wb"), _SH_DENYWR);
+    //TODO: If failed, ask user for file name
+
+    BYTE result = 2;  // EMT36 result = checksum error
+    BYTE* pData = NULL;
+    if (fpFile != NULL)
+    {
+        for (;;)  // For breaks only
+        {
+            WORD filesize = g_pBoard->GetRAMWord(0324);
+            WORD filestart = g_pBoard->GetRAMWord(0322);
+
+            pData = (BYTE*)malloc(filesize);
+
+            // Copy from memory
+            for (int i = 0; i < filesize; i++)
+            {
+                pData[i] = g_pBoard->GetRAMByte(filestart + i);
+            }
+
+            WORD header[2];
+            header[0] = filestart;
+            header[1] = filesize;
+            if (::fwrite(header, 1, 4, fpFile) != 4)
+                break;  // Writing error
+
+            if (::fwrite(pData, 1, filesize, fpFile) != filesize)
+                break;  // Writing error
+
+            result = 0;  // EMT36 result = OK
+            break;
+        }
+        fclose(fpFile);
     }
 
     if (pData != NULL)
