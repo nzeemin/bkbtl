@@ -75,11 +75,7 @@ enum StatusbarParts
 {
     StatusbarPartMessage = 0,
     StatusbarPartFPS = 1,
-    StatusbarPartMZ0 = 2,
-    StatusbarPartMZ1 = 3,
-    StatusbarPartMZ2 = 4,
-    StatusbarPartMZ3 = 5,
-    StatusbarPartUptime = 6,
+    StatusbarPartUptime = 2,
 };
 
 

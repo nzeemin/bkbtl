@@ -65,8 +65,6 @@ void MainWindow_DoFileScreenshot();
 void MainWindow_DoFileScreenshotSaveAs();
 void MainWindow_DoFileLoadBin();
 void MainWindow_DoFileSettings();
-void MainWindow_OnStatusbarClick(LPNMMOUSE lpnm);
-void MainWindow_OnStatusbarDrawItem(LPDRAWITEMSTRUCT);
 void MainWindow_OnToolbarGetInfoTip(LPNMTBGETINFOTIP);
 
 
@@ -185,9 +183,11 @@ BOOL MainWindow_InitStatusbar()
             g_hwnd, 101);
     if (! m_hwndStatusbar)
         return FALSE;
-    int statusbarParts[2];
-    statusbarParts[0] = 350;
-    statusbarParts[1] = -1;
+
+    int statusbarParts[3];
+    statusbarParts[0] = 300;
+    statusbarParts[1] = 380;
+    statusbarParts[2] = -1;
     SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts) / sizeof(int), (LPARAM) statusbarParts);
 
     return TRUE;
@@ -233,6 +233,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
         }
         break;
     case WM_DESTROY:
+        //MainWindow_SavePosition();
         PostQuitMessage(0);
         break;
     case WM_NOTIFY:
@@ -240,11 +241,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
             int idCtrl = (int) wParam;
             HWND hwndFrom = ((LPNMHDR) lParam)->hwndFrom;
             UINT code = ((LPNMHDR) lParam)->code;
-            if (hwndFrom == m_hwndStatusbar && code == NM_CLICK)
-            {
-                MainWindow_OnStatusbarClick((LPNMMOUSE) lParam);
-            }
-            else if (code == TTN_SHOW)
+            if (code == TTN_SHOW)
             {
                 return 0;
             }
@@ -256,15 +253,15 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
                 return DefWindowProc(hWnd, message, wParam, lParam);
         }
         break;
-    case WM_DRAWITEM:
-        {
-            int idCtrl = (int) wParam;
-            HWND hwndItem = ((LPDRAWITEMSTRUCT) lParam)->hwndItem;
-            if (hwndItem == m_hwndStatusbar)
-                MainWindow_OnStatusbarDrawItem((LPDRAWITEMSTRUCT) lParam);
-            else
-                return DefWindowProc(hWnd, message, wParam, lParam);
-        }
+        //case WM_DRAWITEM:
+        //    {
+        //        int idCtrl = (int) wParam;
+        //        HWND hwndItem = ((LPDRAWITEMSTRUCT) lParam)->hwndItem;
+        //        if (hwndItem == m_hwndStatusbar)
+        //            MainWindow_OnStatusbarDrawItem((LPDRAWITEMSTRUCT) lParam);
+        //        else
+        //            return DefWindowProc(hWnd, message, wParam, lParam);
+        //    }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -608,14 +605,14 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY1, (g_pBoard->IsFloppyImageAttached(1) ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY2, (g_pBoard->IsFloppyImageAttached(2) ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY3, (g_pBoard->IsFloppyImageAttached(3) ? MF_CHECKED : MF_UNCHECKED));
-    MainWindow_SetStatusbarBitmap(StatusbarPartMZ0,
-            g_pBoard->IsFloppyImageAttached(0) ? ((g_pBoard->IsFloppyReadOnly(0)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
-    MainWindow_SetStatusbarBitmap(StatusbarPartMZ1,
-            g_pBoard->IsFloppyImageAttached(1) ? ((g_pBoard->IsFloppyReadOnly(1)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
-    MainWindow_SetStatusbarBitmap(StatusbarPartMZ2,
-            g_pBoard->IsFloppyImageAttached(2) ? ((g_pBoard->IsFloppyReadOnly(2)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
-    MainWindow_SetStatusbarBitmap(StatusbarPartMZ3,
-            g_pBoard->IsFloppyImageAttached(3) ? ((g_pBoard->IsFloppyReadOnly(3)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
+    //MainWindow_SetStatusbarBitmap(StatusbarPartMZ0,
+    //        g_pBoard->IsFloppyImageAttached(0) ? ((g_pBoard->IsFloppyReadOnly(0)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
+    //MainWindow_SetStatusbarBitmap(StatusbarPartMZ1,
+    //        g_pBoard->IsFloppyImageAttached(1) ? ((g_pBoard->IsFloppyReadOnly(1)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
+    //MainWindow_SetStatusbarBitmap(StatusbarPartMZ2,
+    //        g_pBoard->IsFloppyImageAttached(2) ? ((g_pBoard->IsFloppyReadOnly(2)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
+    //MainWindow_SetStatusbarBitmap(StatusbarPartMZ3,
+    //        g_pBoard->IsFloppyImageAttached(3) ? ((g_pBoard->IsFloppyReadOnly(3)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
     MainWindow_SetToolbarImage(ID_EMULATOR_FLOPPY0,
             g_pBoard->IsFloppyImageAttached(0) ? (g_pBoard->IsFloppyReadOnly(0) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
     MainWindow_SetToolbarImage(ID_EMULATOR_FLOPPY1,
@@ -932,6 +929,7 @@ void MainWindow_DoFileScreenshotSaveAs()
     }
 }
 
+//TODO: Remove, fake tape replaced it
 void MainWindow_DoFileLoadBin()
 {
     ShowLoadBinDialog();
@@ -1028,45 +1026,6 @@ void MainWindow_OnToolbarGetInfoTip(LPNMTBGETINFOTIP lpnm)
             LPCTSTR lpFileName = GetFileNameFromFilePath(buffilepath);
             _tcsncpy_s(lpnm->pszText, 80, lpFileName, _TRUNCATE);
         }
-    }
-}
-
-void MainWindow_OnStatusbarClick(LPNMMOUSE lpnm)
-{
-    int nSection = (int) (lpnm->dwItemSpec);
-    if (nSection >= StatusbarPartMZ0 && nSection <= StatusbarPartMZ3)
-    {
-        UINT nCmd = 0;
-        switch (nSection)
-        {
-        case StatusbarPartMZ0: nCmd = ID_EMULATOR_FLOPPY0; break;
-        case StatusbarPartMZ1: nCmd = ID_EMULATOR_FLOPPY1; break;
-        case StatusbarPartMZ2: nCmd = ID_EMULATOR_FLOPPY2; break;
-        case StatusbarPartMZ3: nCmd = ID_EMULATOR_FLOPPY3; break;
-        }
-        ::PostMessage(g_hwnd, WM_COMMAND, (WPARAM) nCmd, 0);
-    }
-}
-
-void MainWindow_OnStatusbarDrawItem(LPDRAWITEMSTRUCT lpDrawItem)
-{
-    HDC hdc = lpDrawItem->hDC;
-
-    // Draw floppy drive number
-    TCHAR text[2];
-    text[0] = _T('0') + (TCHAR)(lpDrawItem->itemID - StatusbarPartMZ0);
-    text[1] = 0;
-    ::DrawStatusText(hdc, &lpDrawItem->rcItem, text, SBT_NOBORDERS);
-
-    // Draw floppy disk icon
-    UINT resourceId = (UINT) lpDrawItem->itemData;
-    if (resourceId != 0)
-    {
-        HICON hicon = ::LoadIcon(g_hInst, MAKEINTRESOURCE(resourceId));
-        int left = lpDrawItem->rcItem.right - 16 - 2; // lpDrawItem->rcItem.left + (lpDrawItem->rcItem.right - lpDrawItem->rcItem.left - 16) / 2;
-        int top = lpDrawItem->rcItem.top + (lpDrawItem->rcItem.bottom - lpDrawItem->rcItem.top - 16) / 2;
-        ::DrawIconEx(hdc, left, top, hicon, 16, 16, 0, NULL, DI_NORMAL);
-        ::DeleteObject(hicon);
     }
 }
 
