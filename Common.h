@@ -12,6 +12,16 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #pragma once
 
+//////////////////////////////////////////////////////////////////////
+
+#ifdef _DEBUG
+#define BKBTL_VERSION_STRING "DEBUG"
+#elif !defined(PRODUCT)
+#define BKBTL_VERSION_STRING "RELEASE"
+#else
+#include "Version.h"
+#endif
+
 
 //////////////////////////////////////////////////////////////////////
 // Assertions checking - MFC-like ASSERT macro

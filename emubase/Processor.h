@@ -26,8 +26,8 @@ class CProcessor  // KM1801VM1 processor
 public:  // Constructor / initialization
     CProcessor(CMotherboard* pBoard);
     void        AssertHALT();
-    void		DeassertHALT();
-    void		MemoryError();
+    void        DeassertHALT();
+    void        MemoryError();
     void        AssertIRQ1();
     void        SetInternalTick (WORD tick) { m_internalTick = tick; }
 
@@ -116,7 +116,7 @@ public:  // Processor control
     void        Start();     // Start processor
     void        Stop();      // Stop processor
     void        TickIRQ2();  // IRQ2 signal
-    void		PowerFail();
+    void        PowerFail();
     void        InterruptVIRQ(int que, WORD interrupt);  // External interrupt via VIRQ signal
     void        Execute();   // Execute one instruction - for debugger only
 
@@ -160,26 +160,18 @@ protected:  // PSW bits calculations
 
 protected:  // Implementation - instruction execution
     // No fields
-    WORD		GetWordAddr (BYTE meth, BYTE reg);
-    WORD		GetByteAddr (BYTE meth, BYTE reg);
+    WORD        GetWordAddr (BYTE meth, BYTE reg);
+    WORD        GetByteAddr (BYTE meth, BYTE reg);
 
     void        ExecuteUNKNOWN ();  // Нет такой инструкции - просто вызывается TRAP 10
     void        ExecuteHALT ();
     void        ExecuteWAIT ();
-    void		ExecuteRCPC	();
-    void		ExecuteRCPS ();
-    void		ExecuteWCPC	();
-    void		ExecuteWCPS	();
-    void		ExecuteMFUS ();
-    void		ExecuteMTUS ();
     void        ExecuteRTI ();
     void        ExecuteBPT ();
     void        ExecuteIOT ();
     void        ExecuteRESET ();
-    void		ExecuteSTEP	();
-    void        ExecuteRSEL ();
-    void        Execute000030 ();
-    void		ExecuteRUN	();
+    void        ExecuteSTEP ();
+    void        ExecuteRUN ();
     void        ExecuteRTT ();
     void        ExecuteNOP ();
     void        ExecuteCLC ();
