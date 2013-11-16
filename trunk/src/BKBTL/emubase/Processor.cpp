@@ -66,7 +66,7 @@ void CProcessor::Init()
 
     RegisterMethodRef( 0000010, 0000013, &CProcessor::ExecuteRUN );
     RegisterMethodRef( 0000014, 0000017, &CProcessor::ExecuteSTEP );
-    RegisterMethodRef( 0000030, 0000030, &CProcessor::Execute000030 );
+    //RegisterMethodRef( 0000030, 0000030, &CProcessor::Execute000030 );
 
     RegisterMethodRef( 0000100, 0000177, &CProcessor::ExecuteJMP );
     RegisterMethodRef( 0000200, 0000207, &CProcessor::ExecuteRTS );  // RTS / RETURN
@@ -376,17 +376,15 @@ void CProcessor::Execute()
 
             if (intrMode)  // HALT mode interrupt
             {
-                WORD selVector = m_pBoard->GetSelRegister() & 0x0ff00;
-                intrVector |= selVector;
+                MemoryError();
+                // PC  -> 0177674
+                // PSW -> 0177676
+                //intrVector |= 0160000;
 
-                // Save PC/PSW to CPC/CPSW
-                //m_savepc = GetPC();
-                //m_savepsw = GetPSW();
+                //m_psw |= 0400;
 
-                m_psw |= 0400;
-
-                SetPC(GetWord(intrVector));
-                m_psw = GetWord(intrVector + 2) & 0777;
+                //SetPC(GetWord(intrVector));
+                //m_psw = GetWord(intrVector + 2) & 0777;
             }
             else  // USER mode interrupt
             {
@@ -739,36 +737,16 @@ void CProcessor::ExecuteWAIT ()  // WAIT - Wait for an interrupt
 
 void CProcessor::ExecuteSTEP()
 {
-    if ((m_psw & PSW_HALT) == 0)
-    {
-        m_RSVDrq = TRUE;
-        return;
-    }
+    m_HALTrq = TRUE;
 
     m_stepmode = TRUE;
     //SetPC(m_savepc);
     //SetPSW(m_savepsw);
 }
 
-void CProcessor::Execute000030()  // Unknown command
-{
-    if ((m_psw & PSW_HALT) == 0)
-    {
-        m_RSVDrq = TRUE;
-        return;
-    }
-
-    //TODO: Реализовать команду
-    m_RPLYrq = TRUE;
-}
-
 void CProcessor::ExecuteRUN()
 {
-    if ((m_psw & PSW_HALT) == 0)
-    {
-        m_RSVDrq = TRUE;
-        return;
-    }
+    m_HALTrq = TRUE;
 
     //SetPC(m_savepc);
     //SetPSW(m_savepsw);
