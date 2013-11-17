@@ -175,41 +175,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     Emulator_SetSound(Settings_GetSound());
     Emulator_SetCovox(Settings_GetCovox());
 
-    // Create main window
-    g_hwnd = CreateWindow(g_szWindowClass, g_szTitle,
-            WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_DLGFRAME | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-            0, 0, 0, 0,
-            NULL, NULL, hInstance, NULL);
-    if (! g_hwnd)
+    if (!CreateMainWindow())
         return FALSE;
-
-    // Create and set up the toolbar and the statusbar
-    if (!MainWindow_InitToolbar())
-        return FALSE;
-    if (!MainWindow_InitStatusbar())
-        return FALSE;
-
-    // Create screen window as a child of the main window
-    CreateScreenView(g_hwnd, 4, 4, 582);
-
-    MainWindow_RestoreSettings();
-
-    MainWindow_ShowHideKeyboard();
-    MainWindow_ShowHideTape();
-    MainWindow_ShowHideDebug();
-    MainWindow_AdjustWindowSize();
-
-    DebugView_Init();
-    ScreenView_Init();
-
-    ShowWindow(g_hwnd, nCmdShow);
-    UpdateWindow(g_hwnd);
-    MainWindow_UpdateAllViews();
-    MainWindow_UpdateMenu();
-
-    // Autostart
-    if (Settings_GetAutostart())
-        ::PostMessage(g_hwnd, WM_COMMAND, ID_EMULATOR_RUN, 0);
 
     return TRUE;
 }

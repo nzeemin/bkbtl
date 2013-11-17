@@ -31,6 +31,7 @@ extern HINSTANCE g_hInst; // current instance
 extern HWND g_hwnd;  // Main window handle
 
 void MainWindow_RegisterClass();
+BOOL CreateMainWindow();
 void MainWindow_RestoreSettings();
 void MainWindow_UpdateMenu();
 void MainWindow_UpdateAllViews();
@@ -84,6 +85,12 @@ enum StatusbarParts
 
 void Settings_Init();
 void Settings_Done();
+BOOL Settings_GetWindowRect(RECT * pRect);
+void Settings_SetWindowRect(const RECT * pRect);
+void Settings_SetWindowMaximized(BOOL flag);
+BOOL Settings_GetWindowMaximized();
+void Settings_SetWindowFullscreen(BOOL flag);
+BOOL Settings_GetWindowFullscreen();
 void Settings_SetConfiguration(int configuration);
 int  Settings_GetConfiguration();
 void Settings_SetFloppyFilePath(int slot, LPCTSTR sFilePath);
