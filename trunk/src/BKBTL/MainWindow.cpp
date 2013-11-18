@@ -232,7 +232,8 @@ BOOL MainWindow_InitStatusbar()
 {
     TCHAR buffer[100];
     wsprintf(buffer, _T("BK Back to Life - version %s"), _T(BKBTL_VERSION_STRING));
-    m_hwndStatusbar = CreateStatusWindow(WS_CHILD | WS_VISIBLE | SBT_TOOLTIPS,
+    m_hwndStatusbar = CreateStatusWindow(
+            WS_CHILD | WS_VISIBLE | SBT_TOOLTIPS | CCS_NOPARENTALIGN | CCS_NODIVIDER,
             buffer,
             g_hwnd, 101);
     if (! m_hwndStatusbar)
