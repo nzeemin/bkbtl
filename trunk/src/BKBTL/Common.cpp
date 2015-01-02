@@ -41,6 +41,17 @@ void AlertWarning(LPCTSTR sMessage)
 {
     ::MessageBox(NULL, sMessage, _T("BK Back to Life"), MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
 }
+void AlertWarningFormat(LPCTSTR sFormat, ...)
+{
+    TCHAR buffer[512];
+
+    va_list ptr;
+    va_start(ptr, sFormat);
+    _vsntprintf_s(buffer, 512, 512 - 1, sFormat, ptr);
+    va_end(ptr);
+
+    ::MessageBox(NULL, buffer, _T("BK Back to Life"), MB_OK | MB_ICONEXCLAMATION);
+}
 BOOL AlertOkCancel(LPCTSTR sMessage)
 {
     int result = ::MessageBox(NULL, sMessage, _T("BK Back to Life"), MB_OKCANCEL | MB_ICONQUESTION | MB_TOPMOST);

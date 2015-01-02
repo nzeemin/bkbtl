@@ -29,6 +29,7 @@ public:  // Constructor / initialization
     void        DeassertHALT();
     void        MemoryError();
     void        AssertIRQ1();
+	int			GetInternalTick() const { return m_internalTick; }
     void        SetInternalTick (WORD tick) { m_internalTick = tick; }
 
 public:

@@ -601,6 +601,18 @@ void DoConsoleCommand()
             }
         }
         break;
+#if !defined(PRODUCT)
+    case _T('t'):
+		{
+			BOOL okTrace = !g_pBoard->GetTrace();
+			g_pBoard->SetTrace(okTrace);
+			if (okTrace)
+				ConsoleView_Print(_T("  Trace is ON.\r\n"));
+			else
+				ConsoleView_Print(_T("  Trace is OFF.\r\n"));
+		}
+		break;
+#endif
     default:
         ConsoleView_Print(MESSAGE_UNKNOWN_COMMAND);
         break;
