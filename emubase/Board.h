@@ -148,6 +148,8 @@ public:  // Memory access  //TODO: Make it private
 public:  // Debug
     void        DebugTicks();  // One Debug PPU tick -- use for debug step or debug breakpoint
     void        SetCPUBreakpoint(WORD bp) { m_CPUbp = bp; } // Set CPU breakpoint
+	BOOL        GetTrace() const { return m_okTraceCPU; }
+	void        SetTrace(BOOL okTraceCPU) { m_okTraceCPU = okTraceCPU; }
 public:  // System control
     void        SetConfiguration(WORD conf);
     void        Reset();  // Reset computer
@@ -236,6 +238,7 @@ private:  // Timer implementation
     void		SetTimerState(WORD val);	//sets timer state
 private:
     WORD        m_CPUbp;  // CPU breakpoint address
+    BOOL        m_okTraceCPU;
 private:
     TAPEREADCALLBACK m_TapeReadCallback;
     TAPEWRITECALLBACK m_TapeWriteCallback;

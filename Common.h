@@ -41,9 +41,10 @@ BOOL AssertFailedLine(LPCSTR lpszFileName, int nLine);
 
 
 //////////////////////////////////////////////////////////////////////
-
+// Alerts
 
 void AlertWarning(LPCTSTR sMessage);
+void AlertWarningFormat(LPCTSTR sFormat, ...);
 BOOL AlertOkCancel(LPCTSTR sMessage);
 
 
