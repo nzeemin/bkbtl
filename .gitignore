@@ -1,0 +1,8 @@
+/trace.log
+/*.ncb
+/Debug
+/*.suo
+/*.user
+/Product
+/Release
+/*.rom
