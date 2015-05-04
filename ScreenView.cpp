@@ -195,6 +195,8 @@ void ScreenView_SetScreenMode(int newMode)
 
     RECT rc;  ::GetWindowRect(g_hwndScreen, &rc);
     ::SetWindowPos(g_hwndScreen, NULL, 0, 0, rc.right - rc.left, 4 + cyHeight + 4, SWP_NOZORDER | SWP_NOMOVE);
+
+    ScreenView_RedrawScreen();
 }
 
 void ScreenView_OnDraw(HDC hdc)
