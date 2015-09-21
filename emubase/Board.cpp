@@ -1038,15 +1038,9 @@ void CMotherboard::SetPortWord(WORD address, WORD word)
 //    // CPU status
 //    BYTE* pImageCPU = pImage + 64;
 //    m_pCPU->SaveToImage(pImageCPU);
-//    // PPU status
-//    BYTE* pImagePPU = pImageCPU + 32;
-//    m_pPPU->SaveToImage(pImagePPU);
 //    // CPU memory/IO controller status
-//    BYTE* pImageCpuMem = pImagePPU + 32;
+//    BYTE* pImageCpuMem = pImageCPU + 32;
 //    m_pFirstMemCtl->SaveToImage(pImageCpuMem);
-//    // PPU memory/IO controller status
-//    BYTE* pImagePpuMem = pImageCpuMem + 64;
-//    m_pSecondMemCtl->SaveToImage(pImagePpuMem);
 //
 //    // ROM
 //    BYTE* pImageRom = pImage + 256;
