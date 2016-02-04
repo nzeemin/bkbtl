@@ -178,7 +178,7 @@ public:  // Callbacks
     void		SetTeletypeCallback(TELETYPECALLBACK callback);
 public:  // Memory
     // Read command for execution
-    uint16_t GetWordExec(uint16_t address, bool okHaltMode) { return GetWord(address, okHaltMode, TRUE); }
+    uint16_t GetWordExec(uint16_t address, bool okHaltMode) { return GetWord(address, okHaltMode, true); }
     // Read word from memory
     uint16_t GetWord(uint16_t address, bool okHaltMode) { return GetWord(address, okHaltMode, false); }
     // Read word
@@ -204,7 +204,7 @@ private:
 private:
     // Determite memory type for given address - see ADDRTYPE_Xxx constants
     //   okHaltMode - processor mode (USER/HALT)
-    //   okExec - TRUE: read instruction for execution; false: read memory
+    //   okExec - true: read instruction for execution; false: read memory
     //   pOffset - result - offset in memory plane
     int TranslateAddress(uint16_t address, bool okHaltMode, bool okExec, uint16_t* pOffset) const;
 private:  // Access to I/O ports

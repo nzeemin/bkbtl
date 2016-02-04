@@ -43,7 +43,7 @@ bool ConvertSrcToString(uint16_t instr, uint16_t addr, TCHAR* strSrc, uint16_t c
         {
             uint16_t word = code;  //TODO: pMemory
             _sntprintf(strSrc, 24, format, word, pszReg);
-            return TRUE;
+            return true;
         }
         else
             _sntprintf(strSrc, 24, format, pszReg);
@@ -56,13 +56,13 @@ bool ConvertSrcToString(uint16_t instr, uint16_t addr, TCHAR* strSrc, uint16_t c
         {
             uint16_t word = code;  //TODO: pMemory
             _sntprintf(strSrc, 24, format, word);
-            return TRUE;
+            return true;
         }
         else if (param == 6 || param == 7)
         {
             uint16_t word = code;  //TODO: pMemory
             _sntprintf(strSrc, 24, format, (uint16_t)(addr + word + 2));
-            return TRUE;
+            return true;
         }
         else
             _sntprintf(strSrc, 24, format, pszReg);
@@ -86,7 +86,7 @@ bool ConvertDstToString (uint16_t instr, uint16_t addr, TCHAR* strDst, uint16_t 
         if (param == 6 || param == 7)
         {
             _sntprintf(strDst, 24, format, code, pszReg);
-            return TRUE;
+            return true;
         }
         else
             _sntprintf(strDst, 24, format, pszReg);
@@ -98,12 +98,12 @@ bool ConvertDstToString (uint16_t instr, uint16_t addr, TCHAR* strDst, uint16_t 
         if (param == 2 || param == 3)
         {
             _sntprintf(strDst, 24, format, code);
-            return TRUE;
+            return true;
         }
         else if (param == 6 || param == 7)
         {
             _sntprintf(strDst, 24, format, (uint16_t)(addr + code + 2));
-            return TRUE;
+            return true;
         }
         else
             _sntprintf(strDst, 24, format, pszReg);

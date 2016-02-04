@@ -104,11 +104,11 @@ public:
     void Reset();
 
 public:
-    BOOL AttachImage(int drive, LPCTSTR sFileName);
+    bool AttachImage(int drive, LPCTSTR sFileName);
     void DetachImage(int drive);
-    BOOL IsAttached(int drive) { return (m_drivedata[drive].fpFile != NULL); }
-    BOOL IsReadOnly(int drive) { return m_drivedata[drive].okReadOnly; } // return (m_status & FLOPPY_STATUS_WRITEPROTECT) != 0; }
-    BOOL IsEngineOn() { return (m_flags & FLOPPY_CMD_ENGINESTART) != 0; }
+    bool IsAttached(int drive) { return (m_drivedata[drive].fpFile != NULL); }
+    bool IsReadOnly(int drive) { return m_drivedata[drive].okReadOnly; } // return (m_status & FLOPPY_STATUS_WRITEPROTECT) != 0; }
+    bool IsEngineOn() { return (m_flags & FLOPPY_CMD_ENGINESTART) != 0; }
     uint16_t GetData(void);         // Reading port 177132 - data
     uint16_t GetState(void);        // Reading port 177130 - device status
     uint16_t GetDataView() const { return m_datareg; }  // Get port 177132 value for debugger

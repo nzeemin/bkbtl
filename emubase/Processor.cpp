@@ -199,7 +199,7 @@ CProcessor::CProcessor (CMotherboard* pBoard)
     m_pBoard = pBoard;
     ::memset(m_R, 0, sizeof(m_R));
     m_psw = 0340;
-    m_okStopped = TRUE;
+    m_okStopped = true;
     m_internalTick = 0;
     m_waitmode = false;
     m_userspace = false;
@@ -229,7 +229,7 @@ void CProcessor::Start ()
 }
 void CProcessor::Stop ()
 {
-    m_okStopped = TRUE;
+    m_okStopped = true;
 
     m_userspace = false;
     m_stepmode = false;
@@ -274,17 +274,17 @@ void CProcessor::Execute()
     }
     else  // Processing interrupts
     {
-        while (TRUE)
+        while (true)
         {
             m_TBITrq = (m_psw & 020);  // T-bit
 
             // Calculate interrupt vector and mode accoding to priority
             uint16_t intrVector = 0;
-            bool currMode = ((m_psw & 0400) != 0);  // Current processor mode: TRUE = HALT mode, false = USER mode
-            bool intrMode;  // TRUE = HALT mode interrupt, false = USER mode interrupt
+            bool currMode = ((m_psw & 0400) != 0);  // Current processor mode: true = HALT mode, false = USER mode
+            bool intrMode;  // true = HALT mode interrupt, false = USER mode interrupt
             if (m_HALTrq)  // HALT command
             {
-                intrVector = 0002;  intrMode = TRUE;
+                intrVector = 0002;  intrMode = true;
                 m_HALTrq = false;
             }
             else if (m_BPT_rq)  // BPT command
@@ -309,7 +309,7 @@ void CProcessor::Execute()
             }
             else if (m_RPLYrq && currMode)  // Зависание в HALT, priority 1
             {
-                intrVector = 0004;  intrMode = TRUE;
+                intrVector = 0004;  intrMode = true;
                 m_RPLYrq = false;
             }
             else if (m_RPLYrq && !currMode)  // Зависание в USER, priority 1
@@ -319,7 +319,7 @@ void CProcessor::Execute()
             }
             else if (m_RPL2rq)  // Двойное зависание, priority 1
             {
-                intrVector = 0174;  intrMode = TRUE;
+                intrVector = 0174;  intrMode = true;
                 m_RPL2rq = false;
             }
             else if (m_RSVDrq)  // Reserved command, priority 2
@@ -339,7 +339,7 @@ void CProcessor::Execute()
             }
             else if (m_haltpin && (m_psw & 0400) != 0400)  // HALT signal in USER mode, priority 5
             {
-                intrVector = 0170;  intrMode = TRUE;
+                intrVector = 0170;  intrMode = true;
             }
             else if (m_IRQ2rq && (m_psw & 0200) != 0200)  // EVNT signal, priority 6
             {
@@ -408,14 +408,14 @@ void CProcessor::TickIRQ2()
 {
     if (m_okStopped) return;  // Processor is stopped - nothing to do
 
-    m_IRQ2rq = TRUE;
+    m_IRQ2rq = true;
 }
 
 void CProcessor::PowerFail()
 {
     if (m_okStopped) return;  // Processor is stopped - nothing to do
 
-    m_ACLOrq = TRUE;
+    m_ACLOrq = true;
 }
 
 void CProcessor::InterruptVIRQ(int que, uint16_t interrupt)
@@ -430,7 +430,7 @@ void CProcessor::InterruptVIRQ(int que, uint16_t interrupt)
 }
 void CProcessor::AssertHALT()
 {
-    m_haltpin = TRUE;
+    m_haltpin = true;
 }
 void CProcessor::DeassertHALT()
 {
@@ -438,11 +438,11 @@ void CProcessor::DeassertHALT()
 }
 void CProcessor::MemoryError()
 {
-    m_RPLYrq = TRUE;
+    m_RPLYrq = true;
 }
 void CProcessor::AssertIRQ1()
 {
-    m_IRQ1rq = TRUE;
+    m_IRQ1rq = true;
 }
 
 
@@ -722,7 +722,7 @@ void CProcessor::ExecuteUNKNOWN ()  // Нет такой инструкции - просто вызывается 
 //    DebugPrintFormat(_T(">>Invalid OPCODE = %06o %06o\r\n"), GetPC()-2, m_instruction);
 //#endif
 
-    m_RSVDrq = TRUE;
+    m_RSVDrq = true;
 }
 
 
@@ -730,23 +730,23 @@ void CProcessor::ExecuteUNKNOWN ()  // Нет такой инструкции - просто вызывается 
 
 void CProcessor::ExecuteWAIT ()  // WAIT - Wait for an interrupt
 {
-    m_waitmode = TRUE;
+    m_waitmode = true;
 
     m_internalTick = TIMING_WAIT;
 }
 
 void CProcessor::ExecuteSTEP()
 {
-    m_HALTrq = TRUE;
+    m_HALTrq = true;
 
-    m_stepmode = TRUE;
+    m_stepmode = true;
     //SetPC(m_savepc);
     //SetPSW(m_savepsw);
 }
 
 void CProcessor::ExecuteRUN()
 {
-    m_HALTrq = TRUE;
+    m_HALTrq = true;
 
     //SetPC(m_savepc);
     //SetPSW(m_savepsw);
@@ -754,7 +754,7 @@ void CProcessor::ExecuteRUN()
 
 void CProcessor::ExecuteHALT ()  // HALT - Останов
 {
-    m_HALTrq = TRUE;
+    m_HALTrq = true;
 }
 
 void CProcessor::ExecuteRTI ()  // RTI - Возврат из прерывания
@@ -776,13 +776,13 @@ void CProcessor::ExecuteRTI ()  // RTI - Возврат из прерывания
 
 void CProcessor::ExecuteBPT ()  // BPT - Breakpoint
 {
-    m_BPT_rq = TRUE;
+    m_BPT_rq = true;
     m_internalTick = TIMING_EMT;
 }
 
 void CProcessor::ExecuteIOT ()  // IOT - I/O trap
 {
-    m_IOT_rq = TRUE;
+    m_IOT_rq = true;
     m_internalTick = TIMING_EMT;
 }
 
@@ -919,94 +919,94 @@ void CProcessor::ExecuteCCC ()
 }
 void CProcessor::ExecuteSEC ()
 {
-    SetC(TRUE);
+    SetC(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSEV ()
 {
-    SetV(TRUE);
+    SetV(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSEVC ()
 {
-    SetV(TRUE);
-    SetC(TRUE);
+    SetV(true);
+    SetC(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSEZ ()
 {
-    SetZ(TRUE);
+    SetZ(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSEZC ()
 {
-    SetZ(TRUE);
-    SetC(TRUE);
+    SetZ(true);
+    SetC(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSEZV ()
 {
-    SetZ(TRUE);
-    SetV(TRUE);
+    SetZ(true);
+    SetV(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSEZVC ()
 {
-    SetZ(TRUE);
-    SetV(TRUE);
-    SetC(TRUE);
+    SetZ(true);
+    SetV(true);
+    SetC(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSEN ()
 {
-    SetN(TRUE);
+    SetN(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSENC ()
 {
-    SetN(TRUE);
-    SetZ(TRUE);
+    SetN(true);
+    SetZ(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSENV ()
 {
-    SetN(TRUE);
-    SetV(TRUE);
+    SetN(true);
+    SetV(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSENVC ()
 {
-    SetN(TRUE);
-    SetV(TRUE);
-    SetC(TRUE);
+    SetN(true);
+    SetV(true);
+    SetC(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSENZ ()
 {
-    SetN(TRUE);
-    SetZ(TRUE);
+    SetN(true);
+    SetZ(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSENZC ()
 {
-    SetN(TRUE);
-    SetZ(TRUE);
-    SetC(TRUE);
+    SetN(true);
+    SetZ(true);
+    SetC(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSENZV ()
 {
-    SetN(TRUE);
-    SetZ(TRUE);
-    SetV(TRUE);
+    SetN(true);
+    SetZ(true);
+    SetV(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSCC ()
 {
-    SetC(TRUE);
-    SetV(TRUE);
-    SetZ(TRUE);
-    SetN(TRUE);
+    SetC(true);
+    SetV(true);
+    SetZ(true);
+    SetN(true);
     m_internalTick = TIMING_REGREG;
 }
 
@@ -1014,7 +1014,7 @@ void CProcessor::ExecuteJMP ()  // JMP - jump: PC = &d (a-mode > 0)
 {
     if (m_methdest == 0)  // Неправильный метод адресации
     {
-        m_RPLYrq = TRUE;
+        m_RPLYrq = true;
 
         m_internalTick = TIMING_EMT;
     }
@@ -2041,13 +2041,13 @@ void CProcessor::ExecuteSUB ()
 
 void CProcessor::ExecuteEMT ()  // EMT - emulator trap
 {
-    m_EMT_rq = TRUE;
+    m_EMT_rq = true;
     m_internalTick = TIMING_EMT;
 }
 
 void CProcessor::ExecuteTRAP ()
 {
-    m_TRAPrq = TRUE;
+    m_TRAPrq = true;
     m_internalTick = TIMING_EMT;
 }
 
@@ -2057,7 +2057,7 @@ void CProcessor::ExecuteJSR ()  // JSR - Jump subroutine: *--SP = R; R = PC; PC 
     if (m_methdest == 0)
     {
         // Неправильный метод адресации
-        m_RPLYrq = TRUE;
+        m_RPLYrq = true;
         m_internalTick = TIMING_EMT;
     }
     else

@@ -96,7 +96,7 @@ bool CFloppyController::AttachImage(int drive, LPCTSTR sFileName)
     m_drivedata[drive].fpFile = ::_tfopen(sFileName, _T("r+b"));
     if (m_drivedata[drive].fpFile == NULL)
     {
-        m_drivedata[drive].okReadOnly = TRUE;
+        m_drivedata[drive].okReadOnly = true;
         m_drivedata[drive].fpFile = ::_tfopen(sFileName, _T("rb"));
     }
     if (m_drivedata[drive].fpFile == NULL)
@@ -113,7 +113,7 @@ bool CFloppyController::AttachImage(int drive, LPCTSTR sFileName)
 
     PrepareTrack();
 
-    return TRUE;
+    return true;
 }
 
 void CFloppyController::DetachImage(int drive)
@@ -185,7 +185,7 @@ case 1: default:                    newdrive = 0;  break;
 
         m_drive = newdrive;
         m_pDrive = (newdrive == -1) ? NULL : m_drivedata + m_drive;
-        okPrepareTrack = TRUE;
+        okPrepareTrack = true;
 #if !defined(PRODUCT)
         DebugLogFormat(_T("Floppy CURRENT DRIVE %d\r\n"), newdrive);
 #endif
@@ -201,11 +201,11 @@ case 1: default:                    newdrive = 0;  break;
     // Проверяем, не сменилась ли сторона
     if (m_flags & FLOPPY_CMD_SIDEUP)  // Side selection: 0 - down, 1 - up
     {
-        if (m_side == 0) { m_side = 1;  okPrepareTrack = TRUE; }
+        if (m_side == 0) { m_side = 1;  okPrepareTrack = true; }
     }
     else
     {
-        if (m_side == 1) { m_side = 0;  okPrepareTrack = TRUE; }
+        if (m_side == 1) { m_side = 0;  okPrepareTrack = true; }
     }
 
     if (cmd & FLOPPY_CMD_STEP)  // Move head for one track to center or from center
@@ -217,11 +217,11 @@ case 1: default:                    newdrive = 0;  break;
 
         if (m_flags & FLOPPY_CMD_DIR)
         {
-            if (m_track < 82) { m_track++;  okPrepareTrack = TRUE; }
+            if (m_track < 82) { m_track++;  okPrepareTrack = true; }
         }
         else
         {
-            if (m_track >= 1) { m_track--;  okPrepareTrack = TRUE; }
+            if (m_track >= 1) { m_track--;  okPrepareTrack = true; }
         }
     }
     if (okPrepareTrack)
@@ -233,8 +233,8 @@ case 1: default:                    newdrive = 0;  break;
         DebugLog(_T("Floppy SEARCHSYNC\r\n"));  //DEBUG
 #endif
         m_flags &= ~FLOPPY_CMD_SEARCHSYNC;
-        m_searchsync = TRUE;
-        m_crccalculus = TRUE;
+        m_searchsync = true;
+        m_crccalculus = true;
         m_status &= ~FLOPPY_STATUS_CHECKSUMOK;
     }
 
@@ -243,7 +243,7 @@ case 1: default:                    newdrive = 0;  break;
 //#if !defined(PRODUCT)
 //        DebugLog(_T("Floppy MARKER\r\n"));  //DEBUG
 //#endif
-        m_writemarker = TRUE;
+        m_writemarker = true;
         m_status &= ~FLOPPY_STATUS_CHECKSUMOK;
     }
 }
@@ -275,19 +275,19 @@ void CFloppyController::WriteData(uint16_t data)
 //    DebugLogFormat(_T("Floppy WRITE\t\t%04x\r\n"), data);  //DEBUG
 //#endif
 
-    m_writing = TRUE;  // Switch to write mode if not yet
+    m_writing = true;  // Switch to write mode if not yet
     m_searchsync = false;
 
     if (!m_writeflag && !m_shiftflag)  // Both registers are empty
     {
         m_shiftreg = data;
-        m_shiftflag = TRUE;
+        m_shiftflag = true;
         m_status |= FLOPPY_STATUS_MOREDATA;
     }
     else if (!m_writeflag && m_shiftflag)  // Write register is empty
     {
         m_writereg = data;
-        m_writeflag = TRUE;
+        m_writeflag = true;
         m_status &= ~FLOPPY_STATUS_MOREDATA;
     }
     else if (m_writeflag && !m_shiftflag)  // Shift register is empty
@@ -295,7 +295,7 @@ void CFloppyController::WriteData(uint16_t data)
         m_shiftreg = m_writereg;
         m_shiftflag = m_writeflag;
         m_writereg = data;
-        m_writeflag = TRUE;
+        m_writeflag = true;
         m_status &= ~FLOPPY_STATUS_MOREDATA;
     }
     else  // Both registers are not empty
@@ -360,16 +360,16 @@ void CFloppyController::Periodic()
             m_pDrive->data[m_pDrive->dataptr] = LOBYTE(m_shiftreg);
             m_pDrive->data[m_pDrive->dataptr + 1] = HIBYTE(m_shiftreg);
             m_shiftflag = false;
-            m_trackchanged = TRUE;
+            m_trackchanged = true;
 
             if (m_shiftmarker)
             {
 //#if !defined(PRODUCT)
 //            DebugLogFormat(_T("Floppy WRITING %06o MARKER\r\n"), m_shiftreg);  //DEBUG
 //#endif
-                m_pDrive->marker[m_pDrive->dataptr / 2] = TRUE;
+                m_pDrive->marker[m_pDrive->dataptr / 2] = true;
                 m_shiftmarker = false;
-                m_crccalculus = TRUE;  // Start CRC calculation
+                m_crccalculus = true;  // Start CRC calculation
             }
             else
             {
@@ -391,7 +391,7 @@ void CFloppyController::Periodic()
                 if (m_crccalculus)  // Stop CRC calclation
                 {
                     m_shiftreg = 0x4444;  //STUB
-                    m_shiftflag = TRUE;
+                    m_shiftflag = true;
                     m_shiftmarker = false;
                     m_crccalculus = false;
                     m_status |= FLOPPY_STATUS_CHECKSUMOK;
@@ -442,7 +442,7 @@ void CFloppyController::PrepareTrack()
     //uint8_t data2[5120];
     //bool parsed = DecodeTrackData(m_pDrive->data, data2);
     //ASSERT(parsed);
-    //bool tested = TRUE;
+    //bool tested = true;
     //for (int i = 0; i < 5120; i++)
     //    if (data[i] != data2[i])
     //    {
@@ -524,7 +524,7 @@ static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker,
         // sector header
         for (count = 0; count < 12; count++) data[ptr++] = 0x00;
         // marker
-        marker[ptr / 2] = TRUE;  // ID marker; start CRC calculus
+        marker[ptr / 2] = true;  // ID marker; start CRC calculus
         data[ptr++] = 0xa1;  data[ptr++] = 0xa1;  data[ptr++] = 0xa1;
         data[ptr++] = 0xfe;
 
@@ -539,7 +539,7 @@ static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker,
         // data header
         for (count = 0; count < 12; count++) data[ptr++] = 0x00;
         // marker
-        marker[ptr / 2] = TRUE;  // Data marker; start CRC calculus
+        marker[ptr / 2] = true;  // Data marker; start CRC calculus
         data[ptr++] = 0xa1;  data[ptr++] = 0xa1;  data[ptr++] = 0xa1;
         data[ptr++] = 0xfb;
         // data
@@ -558,7 +558,7 @@ static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker,
 // Decode track data from raw data
 // pRaw is array of FLOPPY_RAWTRACKSIZE bytes
 // pDest is array of 5120 bytes
-// Returns: TRUE - decoded, false - parse error
+// Returns: true - decoded, false - parse error
 static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest)
 {
     uint16_t dataptr = 0;  // Offset in m_data array
@@ -615,7 +615,7 @@ static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest)
         if (dataptr < FLOPPY_RAWTRACKSIZE) dataptr++;
     }
 
-    return TRUE;
+    return true;
 }
 
 
