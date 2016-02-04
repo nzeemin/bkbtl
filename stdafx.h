@@ -15,6 +15,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #pragma once
 
+//NOTE: I know, we use unsafe string copy functions
 #define _CRT_SECURE_NO_WARNINGS
 
 // NOTE: This trick is needed to bind assembly manifest to the current version of the VC CRT
@@ -50,6 +51,20 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include <memory.h>
 #include <tchar.h>
 
+// Define C99 stdint.h types for VS2008
+#ifdef _MSC_VER
+   typedef unsigned __int8   uint8_t;
+   typedef unsigned __int16  uint16_t;
+   typedef unsigned __int32  uint32_t;
+   typedef unsigned __int64  uint64_t;
+
+#  define false   0
+#  define true    1
+#  define bool int
+#else
+#include <stdint.h>
+#include <stdbool.h>
+#endif
 
 // TODO: reference additional headers your program requires here
 

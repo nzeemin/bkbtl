@@ -31,7 +31,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //   sInstr  - instruction mnemonics buffer - at least 8 characters
 //   sArg    - instruction arguments buffer - at least 32 characters
 //   Return value: number of words in the instruction
-int DisassembleInstruction(WORD* pMemory, WORD addr, TCHAR* sInstr, TCHAR* sArg);
+int DisassembleInstruction(uint16_t* pMemory, uint16_t addr, TCHAR* sInstr, TCHAR* sArg);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -64,12 +64,12 @@ int DisassembleInstruction(WORD* pMemory, WORD addr, TCHAR* sInstr, TCHAR* sArg)
 struct CFloppyDrive
 {
     FILE* fpFile;
-    BOOL okReadOnly;    // Write protection flag
-    WORD dataptr;       // Data offset within m_data - "head" position
-    BYTE data[FLOPPY_RAWTRACKSIZE];  // Raw track image for the current track
-    BYTE marker[FLOPPY_RAWMARKERSIZE];  // Marker positions
-    WORD datatrack;     // Track number of data in m_data array
-    WORD dataside;      // Disk side of data in m_data array
+    bool okReadOnly;    // Write protection flag
+    uint16_t dataptr;       // Data offset within m_data - "head" position
+    uint8_t data[FLOPPY_RAWTRACKSIZE];  // Raw track image for the current track
+    uint8_t marker[FLOPPY_RAWMARKERSIZE];  // Marker positions
+    uint16_t datatrack;     // Track number of data in m_data array
+    uint16_t dataside;      // Disk side of data in m_data array
 
 public:
     CFloppyDrive();
@@ -82,21 +82,21 @@ protected:
     CFloppyDrive m_drivedata[4];
     int  m_drive;       // Drive number: from 0 to 3; -1 if not selected
     CFloppyDrive* m_pDrive;  // Current drive; NULL if not selected
-    WORD m_track;       // Track number: from 0 to 79
-    WORD m_side;        // Disk side: 0 or 1
-    WORD m_status;      // See FLOPPY_STATUS_XXX defines
-    WORD m_flags;       // See FLOPPY_CMD_XXX defines
-    WORD m_datareg;     // Read mode data register
-    WORD m_writereg;    // Write mode data register
-    BOOL m_writeflag;   // Write mode data register has data
-    BOOL m_writemarker; // Write marker in m_marker
-    WORD m_shiftreg;    // Write mode shift register
-    BOOL m_shiftflag;   // Write mode shift register has data
-    BOOL m_shiftmarker; // Write marker in m_marker
-    BOOL m_writing;     // TRUE = write mode, FALSE = read mode
-    BOOL m_searchsync;  // Read sub-mode: TRUE = search for sync, FALSE = just read
-    BOOL m_crccalculus; // TRUE = CRC is calculated now
-    BOOL m_trackchanged;  // TRUE = m_data was changed - need to save it into the file
+    uint16_t m_track;       // Track number: from 0 to 79
+    uint16_t m_side;        // Disk side: 0 or 1
+    uint16_t m_status;      // See FLOPPY_STATUS_XXX defines
+    uint16_t m_flags;       // See FLOPPY_CMD_XXX defines
+    uint16_t m_datareg;     // Read mode data register
+    uint16_t m_writereg;    // Write mode data register
+    bool m_writeflag;   // Write mode data register has data
+    bool m_writemarker; // Write marker in m_marker
+    uint16_t m_shiftreg;    // Write mode shift register
+    bool m_shiftflag;   // Write mode shift register has data
+    bool m_shiftmarker; // Write marker in m_marker
+    bool m_writing;     // TRUE = write mode, false = read mode
+    bool m_searchsync;  // Read sub-mode: TRUE = search for sync, false = just read
+    bool m_crccalculus; // TRUE = CRC is calculated now
+    bool m_trackchanged;  // TRUE = m_data was changed - need to save it into the file
 
 public:
     CFloppyController();
@@ -109,12 +109,12 @@ public:
     BOOL IsAttached(int drive) { return (m_drivedata[drive].fpFile != NULL); }
     BOOL IsReadOnly(int drive) { return m_drivedata[drive].okReadOnly; } // return (m_status & FLOPPY_STATUS_WRITEPROTECT) != 0; }
     BOOL IsEngineOn() { return (m_flags & FLOPPY_CMD_ENGINESTART) != 0; }
-    WORD GetData(void);         // Reading port 177132 - data
-    WORD GetState(void);        // Reading port 177130 - device status
-    WORD GetDataView() const { return m_datareg; }  // Get port 177132 value for debugger
-    WORD GetStateView() const { return m_status; }  // Get port 177130 value for debugger
-    void SetCommand(WORD cmd);  // Writing to port 177130 - commands
-    void WriteData(WORD Data);  // Writing to port 177132 - data
+    uint16_t GetData(void);         // Reading port 177132 - data
+    uint16_t GetState(void);        // Reading port 177130 - device status
+    uint16_t GetDataView() const { return m_datareg; }  // Get port 177132 value for debugger
+    uint16_t GetStateView() const { return m_status; }  // Get port 177130 value for debugger
+    void SetCommand(uint16_t cmd);  // Writing to port 177130 - commands
+    void WriteData(uint16_t Data);  // Writing to port 177132 - data
     void Periodic();            // Rotate disk; call it each 64 us - 15625 times per second
 
 private:

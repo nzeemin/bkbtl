@@ -30,7 +30,7 @@ public:  // Constructor / initialization
     void        MemoryError();
     void        AssertIRQ1();
     int			GetInternalTick() const { return m_internalTick; }
-    void        SetInternalTick (WORD tick) { m_internalTick = tick; }
+    void        SetInternalTick (uint16_t tick) { m_internalTick = tick; }
 
 public:
     static void Init();  // Initialize static tables
@@ -38,76 +38,76 @@ public:
 protected:  // Statics
     typedef void ( CProcessor::*ExecuteMethodRef )();
     static ExecuteMethodRef* m_pExecuteMethodMap;
-    static void RegisterMethodRef(WORD start, WORD end, CProcessor::ExecuteMethodRef methodref);
+    static void RegisterMethodRef(uint16_t start, uint16_t end, CProcessor::ExecuteMethodRef methodref);
 
 protected:  // Processor state
     int         m_internalTick;     // How many ticks waiting to the end of current instruction
-    WORD        m_psw;              // Processor Status Word (PSW)
-    WORD        m_R[8];             // Registers (R0..R5, R6=SP, R7=PC)
-    BOOL        m_okStopped;        // "Processor stopped" flag
-    BOOL        m_userspace;        // Read TRUE if user space is used -- CPU is accessing I/O from HALT mode using user space
-    BOOL        m_stepmode;         // Read TRUE if it's step mode
-    BOOL        m_haltpin;			// HALT
-    BOOL        m_waitmode;			// WAIT
+    uint16_t        m_psw;              // Processor Status Word (PSW)
+    uint16_t        m_R[8];             // Registers (R0..R5, R6=SP, R7=PC)
+    bool        m_okStopped;        // "Processor stopped" flag
+    bool        m_userspace;        // Read TRUE if user space is used -- CPU is accessing I/O from HALT mode using user space
+    bool        m_stepmode;         // Read TRUE if it's step mode
+    bool        m_haltpin;			// HALT
+    bool        m_waitmode;			// WAIT
 
 protected:  // Current instruction processing
-    WORD        m_instruction;      // Curent instruction
-    WORD        m_instructionpc;    // Address of the current instruction
+    uint16_t        m_instruction;      // Curent instruction
+    uint16_t        m_instructionpc;    // Address of the current instruction
     int         m_regsrc;           // Source register number
     int         m_methsrc;          // Source address mode
-    WORD        m_addrsrc;          // Source address
+    uint16_t        m_addrsrc;          // Source address
     int         m_regdest;          // Destination register number
     int         m_methdest;         // Destination address mode
-    WORD        m_addrdest;         // Destination address
+    uint16_t        m_addrdest;         // Destination address
 protected:  // Interrupt processing
-    BOOL        m_RPLYrq;           // Hangup interrupt pending
-    BOOL        m_RSVDrq;           // Reserved instruction interrupt pending
-    BOOL        m_TBITrq;           // T-bit interrupt pending
-    BOOL        m_ACLOrq;           // Power down interrupt pending
-    BOOL        m_HALTrq;           // HALT command or HALT signal
-    BOOL        m_RPL2rq;           // Double hangup interrupt pending
-    BOOL        m_IRQ1rq;
-    BOOL        m_IRQ2rq;           // Timer event interrupt pending
-    BOOL        m_BPT_rq;           // BPT command interrupt pending
-    BOOL        m_IOT_rq;           // IOT command interrupt pending
-    BOOL        m_EMT_rq;           // EMT command interrupt pending
-    BOOL        m_TRAPrq;           // TRAP command interrupt pending
-    //BOOL        m_VIRQrq;           // VIRQ vector interrupt pending
-    //WORD        m_VIRQvector;       // VIRQ interrupt vector
+    bool        m_RPLYrq;           // Hangup interrupt pending
+    bool        m_RSVDrq;           // Reserved instruction interrupt pending
+    bool        m_TBITrq;           // T-bit interrupt pending
+    bool        m_ACLOrq;           // Power down interrupt pending
+    bool        m_HALTrq;           // HALT command or HALT signal
+    bool        m_RPL2rq;           // Double hangup interrupt pending
+    bool        m_IRQ1rq;
+    bool        m_IRQ2rq;           // Timer event interrupt pending
+    bool        m_BPT_rq;           // BPT command interrupt pending
+    bool        m_IOT_rq;           // IOT command interrupt pending
+    bool        m_EMT_rq;           // EMT command interrupt pending
+    bool        m_TRAPrq;           // TRAP command interrupt pending
+    //bool        m_VIRQrq;           // VIRQ vector interrupt pending
+    //uint16_t        m_VIRQvector;       // VIRQ interrupt vector
     int         m_virqrq;           // VIRQ pending
-    WORD        m_virq[16];         // VIRQ vector
+    uint16_t        m_virq[16];         // VIRQ vector
 protected:
     CMotherboard* m_pBoard;
 
 public:  // Register control
-    WORD        GetPSW() const { return m_psw; }
-    void        SetPSW(WORD word) { m_psw = word; }
-    WORD        GetReg(int regno) const { return m_R[regno]; }
-    void        SetReg(int regno, WORD word) { m_R[regno] = word; }
-    WORD        GetSP() const { return m_R[6]; }
-    void        SetSP(WORD word) { m_R[6] = word; }
-    WORD        GetPC() const { return m_R[7]; }
-    void        SetPC(WORD word) { m_R[7] = word; }
-    WORD        GetInstructionPC() const { return m_instructionpc; }  // Address of the current instruction
+    uint16_t        GetPSW() const { return m_psw; }
+    void        SetPSW(uint16_t word) { m_psw = word; }
+    uint16_t        GetReg(int regno) const { return m_R[regno]; }
+    void        SetReg(int regno, uint16_t word) { m_R[regno] = word; }
+    uint16_t        GetSP() const { return m_R[6]; }
+    void        SetSP(uint16_t word) { m_R[6] = word; }
+    uint16_t        GetPC() const { return m_R[7]; }
+    void        SetPC(uint16_t word) { m_R[7] = word; }
+    uint16_t        GetInstructionPC() const { return m_instructionpc; }  // Address of the current instruction
 
 public:  // PSW bits control
-    void        SetC(BOOL bFlag);
-    WORD        GetC() const { return (m_psw & PSW_C) != 0; }
-    void        SetV(BOOL bFlag);
-    WORD        GetV() const { return (m_psw & PSW_V) != 0; }
-    void        SetN(BOOL bFlag);
-    WORD        GetN() const { return (m_psw & PSW_N) != 0; }
-    void        SetZ(BOOL bFlag);
-    WORD        GetZ() const { return (m_psw & PSW_Z) != 0; }
-    WORD        GetHALT() const { return (m_psw & PSW_HALT) != 0; }
+    void        SetC(bool bFlag);
+    uint16_t        GetC() const { return (m_psw & PSW_C) != 0; }
+    void        SetV(bool bFlag);
+    uint16_t        GetV() const { return (m_psw & PSW_V) != 0; }
+    void        SetN(bool bFlag);
+    uint16_t        GetN() const { return (m_psw & PSW_N) != 0; }
+    void        SetZ(bool bFlag);
+    uint16_t        GetZ() const { return (m_psw & PSW_Z) != 0; }
+    uint16_t        GetHALT() const { return (m_psw & PSW_HALT) != 0; }
 
 public:  // Processor state
     // "Processor stopped" flag
-    BOOL        IsStopped() const { return m_okStopped; }
-    // HALT flag (TRUE - HALT mode, FALSE - USER mode)
-    BOOL        IsHaltMode() const
+    bool        IsStopped() const { return m_okStopped; }
+    // HALT flag (TRUE - HALT mode, false - USER mode)
+    bool        IsHaltMode() const
     {
-        BOOL mode = ((m_psw & 0x100) != 0);
+        bool mode = ((m_psw & 0x100) != 0);
         if (mode)
             if (m_userspace)
                 return 0;
@@ -118,51 +118,51 @@ public:  // Processor control
     void        Stop();      // Stop processor
     void        TickIRQ2();  // IRQ2 signal
     void        PowerFail();
-    void        InterruptVIRQ(int que, WORD interrupt);  // External interrupt via VIRQ signal
+    void        InterruptVIRQ(int que, uint16_t interrupt);  // External interrupt via VIRQ signal
     void        Execute();   // Execute one instruction - for debugger only
 
 public:  // Saving/loading emulator status (pImage addresses up to 32 bytes)
-    void        SaveToImage(BYTE* pImage);
-    void        LoadFromImage(const BYTE* pImage);
+    void        SaveToImage(uint8_t* pImage);
+    void        LoadFromImage(const uint8_t* pImage);
 
 protected:  // Implementation
     void        FetchInstruction();      // Read next instruction
     void        TranslateInstruction();  // Execute the instruction
 protected:  // Implementation - instruction processing
-    WORD        CalculateOperAddr (int meth, int reg);
-    WORD        CalculateOperAddrSrc (int meth, int reg);
-    BYTE        GetByteSrc();
-    BYTE        GetByteDest();
-    void        SetByteDest(BYTE);
-    WORD        GetWordSrc();
-    WORD        GetWordDest();
-    void        SetWordDest(WORD);
-    WORD        GetDstWordArgAsBranch();
+    uint16_t        CalculateOperAddr (int meth, int reg);
+    uint16_t        CalculateOperAddrSrc (int meth, int reg);
+    uint8_t     GetByteSrc();
+    uint8_t     GetByteDest();
+    void        SetByteDest(uint8_t);
+    uint16_t        GetWordSrc();
+    uint16_t        GetWordDest();
+    void        SetWordDest(uint16_t);
+    uint16_t        GetDstWordArgAsBranch();
 protected:  // Implementation - memory access
-    WORD        GetWordExec(WORD address) { return m_pBoard->GetWordExec(address, IsHaltMode()); }
-    WORD        GetWord(WORD address) { return m_pBoard->GetWord(address, IsHaltMode()); }
-    void        SetWord(WORD address, WORD word) { m_pBoard->SetWord(address, IsHaltMode(), word); }
-    BYTE        GetByte(WORD address) { return m_pBoard->GetByte(address, IsHaltMode()); }
-    void        SetByte(WORD address, BYTE byte) { m_pBoard->SetByte(address, IsHaltMode(), byte); }
+    uint16_t        GetWordExec(uint16_t address) { return m_pBoard->GetWordExec(address, IsHaltMode()); }
+    uint16_t        GetWord(uint16_t address) { return m_pBoard->GetWord(address, IsHaltMode()); }
+    void        SetWord(uint16_t address, uint16_t word) { m_pBoard->SetWord(address, IsHaltMode(), word); }
+    uint8_t     GetByte(uint16_t address) { return m_pBoard->GetByte(address, IsHaltMode()); }
+    void        SetByte(uint16_t address, uint8_t byte) { m_pBoard->SetByte(address, IsHaltMode(), byte); }
 
 protected:  // PSW bits calculations
-    BOOL static CheckForNegative(BYTE byte) { return (byte & 0200) != 0; }
-    BOOL static CheckForNegative(WORD word) { return (word & 0100000) != 0; }
-    BOOL static CheckForZero(BYTE byte) { return byte == 0; }
-    BOOL static CheckForZero(WORD word) { return word == 0; }
-    BOOL static CheckAddForOverflow(BYTE a, BYTE b);
-    BOOL static CheckAddForOverflow(WORD a, WORD b);
-    BOOL static CheckSubForOverflow(BYTE a, BYTE b);
-    BOOL static CheckSubForOverflow(WORD a, WORD b);
-    BOOL static CheckAddForCarry(BYTE a, BYTE b);
-    BOOL static CheckAddForCarry(WORD a, WORD b);
-    BOOL static CheckSubForCarry(BYTE a, BYTE b);
-    BOOL static CheckSubForCarry(WORD a, WORD b);
+    bool static CheckForNegative(uint8_t byte) { return (byte & 0200) != 0; }
+    bool static CheckForNegative(uint16_t word) { return (word & 0100000) != 0; }
+    bool static CheckForZero(uint8_t byte) { return byte == 0; }
+    bool static CheckForZero(uint16_t word) { return word == 0; }
+    bool static CheckAddForOverflow(uint8_t a, uint8_t b);
+    bool static CheckAddForOverflow(uint16_t a, uint16_t b);
+    bool static CheckSubForOverflow(uint8_t a, uint8_t b);
+    bool static CheckSubForOverflow(uint16_t a, uint16_t b);
+    bool static CheckAddForCarry(uint8_t a, uint8_t b);
+    bool static CheckAddForCarry(uint16_t a, uint16_t b);
+    bool static CheckSubForCarry(uint8_t a, uint8_t b);
+    bool static CheckSubForCarry(uint16_t a, uint16_t b);
 
 protected:  // Implementation - instruction execution
     // No fields
-    WORD        GetWordAddr (BYTE meth, BYTE reg);
-    WORD        GetByteAddr (BYTE meth, BYTE reg);
+    uint16_t        GetWordAddr (uint8_t meth, uint8_t reg);
+    uint16_t        GetByteAddr (uint8_t meth, uint8_t reg);
 
     void        ExecuteUNKNOWN ();  // Нет такой инструкции - просто вызывается TRAP 10
     void        ExecuteHALT ();
@@ -271,28 +271,28 @@ protected:  // Implementation - instruction execution
 };
 
 // PSW bits control - implementation
-inline void CProcessor::SetC (BOOL bFlag)
+inline void CProcessor::SetC (bool bFlag)
 {
     if (bFlag) m_psw |= PSW_C; else m_psw &= ~PSW_C;
 }
-inline void CProcessor::SetV (BOOL bFlag)
+inline void CProcessor::SetV (bool bFlag)
 {
     if (bFlag) m_psw |= PSW_V; else m_psw &= ~PSW_V;
 }
-inline void CProcessor::SetN (BOOL bFlag)
+inline void CProcessor::SetN (bool bFlag)
 {
     if (bFlag) m_psw |= PSW_N; else m_psw &= ~PSW_N;
 }
-inline void CProcessor::SetZ (BOOL bFlag)
+inline void CProcessor::SetZ (bool bFlag)
 {
     if (bFlag) m_psw |= PSW_Z; else m_psw &= ~PSW_Z;
 }
 
 // PSW bits calculations - implementation
-inline BOOL CProcessor::CheckAddForOverflow (BYTE a, BYTE b)
+inline bool CProcessor::CheckAddForOverflow (uint8_t a, uint8_t b)
 {
 #ifdef _M_IX86
-    BOOL bOverflow = FALSE;
+    bool bOverflow = false;
     _asm
     {
         pushf
@@ -307,16 +307,16 @@ inline BOOL CProcessor::CheckAddForOverflow (BYTE a, BYTE b)
     }
     return bOverflow;
 #else
-    //WORD sum = a < 0200 ? (WORD)a + (WORD)b + 0200 : (WORD)a + (WORD)b - 0200;
+    //uint16_t sum = a < 0200 ? (uint16_t)a + (uint16_t)b + 0200 : (uint16_t)a + (uint16_t)b - 0200;
     //return HIBYTE (sum) != 0;
-    BYTE sum = a + b;
+    uint8_t sum = a + b;
     return ((~a ^ b) & (a ^ sum)) & 0200;
 #endif
 }
-inline BOOL CProcessor::CheckAddForOverflow (WORD a, WORD b)
+inline bool CProcessor::CheckAddForOverflow (uint16_t a, uint16_t b)
 {
 #ifdef _M_IX86
-    BOOL bOverflow = FALSE;
+    bool bOverflow = false;
     _asm
     {
         pushf
@@ -331,18 +331,18 @@ inline BOOL CProcessor::CheckAddForOverflow (WORD a, WORD b)
     }
     return bOverflow;
 #else
-    //DWORD sum =  a < 0100000 ? (DWORD)a + (DWORD)b + 0100000 : (DWORD)a + (DWORD)b - 0100000;
+    //uint32_t sum =  a < 0100000 ? (uint32_t)a + (uint32_t)b + 0100000 : (uint32_t)a + (uint32_t)b - 0100000;
     //return HIWORD (sum) != 0;
-    WORD sum = a + b;
+    uint16_t sum = a + b;
     return ((~a ^ b) & (a ^ sum)) & 0100000;
 #endif
 }
-//void        CProcessor::SetReg(int regno, WORD word)
+//void        CProcessor::SetReg(int regno, uint16_t word)
 
-inline BOOL CProcessor::CheckSubForOverflow (BYTE a, BYTE b)
+inline bool CProcessor::CheckSubForOverflow (uint8_t a, uint8_t b)
 {
 #ifdef _M_IX86
-    BOOL bOverflow = FALSE;
+    bool bOverflow = false;
     _asm
     {
         pushf
@@ -357,16 +357,16 @@ inline BOOL CProcessor::CheckSubForOverflow (BYTE a, BYTE b)
     }
     return bOverflow;
 #else
-    //WORD sum = a < 0200 ? (WORD)a - (WORD)b + 0200 : (WORD)a - (WORD)b - 0200;
+    //uint16_t sum = a < 0200 ? (uint16_t)a - (uint16_t)b + 0200 : (uint16_t)a - (uint16_t)b - 0200;
     //return HIBYTE (sum) != 0;
-    BYTE sum = a - b;
+    uint8_t sum = a - b;
     return ((a ^ b) & (~b ^ sum)) & 0200;
 #endif
 }
-inline BOOL CProcessor::CheckSubForOverflow (WORD a, WORD b)
+inline bool CProcessor::CheckSubForOverflow (uint16_t a, uint16_t b)
 {
 #ifdef _M_IX86
-    BOOL bOverflow = FALSE;
+    bool bOverflow = false;
     _asm
     {
         pushf
@@ -381,30 +381,30 @@ inline BOOL CProcessor::CheckSubForOverflow (WORD a, WORD b)
     }
     return bOverflow;
 #else
-    //DWORD sum =  a < 0100000 ? (DWORD)a - (DWORD)b + 0100000 : (DWORD)a - (DWORD)b - 0100000;
+    //uint32_t sum =  a < 0100000 ? (uint32_t)a - (uint32_t)b + 0100000 : (uint32_t)a - (uint32_t)b - 0100000;
     //return HIWORD (sum) != 0;
-    WORD sum = a - b;
+    uint16_t sum = a - b;
     return ((a ^ b) & (~b ^ sum)) & 0100000;
 #endif
 }
-inline BOOL CProcessor::CheckAddForCarry (BYTE a, BYTE b)
+inline bool CProcessor::CheckAddForCarry (uint8_t a, uint8_t b)
 {
-    WORD sum = (WORD)a + (WORD)b;
+    uint16_t sum = (uint16_t)a + (uint16_t)b;
     return HIBYTE (sum) != 0;
 }
-inline BOOL CProcessor::CheckAddForCarry (WORD a, WORD b)
+inline bool CProcessor::CheckAddForCarry (uint16_t a, uint16_t b)
 {
-    DWORD sum = (DWORD)a + (DWORD)b;
+    uint32_t sum = (uint32_t)a + (uint32_t)b;
     return HIWORD (sum) != 0;
 }
-inline BOOL CProcessor::CheckSubForCarry (BYTE a, BYTE b)
+inline bool CProcessor::CheckSubForCarry (uint8_t a, uint8_t b)
 {
-    WORD sum = (WORD)a - (WORD)b;
+    uint16_t sum = (uint16_t)a - (uint16_t)b;
     return HIBYTE (sum) != 0;
 }
-inline BOOL CProcessor::CheckSubForCarry (WORD a, WORD b)
+inline bool CProcessor::CheckSubForCarry (uint16_t a, uint16_t b)
 {
-    DWORD sum = (DWORD)a - (DWORD)b;
+    uint32_t sum = (uint32_t)a - (uint32_t)b;
     return HIWORD (sum) != 0;
 }
 
