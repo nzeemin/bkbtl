@@ -72,6 +72,8 @@ void CALLBACK Emulator_PrepareScreenBW512x256(const BYTE* pVideoBuffer, int okSm
 void CALLBACK Emulator_PrepareScreenColor512x256(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* pPalette, int scroll, void* pImageBits);
 void CALLBACK Emulator_PrepareScreenBW512x384(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* pPalette, int scroll, void* pImageBits);
 void CALLBACK Emulator_PrepareScreenColor512x384(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* pPalette, int scroll, void* pImageBits);
+void CALLBACK Emulator_PrepareScreenBW1024x768(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* pPalette, int scroll, void* pImageBits);
+void CALLBACK Emulator_PrepareScreenColor1024x768(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* pPalette, int scroll, void* pImageBits);
 
 struct ScreenModeStruct
 {
@@ -81,10 +83,12 @@ struct ScreenModeStruct
 }
 static ScreenModeReference[] =
 {
-    { 512, 256, Emulator_PrepareScreenBW512x256 },
-    { 512, 256, Emulator_PrepareScreenColor512x256 },
-    { 512, 384, Emulator_PrepareScreenBW512x384 },
-    { 512, 384, Emulator_PrepareScreenColor512x384 },
+    {  512, 256, Emulator_PrepareScreenBW512x256 },
+    {  512, 256, Emulator_PrepareScreenColor512x256 },
+    {  512, 384, Emulator_PrepareScreenBW512x384 },
+    {  512, 384, Emulator_PrepareScreenColor512x384 },
+    { 1024, 768, Emulator_PrepareScreenBW1024x768 },
+    { 1024, 768, Emulator_PrepareScreenColor1024x768 },
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -989,6 +993,74 @@ void CALLBACK Emulator_PrepareScreenColor512x384(const BYTE* pVideoBuffer, int o
     if (okSmallScreen)
     {
         memset((DWORD*)pImageBits, 0, (384 - 86) * 512 * sizeof(DWORD));  //TODO
+    }
+}
+
+void CALLBACK Emulator_PrepareScreenBW1024x768(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* pPalette, int scroll, void* pImageBits)
+{
+    int linesToShow = okSmallScreen ? 64 : 256;
+    for (int y = 0; y < linesToShow; y++)
+    {
+        int yy = (y + scroll) & 0377;
+        const WORD* pVideo = (WORD*)(pVideoBuffer + yy * 0100);
+        DWORD* pBits = (DWORD*)pImageBits + (255 - y) * 1024 * 3;
+        DWORD* pBits2 = pBits + 1024;
+        for (int x = 0; x < 512 / 16; x++)
+        {
+            WORD src = *pVideo;
+
+            for (int bit = 0; bit < 16; bit++)
+            {
+                DWORD color = (src & 1) ? 0x0ffffff : 0;
+                *pBits = *pBits2 = color;
+                pBits++;  pBits2++;
+                *pBits = *pBits2 = color;
+                pBits++;  pBits2++;
+                src = src >> 1;
+            }
+
+            pVideo++;
+        }
+    }
+    if (okSmallScreen)
+    {
+        memset((DWORD*)pImageBits, 0, (256 - 64) * 1024 * 3 * sizeof(DWORD));
+    }
+}
+
+void CALLBACK Emulator_PrepareScreenColor1024x768(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* pPalette, int scroll, void* pImageBits)
+{
+    int linesToShow = okSmallScreen ? 64 : 256;
+    for (int y = 0; y < linesToShow; y++)
+    {
+        int yy = (y + scroll) & 0377;
+        const WORD* pVideo = (WORD*)(pVideoBuffer + yy * 0100);
+        DWORD* pBits = (DWORD*)pImageBits + (255 - y) * 1024 * 3;
+        DWORD* pBits2 = pBits + 1024;
+        for (int x = 0; x < 512 / 16; x++)
+        {
+            WORD src = *pVideo;
+
+            for (int bit = 0; bit < 16; bit += 2)
+            {
+                DWORD color = pPalette[src & 3];
+                *pBits = *pBits2 = color;
+                pBits++;  pBits2++;
+                *pBits = *pBits2 = color;
+                pBits++;  pBits2++;
+                *pBits = *pBits2 = color;
+                pBits++;  pBits2++;
+                *pBits = *pBits2 = color;
+                pBits++;  pBits2++;
+                src = src >> 2;
+            }
+
+            pVideo++;
+        }
+    }
+    if (okSmallScreen)
+    {
+        memset((DWORD*)pImageBits, 0, (256 - 64) * 1024 * 3 * sizeof(DWORD));
     }
 }
 
