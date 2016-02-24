@@ -111,7 +111,7 @@ public:  // Processor state
         bool mode = ((m_psw & 0x100) != 0);
         if (mode)
             if (m_userspace)
-                return 0;
+                return false;
         return mode;
     }
 public:  // Processor control
@@ -221,6 +221,7 @@ protected:  // Implementation - instruction execution
     void        ExecuteADC ();
     void        ExecuteSBC ();
     void        ExecuteTST ();
+    void        ExecuteTSTB ();
     void        ExecuteROR ();
     void        ExecuteROL ();
     void        ExecuteASR ();
@@ -261,7 +262,9 @@ protected:  // Implementation - instruction execution
 
     // Four fields
     void        ExecuteMOV ();
+    void        ExecuteMOVB ();
     void        ExecuteCMP ();
+    void        ExecuteCMPB ();
     void        ExecuteBIT ();
     void        ExecuteBIC ();
     void        ExecuteBIS ();
