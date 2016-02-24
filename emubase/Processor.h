@@ -73,33 +73,34 @@ protected:  // Interrupt processing
     bool        m_EMT_rq;           // EMT command interrupt pending
     bool        m_TRAPrq;           // TRAP command interrupt pending
     //bool        m_VIRQrq;           // VIRQ vector interrupt pending
-    //uint16_t        m_VIRQvector;       // VIRQ interrupt vector
+    //uint16_t    m_VIRQvector;       // VIRQ interrupt vector
     int         m_virqrq;           // VIRQ pending
-    uint16_t        m_virq[16];         // VIRQ vector
+    uint16_t    m_virq[16];         // VIRQ vector
 protected:
     CMotherboard* m_pBoard;
 
 public:  // Register control
-    uint16_t        GetPSW() const { return m_psw; }
+    uint16_t    GetPSW() const { return m_psw; }
     void        SetPSW(uint16_t word) { m_psw = word; }
-    uint16_t        GetReg(int regno) const { return m_R[regno]; }
+    uint16_t    GetReg(int regno) const { return m_R[regno]; }
     void        SetReg(int regno, uint16_t word) { m_R[regno] = word; }
-    uint16_t        GetSP() const { return m_R[6]; }
+    uint8_t     GetLReg(int regno) const { return (uint8_t)(m_R[regno] & 0xff); }
+    uint16_t    GetSP() const { return m_R[6]; }
     void        SetSP(uint16_t word) { m_R[6] = word; }
-    uint16_t        GetPC() const { return m_R[7]; }
+    uint16_t    GetPC() const { return m_R[7]; }
     void        SetPC(uint16_t word) { m_R[7] = word; }
-    uint16_t        GetInstructionPC() const { return m_instructionpc; }  // Address of the current instruction
+    uint16_t    GetInstructionPC() const { return m_instructionpc; }  // Address of the current instruction
 
 public:  // PSW bits control
     void        SetC(bool bFlag);
-    uint16_t        GetC() const { return (m_psw & PSW_C) != 0; }
+    uint16_t    GetC() const { return (m_psw & PSW_C) != 0; }
     void        SetV(bool bFlag);
-    uint16_t        GetV() const { return (m_psw & PSW_V) != 0; }
+    uint16_t    GetV() const { return (m_psw & PSW_V) != 0; }
     void        SetN(bool bFlag);
-    uint16_t        GetN() const { return (m_psw & PSW_N) != 0; }
+    uint16_t    GetN() const { return (m_psw & PSW_N) != 0; }
     void        SetZ(bool bFlag);
-    uint16_t        GetZ() const { return (m_psw & PSW_Z) != 0; }
-    uint16_t        GetHALT() const { return (m_psw & PSW_HALT) != 0; }
+    uint16_t    GetZ() const { return (m_psw & PSW_Z) != 0; }
+    uint16_t    GetHALT() const { return (m_psw & PSW_HALT) != 0; }
 
 public:  // Processor state
     // "Processor stopped" flag

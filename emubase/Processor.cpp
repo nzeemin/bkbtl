@@ -281,7 +281,7 @@ void CProcessor::Execute()
             // Calculate interrupt vector and mode accoding to priority
             uint16_t intrVector = 0;
             bool currMode = ((m_psw & 0400) != 0);  // Current processor mode: true = HALT mode, false = USER mode
-            bool intrMode;  // true = HALT mode interrupt, false = USER mode interrupt
+            bool intrMode = false;  // true = HALT mode interrupt, false = USER mode interrupt
             if (m_HALTrq)  // HALT command
             {
                 intrVector = 0002;  intrMode = true;
@@ -1089,7 +1089,7 @@ void CProcessor::ExecuteCOM ()  // COM
         if (m_methdest)
             dst = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            dst = GetReg(m_regdest);
+            dst = GetLReg(m_regdest);
 
         dst = dst ^ 0377;
 
@@ -1134,7 +1134,7 @@ void CProcessor::ExecuteINC ()  // INC - Инкремент
         if (m_methdest)
             dst = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            dst = GetReg(m_regdest);
+            dst = GetLReg(m_regdest);
 
         dst = dst + 1;
 
@@ -1179,7 +1179,7 @@ void CProcessor::ExecuteDEC ()  // DEC - Декремент
         if (m_methdest)
             dst = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            dst = GetReg(m_regdest);
+            dst = GetLReg(m_regdest);
 
         dst = dst - 1;
 
@@ -1224,7 +1224,7 @@ void CProcessor::ExecuteNEG ()
         if (m_methdest)
             dst = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            dst = GetReg(m_regdest);
+            dst = GetLReg(m_regdest);
 
         dst = 0 - dst;
 
@@ -1272,7 +1272,7 @@ void CProcessor::ExecuteADC ()  // ADC{B}
         if (m_methdest)
             dst = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            dst = GetReg(m_regdest);
+            dst = GetLReg(m_regdest);
 
         dst = dst + (GetC() ? 1 : 0);
 
@@ -1321,7 +1321,7 @@ void CProcessor::ExecuteSBC ()  // SBC{B}
         if (m_methdest)
             dst = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            dst = GetReg(m_regdest);
+            dst = GetLReg(m_regdest);
 
         dst = dst - (GetC() ? 1 : 0);
 
@@ -1367,7 +1367,7 @@ void CProcessor::ExecuteTST ()  // TST{B} - test
         if (m_methdest)
             dst = GetByte(GetByteAddr(m_methdest, m_regdest));
         else
-            dst = GetReg(m_regdest);
+            dst = GetLReg(m_regdest);
 
         SetN(dst >> 7);
         SetZ(!dst);
@@ -1402,7 +1402,7 @@ void CProcessor::ExecuteROR ()  // ROR{B}
         if (m_methdest)
             src = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            src = GetReg(m_regdest);
+            src = GetLReg(m_regdest);
 
         dst = (src >> 1) | (GetC() ? 0200 : 0);
 
@@ -1453,7 +1453,7 @@ void CProcessor::ExecuteROL ()  // ROL{B}
         if (m_methdest)
             src = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            src = GetReg(m_regdest);
+            src = GetLReg(m_regdest);
 
         dst = (src << 1) | (GetC() ? 1 : 0);
 
@@ -1503,7 +1503,7 @@ void CProcessor::ExecuteASR ()  // ASR{B}
         if (m_methdest)
             src = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            src = GetReg(m_regdest);
+            src = GetLReg(m_regdest);
 
         dst = (src >> 1) | (src & 0200);
         SetN(dst >> 7);
@@ -1550,7 +1550,7 @@ void CProcessor::ExecuteASL ()  // ASL{B}
         if (m_methdest)
             src = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            src = GetReg(m_regdest);
+            src = GetLReg(m_regdest);
 
         dst = (src << 1) & 0377;
         SetN(dst >> 7);
@@ -1605,7 +1605,7 @@ void CProcessor::ExecuteMTPS ()  // MTPS - move to PS
     if (m_methdest)
         dst = GetByte(GetByteAddr(m_methdest, m_regdest));
     else
-        dst = GetReg(m_regdest);
+        dst = GetLReg(m_regdest);
 
     if (GetPSW() & 0400) //in halt?
     {
@@ -1819,7 +1819,7 @@ void CProcessor::ExecuteMOV ()
 {
     if (m_instruction & 0100000) // MOVB
     {
-        uint8_t dst = m_methsrc ? GetByte(GetByteAddr(m_methsrc, m_regsrc)) : GetReg(m_regsrc);
+        uint8_t dst = m_methsrc ? GetByte(GetByteAddr(m_methsrc, m_regsrc)) : GetLReg(m_regsrc);
 
         SetN(dst >> 7);
         SetZ(!dst);
@@ -1860,12 +1860,12 @@ void CProcessor::ExecuteCMP ()
         if (m_methsrc)
             src = GetByte(GetByteAddr(m_methsrc, m_regsrc));
         else
-            src = GetReg(m_regsrc);
+            src = GetLReg(m_regsrc);
 
         if (m_methdest)
             src2 = GetByte(GetByteAddr(m_methdest, m_regdest));
         else
-            src2 = GetReg(m_regdest);
+            src2 = GetLReg(m_regdest);
 
         dst = src - src2;
         SetN( CheckForNegative((uint8_t)(src - src2)) );
@@ -1907,12 +1907,12 @@ void CProcessor::ExecuteBIT ()  // BIT{B} - bit test
         if (m_methsrc)
             src = GetByte(GetByteAddr(m_methsrc, m_regsrc));
         else
-            src = GetReg(m_regsrc);
+            src = GetLReg(m_regsrc);
 
         if (m_methdest)
             src2 = GetByte(GetByteAddr(m_methdest, m_regdest));
         else
-            src2 = GetReg(m_regdest);
+            src2 = GetLReg(m_regdest);
 
         dst = src2 & src;
 
@@ -1953,12 +1953,12 @@ void CProcessor::ExecuteBIC ()  // BIC{B} - bit clear
         if (m_methsrc)
             src = GetByte(GetByteAddr(m_methsrc, m_regsrc));
         else
-            src = GetReg(m_regsrc);
+            src = GetLReg(m_regsrc);
 
         if (m_methdest)
             src2 = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            src2 = GetReg(m_regdest);
+            src2 = GetLReg(m_regdest);
 
         dst = src2 & (~src);
 
@@ -2009,12 +2009,12 @@ void CProcessor::ExecuteBIS ()  // BIS{B} - bit set
         if (m_methsrc)
             src = GetByte(GetByteAddr(m_methsrc, m_regsrc));
         else
-            src = GetReg(m_regsrc);
+            src = GetLReg(m_regsrc);
 
         if (m_methdest)
             src2 = GetByte(ea = GetByteAddr(m_methdest, m_regdest));
         else
-            src2 = GetReg(m_regdest);
+            src2 = GetLReg(m_regdest);
 
         dst = src2 | src;
 
