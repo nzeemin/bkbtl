@@ -130,9 +130,9 @@ BOOL Settings_LoadBinaryValue(LPCTSTR sName, void * pData, int size)
 
         TCHAR ch = *buf;
         if (ch >= _T('0') && ch <= _T('9'))
-            v = ch - _T('0');
+            v = (BYTE)(ch - _T('0'));
         else if (ch >= _T('A') && ch <= _T('F'))
-            v = ch - _T('A') + 10;
+            v = (BYTE)(ch - _T('A') + 10);
         else  // Not hex
         {
             free(buffer);
@@ -144,9 +144,9 @@ BOOL Settings_LoadBinaryValue(LPCTSTR sName, void * pData, int size)
 
         ch = *buf;
         if (ch >= _T('0') && ch <= _T('9'))
-            v |= ch - _T('0');
+            v |= (BYTE)(ch - _T('0'));
         else if (ch >= _T('A') && ch <= _T('F'))
-            v |= ch - _T('A') + 10;
+            v |= (BYTE)(ch - _T('A') + 10);
         else  // Not hex
         {
             free(buffer);
@@ -220,26 +220,26 @@ int Settings_GetConfiguration()
 void Settings_GetFloppyFilePath(int slot, LPTSTR buffer)
 {
     TCHAR bufValueName[] = _T("Floppy0");
-    bufValueName[6] = slot + _T('0');
+    bufValueName[6] = _T('0') + (TCHAR)slot;
     Settings_LoadStringValue(bufValueName, buffer, MAX_PATH);
 }
 void Settings_SetFloppyFilePath(int slot, LPCTSTR sFilePath)
 {
     TCHAR bufValueName[] = _T("Floppy0");
-    bufValueName[6] = slot + _T('0');
+    bufValueName[6] = _T('0') + (TCHAR)slot;
     Settings_SaveStringValue(bufValueName, sFilePath);
 }
 
 void Settings_GetCartridgeFilePath(int slot, LPTSTR buffer)
 {
     TCHAR bufValueName[] = _T("Cartridge0");
-    bufValueName[9] = slot + _T('0');
+    bufValueName[9] = _T('0') + (TCHAR)slot;
     Settings_LoadStringValue(bufValueName, buffer, MAX_PATH);
 }
 void Settings_SetCartridgeFilePath(int slot, LPCTSTR sFilePath)
 {
     TCHAR bufValueName[] = _T("Cartridge0");
-    bufValueName[9] = slot + _T('0');
+    bufValueName[9] = _T('0') + (TCHAR)slot;
     Settings_SaveStringValue(bufValueName, sFilePath);
 }
 

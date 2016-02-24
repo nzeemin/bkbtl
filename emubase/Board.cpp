@@ -660,7 +660,7 @@ const uint8_t* CMotherboard::GetVideoBuffer()
     }
 }
 
-int CMotherboard::TranslateAddress(uint16_t address, bool okHaltMode, bool okExec, uint16_t* pOffset) const
+int CMotherboard::TranslateAddress(uint16_t address, bool /*okHaltMode*/, bool /*okExec*/, uint16_t* pOffset) const
 {
     // При подключенном блоке дисковода, его ПЗУ занимает адреса 160000-167776, при этом адреса 170000-177776 остаются под порты.
     // Без подключенного дисковода, порты занимают адреса 177600-177776.
@@ -715,7 +715,7 @@ int CMotherboard::TranslateAddress(uint16_t address, bool okHaltMode, bool okExe
                     break;
                 }
 
-                address = (address & 037777) + memoryRomChunk * 040000;
+                address = (uint16_t)((address & 037777) + memoryRomChunk * 040000);
             }
             else  // Включено ОЗУ 0..7
             {
@@ -835,7 +835,7 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
         return 0;
     }
 
-    return 0;
+    //return 0;
 }
 
 // Read word from port for debugger
@@ -1253,8 +1253,8 @@ void TraceInstruction(CProcessor* pProc, CMotherboard* pBoard, uint16_t address)
     bool okHaltMode = pProc->IsHaltMode();
 
     uint16_t memory[4];
-    int addrtype;
-    for (int i = 0; i < 4; i++)
+    int addrtype = ADDRTYPE_RAM;
+    for (uint16_t i = 0; i < 4; i++)
         memory[i] = pBoard->GetWordView(address + i * 2, okHaltMode, true, &addrtype);
 
     if (addrtype != ADDRTYPE_RAM)

@@ -299,7 +299,7 @@ void MemoryView_UpdateWindowText()
     ::SetWindowText(g_hwndMemory, _T("Memory"));
 }
 
-BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM lParam)
+BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
 {
     switch (vkey)
     {
@@ -346,7 +346,7 @@ BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM lParam)
     return FALSE;
 }
 
-BOOL MemoryView_OnMouseWheel(WPARAM wParam, LPARAM lParam)
+BOOL MemoryView_OnMouseWheel(WPARAM wParam, LPARAM /*lParam*/)
 {
     short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 
@@ -359,7 +359,7 @@ BOOL MemoryView_OnMouseWheel(WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-BOOL MemoryView_OnVScroll(WPARAM wParam, LPARAM lParam)
+BOOL MemoryView_OnVScroll(WPARAM wParam, LPARAM /*lParam*/)
 {
     WORD scrollpos = HIWORD(wParam);
     WORD scrollcmd = LOWORD(wParam);
@@ -398,7 +398,7 @@ void MemoryView_Scroll(int nDelta)
 {
     if (nDelta == 0) return;
 
-    m_wBaseAddress += nDelta;
+    m_wBaseAddress += (WORD)nDelta;
     m_wBaseAddress = m_wBaseAddress & ((WORD)~1);
     InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
 

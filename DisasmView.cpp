@@ -487,7 +487,7 @@ DisasmSubtitleItem* DisasmView_FindSubtitle(WORD address, int typemask)
     return NULL;
 }
 
-BOOL DisasmView_CheckForJump(const WORD* memory, WORD address, int* pDelta)
+BOOL DisasmView_CheckForJump(const WORD* memory, WORD /*address*/, int* pDelta)
 {
     WORD instr = *memory;
 
@@ -542,7 +542,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previ
     {
         int addrtype;
         memory[idx] = g_pBoard->GetWordView(
-                current + idx * 2 - 10, pProc->IsHaltMode(), TRUE, &addrtype);
+                (uint16_t)(current + idx * 2 - 10), pProc->IsHaltMode(), TRUE, &addrtype);
     }
 
     WORD address = current - 10;
@@ -645,7 +645,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previ
             }
             ::SetTextColor(hdc, colorText);
             if (wNextBaseAddr == 0)
-                wNextBaseAddr = address + length * 2;
+                wNextBaseAddr = (WORD)(address + length * 2);
         }
         if (length > 0) length--;
 

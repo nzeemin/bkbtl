@@ -217,7 +217,7 @@ void Emulator_Done()
 
 BOOL Emulator_InitConfiguration(BKConfiguration configuration)
 {
-    g_pBoard->SetConfiguration(configuration);
+    g_pBoard->SetConfiguration((uint16_t)configuration);
 
     BYTE buffer[8192];
 
@@ -547,7 +547,7 @@ int Emulator_SystemFrame()
 void Emulator_GetEmt36FileName(TCHAR* filename)
 {
     WORD nameaddr = 0326; //g_pBoard->GetRAMWord(0306) + 6;
-    for (int i = 0; i < 16; i++)
+    for (uint16_t i = 0; i < 16; i++)
     {
         BYTE ch = g_pBoard->GetRAMByte(nameaddr + i);
         filename[i] = (ch < 32) ? 0 : Translate_BK_Unicode(ch);
@@ -643,7 +643,7 @@ void Emulator_FakeTape_ReadFile()
             WORD start = g_pBoard->GetRAMWord(0322);
             if (start == 0)
                 start = filestart;
-            for (int i = 0; i < filesize; i++)
+            for (uint16_t i = 0; i < filesize; i++)
             {
                 g_pBoard->SetRAMByte(start + i, pData[i]);
             }
@@ -692,7 +692,7 @@ void Emulator_FakeTape_WriteFile()
             pData = (BYTE*)malloc(filesize);
 
             // Copy from memory
-            for (int i = 0; i < filesize; i++)
+            for (uint16_t i = 0; i < filesize; i++)
             {
                 pData[i] = g_pBoard->GetRAMByte(filestart + i);
             }
@@ -733,7 +733,7 @@ void Emulator_ProcessJoystick()
         return;  // NumPad joystick processing is inside ScreenView_ScanKeyboard() function
 
     UINT joystate = Joystick_GetJoystickState();
-    g_pBoard->SetPrinterInPort(joystate);
+    g_pBoard->SetPrinterInPort((uint8_t)joystate);
 }
 
 void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R)
@@ -838,7 +838,7 @@ void Emulator_PrepareScreenRGB32(void* pImageBits, int screenMode)
     callback(pVideoBuffer, okSmallScreen, pPalette, scroll, pImageBits);
 }
 
-void CALLBACK Emulator_PrepareScreenBW512x256(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* pPalette, int scroll, void* pImageBits)
+void CALLBACK Emulator_PrepareScreenBW512x256(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* /*pPalette*/, int scroll, void* pImageBits)
 {
     int linesToShow = okSmallScreen ? 64 : 256;
     for (int y = 0; y < linesToShow; y++)
@@ -898,7 +898,7 @@ void CALLBACK Emulator_PrepareScreenColor512x256(const BYTE* pVideoBuffer, int o
     }
 }
 
-void CALLBACK Emulator_PrepareScreenBW512x384(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* pPalette, int scroll, void* pImageBits)
+void CALLBACK Emulator_PrepareScreenBW512x384(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* /*pPalette*/, int scroll, void* pImageBits)
 {
     int linesToShow = okSmallScreen ? 64 : 256;
     int bky = 0;
@@ -996,7 +996,7 @@ void CALLBACK Emulator_PrepareScreenColor512x384(const BYTE* pVideoBuffer, int o
     }
 }
 
-void CALLBACK Emulator_PrepareScreenBW1024x768(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* pPalette, int scroll, void* pImageBits)
+void CALLBACK Emulator_PrepareScreenBW1024x768(const BYTE* pVideoBuffer, int okSmallScreen, const DWORD* /*pPalette*/, int scroll, void* pImageBits)
 {
     int linesToShow = okSmallScreen ? 64 : 256;
     for (int y = 0; y < linesToShow; y++)

@@ -323,7 +323,7 @@ int DisassembleInstruction(uint16_t* pMemory, uint16_t addr, TCHAR* strInstr, TC
     okByte = (instr & 0100000);
 
     length += ConvertSrcToString(instr, addr + 2, strSrc, pMemory[1]);
-    length += ConvertDstToString(instr, addr + 2 + (length - 1) * 2, strDst, pMemory[length]);
+    length += ConvertDstToString(instr, (uint16_t)(addr + 2 + (length - 1) * 2), strDst, pMemory[length]);
 
     switch (instr & ~(uint16_t)0107777)
     {

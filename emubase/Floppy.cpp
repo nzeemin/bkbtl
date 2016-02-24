@@ -517,7 +517,7 @@ static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker,
     int ptr = 0;
 
     int gap = 42;  // GAP4a + GAP1 length
-    for (int sect = 0; sect < 10; sect++)
+    for (uint8_t sect = 0; sect < 10; sect++)
     {
         // GAP
         for (count = 0; count < (uint32_t) gap; count++) data[ptr++] = 0x4e;
@@ -576,7 +576,7 @@ static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest)
         if (dataptr >= FLOPPY_RAWTRACKSIZE) return false;  // Something wrong
         if (pRaw[dataptr++] != 0xfe) return false;  // Marker not found
 
-        uint8_t sectcyl, secthd, sectsec, sectno;
+        uint8_t sectcyl, secthd, sectsec, sectno = 0;
         if (dataptr < FLOPPY_RAWTRACKSIZE) sectcyl = pRaw[dataptr++];
         if (dataptr < FLOPPY_RAWTRACKSIZE) secthd  = pRaw[dataptr++];
         if (dataptr < FLOPPY_RAWTRACKSIZE) sectsec = pRaw[dataptr++];

@@ -320,7 +320,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
     case WM_COMMAND:
         {
             int wmId    = LOWORD(wParam);
-            int wmEvent = HIWORD(wParam);
+            //int wmEvent = HIWORD(wParam);
             bool okProcessed = MainWindow_DoCommand(wmId);
             if (!okProcessed)
                 return DefWindowProc(hWnd, message, wParam, lParam);
@@ -336,7 +336,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
         break;
     case WM_NOTIFY:
         {
-            int idCtrl = (int) wParam;
+            //int idCtrl = (int) wParam;
             HWND hwndFrom = ((LPNMHDR) lParam)->hwndFrom;
             UINT code = ((LPNMHDR) lParam)->code;
             if (code == TTN_SHOW)
@@ -373,8 +373,8 @@ void MainWindow_AdjustWindowSize()
 
     // Get metrics
     RECT rcWorkArea;  SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
-    int cxBorder  = ::GetSystemMetrics(SM_CXBORDER);
-    int cyBorder  = ::GetSystemMetrics(SM_CYBORDER);
+    //int cxBorder  = ::GetSystemMetrics(SM_CXBORDER);
+    //int cyBorder  = ::GetSystemMetrics(SM_CYBORDER);
     int cxFrame   = ::GetSystemMetrics(SM_CXDLGFRAME);
     int cyFrame   = ::GetSystemMetrics(SM_CYDLGFRAME);
     int cyCaption = ::GetSystemMetrics(SM_CYCAPTION);

@@ -240,12 +240,12 @@ void PrintRegister(LPCTSTR strName, WORD value)
     ConsoleView_Print(buffer);
 }
 
-void SaveMemoryDump(CProcessor *pProc)
+void SaveMemoryDump(CProcessor* /*pProc*/)
 {
     BYTE buf[65536];
     for (int i = 0; i < 65536; i++)
     {
-        buf[i] = g_pBoard->GetByte(i, 1);
+        buf[i] = g_pBoard->GetByte((uint16_t)i, 1);
     }
 
     // Create file
@@ -273,7 +273,7 @@ void PrintMemoryDump(CProcessor* pProc, WORD address, int lines)
     {
         WORD dump[8];
         for (int i = 0; i < 8; i++)
-            dump[i] = g_pBoard->GetWord(address + i * 2, okHaltMode);
+            dump[i] = g_pBoard->GetWord((uint16_t)(address + i * 2), okHaltMode);
 
         TCHAR buffer[2 + 6 + 2 + 7 * 8 + 1 + 16 + 1 + 2];
         TCHAR* pBuf = buffer;
@@ -319,7 +319,7 @@ int PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okSh
     WORD memory[nWindowSize + 2];
     int addrtype;
     for (int i = 0; i < nWindowSize + 2; i++)
-        memory[i] = g_pBoard->GetWordView(address + i * 2, okHaltMode, TRUE, &addrtype);
+        memory[i] = g_pBoard->GetWordView((uint16_t)(address + i * 2), okHaltMode, TRUE, &addrtype);
 
     TCHAR bufaddr[7];
     TCHAR bufvalue[7];

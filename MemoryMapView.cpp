@@ -190,7 +190,7 @@ LRESULT CALLBACK MemoryMapViewViewerWndProc(HWND hWnd, UINT message, WPARAM wPar
     return (LRESULT)FALSE;
 }
 
-BOOL MemoryMapView_OnMouseWheel(WPARAM wParam, LPARAM lParam)
+BOOL MemoryMapView_OnMouseWheel(WPARAM wParam, LPARAM /*lParam*/)
 {
     short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 
@@ -236,7 +236,7 @@ void MemoryMapView_Scroll(int dx, int dy)
     MemoryMapView_UpdateScrollPos();
 }
 
-BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM lParam)
+BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
 {
     switch (vkey)
     {
@@ -264,9 +264,9 @@ BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM lParam)
     return FALSE;
 }
 
-BOOL MemoryMapView_OnHScroll(WPARAM wParam, LPARAM lParam)
+BOOL MemoryMapView_OnHScroll(WPARAM wParam, LPARAM /*lParam*/)
 {
-    WORD scrollpos = HIWORD(wParam);
+    //WORD scrollpos = HIWORD(wParam);
     WORD scrollcmd = LOWORD(wParam);
     switch (scrollcmd)
     {
@@ -289,9 +289,9 @@ BOOL MemoryMapView_OnHScroll(WPARAM wParam, LPARAM lParam)
 
     return FALSE;
 }
-BOOL MemoryMapView_OnVScroll(WPARAM wParam, LPARAM lParam)
+BOOL MemoryMapView_OnVScroll(WPARAM wParam, LPARAM /*lParam*/)
 {
-    WORD scrollpos = HIWORD(wParam);
+    //WORD scrollpos = HIWORD(wParam);
     WORD scrollcmd = LOWORD(wParam);
     switch (scrollcmd)
     {
@@ -371,6 +371,9 @@ void MemoryMapView_PrepareBitmap()
                 color1 = RGB(val, val, val);
                 val = value & 0x00ff;
                 color2 = RGB(val, val, val);
+                break;
+            default:
+                color1 = color2 = RGB(0, 0, 0);
                 break;
             }
 

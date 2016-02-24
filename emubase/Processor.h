@@ -51,14 +51,14 @@ protected:  // Processor state
     bool        m_waitmode;			// WAIT
 
 protected:  // Current instruction processing
-    uint16_t        m_instruction;      // Curent instruction
-    uint16_t        m_instructionpc;    // Address of the current instruction
-    int         m_regsrc;           // Source register number
-    int         m_methsrc;          // Source address mode
-    uint16_t        m_addrsrc;          // Source address
-    int         m_regdest;          // Destination register number
-    int         m_methdest;         // Destination address mode
-    uint16_t        m_addrdest;         // Destination address
+    uint16_t    m_instruction;      // Curent instruction
+    uint16_t    m_instructionpc;    // Address of the current instruction
+    uint8_t     m_regsrc;           // Source register number
+    uint8_t     m_methsrc;          // Source address mode
+    uint16_t    m_addrsrc;          // Source address
+    uint8_t     m_regdest;          // Destination register number
+    uint8_t     m_methdest;         // Destination address mode
+    uint16_t    m_addrdest;         // Destination address
 protected:  // Interrupt processing
     bool        m_RPLYrq;           // Hangup interrupt pending
     bool        m_RSVDrq;           // Reserved instruction interrupt pending

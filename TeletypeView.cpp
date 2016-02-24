@@ -33,11 +33,11 @@ HFONT m_hfontTeletype = NULL;
 
 void CreateTeletypeView(int x, int y, int width, int height)
 {
-    int cxBorder = ::GetSystemMetrics(SM_CXDLGFRAME);
-    int cyBorder = ::GetSystemMetrics(SM_CYDLGFRAME);
-    int cxScroll = ::GetSystemMetrics(SM_CXVSCROLL);
-    int cyScroll = ::GetSystemMetrics(SM_CYHSCROLL);
-    int cyCaption = ::GetSystemMetrics(SM_CYSMCAPTION);
+    //int cxBorder = ::GetSystemMetrics(SM_CXDLGFRAME);
+    //int cyBorder = ::GetSystemMetrics(SM_CYDLGFRAME);
+    //int cxScroll = ::GetSystemMetrics(SM_CXVSCROLL);
+    //int cyScroll = ::GetSystemMetrics(SM_CYHSCROLL);
+    //int cyCaption = ::GetSystemMetrics(SM_CYSMCAPTION);
 
     g_hwndTeletype = CreateWindowEx(
             WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
@@ -91,7 +91,6 @@ LRESULT CALLBACK TeletypeViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     default:
         return CallWindowProc(m_wndprocTeletypeToolWindow, hWnd, message, wParam, lParam);
     }
-    return (LRESULT)FALSE;
 }
 
 void TeletypeView_Output(LPCTSTR message)
