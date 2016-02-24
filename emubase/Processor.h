@@ -391,22 +391,22 @@ inline bool CProcessor::CheckSubForOverflow (uint16_t a, uint16_t b)
 inline bool CProcessor::CheckAddForCarry (uint8_t a, uint8_t b)
 {
     uint16_t sum = (uint16_t)a + (uint16_t)b;
-    return HIBYTE (sum) != 0;
+    return (sum & 0xff00) != 0;
 }
 inline bool CProcessor::CheckAddForCarry (uint16_t a, uint16_t b)
 {
     uint32_t sum = (uint32_t)a + (uint32_t)b;
-    return HIWORD (sum) != 0;
+    return (uint16_t)((sum >> 16) & 0xffff) != 0;
 }
 inline bool CProcessor::CheckSubForCarry (uint8_t a, uint8_t b)
 {
     uint16_t sum = (uint16_t)a - (uint16_t)b;
-    return HIBYTE (sum) != 0;
+    return (sum & 0xff00) != 0;
 }
 inline bool CProcessor::CheckSubForCarry (uint16_t a, uint16_t b)
 {
     uint32_t sum = (uint32_t)a - (uint32_t)b;
-    return HIWORD (sum) != 0;
+    return (uint16_t)((sum >> 16) & 0xffff) != 0;
 }
 
 

@@ -1636,7 +1636,7 @@ void CProcessor::ExecuteMFPS ()  // MFPS - move from PS
 
 void CProcessor::ExecuteBR ()
 {
-    SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
+    SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     m_internalTick = TIMING_BR;
 }
 
@@ -1644,7 +1644,7 @@ void CProcessor::ExecuteBNE ()
 {
     if (! GetZ())
     {
-        SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1654,7 +1654,7 @@ void CProcessor::ExecuteBEQ ()
 {
     if (GetZ())
     {
-        SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1664,7 +1664,7 @@ void CProcessor::ExecuteBGE ()
 {
     if (GetN() == GetV())
     {
-        SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1674,7 +1674,7 @@ void CProcessor::ExecuteBLT ()
 {
     if (GetN() != GetV())
     {
-        SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1684,7 +1684,7 @@ void CProcessor::ExecuteBGT ()
 {
     if (! ((GetN() != GetV()) || GetZ()))
     {
-        SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1694,7 +1694,7 @@ void CProcessor::ExecuteBLE ()
 {
     if ((GetN() != GetV()) || GetZ())
     {
-        SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1704,7 +1704,7 @@ void CProcessor::ExecuteBPL ()
 {
     if (! GetN())
     {
-        SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1714,7 +1714,7 @@ void CProcessor::ExecuteBMI ()
 {
     if (GetN())
     {
-        SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1724,7 +1724,7 @@ void CProcessor::ExecuteBHI ()
 {
     if (! (GetZ() || GetC()))
     {
-        SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1734,7 +1734,7 @@ void CProcessor::ExecuteBLOS ()
 {
     if (GetZ() || GetC())
     {
-        SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1744,7 +1744,7 @@ void CProcessor::ExecuteBVC ()
 {
     if (! GetV())
     {
-        SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1754,7 +1754,7 @@ void CProcessor::ExecuteBVS ()
 {
     if (GetV())
     {
-        SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1764,7 +1764,7 @@ void CProcessor::ExecuteBHIS ()
 {
     if (! GetC())
     {
-        SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
@@ -1774,7 +1774,7 @@ void CProcessor::ExecuteBLO ()
 {
     if (GetC())
     {
-        SetReg(7, GetPC() + ((short)(char) LOBYTE(m_instruction)) * 2 );
+        SetReg(7, GetPC() + ((short)(char)(m_instruction & 0xff)) * 2 );
     }
 
     m_internalTick = TIMING_BRANCH;
