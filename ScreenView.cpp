@@ -391,7 +391,7 @@ BOOL ScreenView_SaveScreenshot(LPCTSTR sFileName)
     ASSERT(m_bits != NULL);
 
     DWORD* pBits = (DWORD*) ::malloc(BK_SCREEN_WIDTH * BK_SCREEN_HEIGHT * 4);
-    const DWORD* colors = Emulator_GetPalette(m_ScreenMode);
+    const uint32_t* colors = Emulator_GetPalette(m_ScreenMode);
     Emulator_PrepareScreenRGB32(pBits, m_ScreenMode);
 
     LPCTSTR sFileNameExt = _tcsrchr(sFileName, _T('.'));
