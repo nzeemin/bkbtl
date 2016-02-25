@@ -7,3 +7,5 @@
 /Release
 /*.rom
 /Version.h
+/ipch
+/BKBTL.APS
