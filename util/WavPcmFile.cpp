@@ -45,7 +45,7 @@ int WavPcmFile_GetFrequency(HWAVPCMFILE wavpcmfile)
     if (wavpcmfile == INVALID_HANDLE_VALUE)
         return 0;
 
-    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) wavpcmfile;
+    WAVPCMFILE* pWavPcm = reinterpret_cast<WAVPCMFILE*>(wavpcmfile);
 
     return pWavPcm->nSampleFrequency;
 }
@@ -55,7 +55,7 @@ uint32_t WavPcmFile_GetLength(HWAVPCMFILE wavpcmfile)
     if (wavpcmfile == INVALID_HANDLE_VALUE)
         return 0;
 
-    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) wavpcmfile;
+    WAVPCMFILE* pWavPcm = reinterpret_cast<WAVPCMFILE*>(wavpcmfile);
 
     return pWavPcm->dwDataSize / pWavPcm->nBlockAlign;
 }
@@ -65,7 +65,7 @@ uint32_t WavPcmFile_GetPosition(HWAVPCMFILE wavpcmfile)
     if (wavpcmfile == INVALID_HANDLE_VALUE)
         return 0;
 
-    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) wavpcmfile;
+    WAVPCMFILE* pWavPcm = reinterpret_cast<WAVPCMFILE*>(wavpcmfile);
 
     return pWavPcm->dwCurrentPosition;
 }
@@ -75,7 +75,7 @@ void WavPcmFile_SetPosition(HWAVPCMFILE wavpcmfile, uint32_t position)
     if (wavpcmfile == INVALID_HANDLE_VALUE)
         return;
 
-    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) wavpcmfile;
+    WAVPCMFILE* pWavPcm = reinterpret_cast<WAVPCMFILE*>(wavpcmfile);
 
     uint32_t offsetInData = position * pWavPcm->nBlockAlign;
     ::fseek(pWavPcm->fpFile, pWavPcm->dwDataOffset + offsetInData, SEEK_SET);
@@ -120,7 +120,13 @@ HWAVPCMFILE WavPcmFile_Create(LPCTSTR filename, int sampleRate)
         return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to write consolidated header
     }
 
-    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) ::malloc(sizeof(WAVPCMFILE));  memset(pWavPcm, 0, sizeof(WAVPCMFILE));
+    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) ::malloc(sizeof(WAVPCMFILE));
+    if (pWavPcm == NULL)
+    {
+        ::fclose(fpFileNew);
+        return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to allocate memory
+    }
+    memset(pWavPcm, 0, sizeof(WAVPCMFILE));
     pWavPcm->fpFile = fpFileNew;
     pWavPcm->nChannels = channels;
     pWavPcm->nSampleFrequency = sampleRate;
@@ -165,8 +171,8 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
     uint8_t tagHeader[8];
     uint8_t formatTag[16];
     bool formatSpecified = false;
-    int formatType, channels, bitsPerSample, blockAlign;
-    uint32_t sampleFrequency, bytesPerSecond, dataOffset, dataSize;
+    uint16_t formatType = 1, channels = 1, bitsPerSample = 1, blockAlign = 0;
+    uint32_t sampleFrequency = 22050, bytesPerSecond, dataOffset = 0, dataSize = 0;
     while (offset < statedSize)
     {
         bytesRead = ::fread(tagHeader, 1, sizeof(tagHeader), fpFileOpen);
@@ -232,7 +238,13 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
         ::fseek(fpFileOpen, offset, SEEK_SET);
     }
 
-    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) ::malloc(sizeof(WAVPCMFILE));  ::memset(pWavPcm, 0, sizeof(WAVPCMFILE));
+    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) ::malloc(sizeof(WAVPCMFILE));
+    if (pWavPcm == NULL)
+    {
+        ::fclose(fpFileOpen);
+        return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to allocate memory
+    }
+    ::memset(pWavPcm, 0, sizeof(WAVPCMFILE));
     pWavPcm->fpFile = fpFileOpen;
     pWavPcm->nChannels = channels;
     pWavPcm->nSampleFrequency = sampleFrequency;
@@ -252,7 +264,7 @@ void WavPcmFile_Close(HWAVPCMFILE wavpcmfile)
     if (wavpcmfile == INVALID_HANDLE_VALUE)
         return;
 
-    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) wavpcmfile;
+    WAVPCMFILE* pWavPcm = reinterpret_cast<WAVPCMFILE*>(wavpcmfile);
 
     if (pWavPcm->okWriting)
     {
@@ -271,24 +283,27 @@ void WavPcmFile_Close(HWAVPCMFILE wavpcmfile)
     ::free(pWavPcm);
 }
 
-void WavPcmFile_WriteOne(HWAVPCMFILE wavpcmfile, unsigned int value)
+bool WavPcmFile_WriteOne(HWAVPCMFILE wavpcmfile, unsigned int value)
 {
     if (wavpcmfile == INVALID_HANDLE_VALUE)
-        return;
+        return false;
 
-    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) wavpcmfile;
+    WAVPCMFILE* pWavPcm = reinterpret_cast<WAVPCMFILE*>(wavpcmfile);
     if (!pWavPcm->okWriting)
-        return;
+        return false;
     ASSERT(pWavPcm->nBitsPerSample == 8);
     ASSERT(pWavPcm->nChannels == 1);
 
-    uint8_t data = (value >> 24) & 0xff;
+    uint8_t data = (uint8_t)((value >> 24) & 0xff);
 
-    uint32_t bytesWritten = ::fwrite(&data, 1, 1, pWavPcm->fpFile);
-    //TODO: Проверка на ошибки записи
+    size_t bytesWritten = ::fwrite(&data, 1, 1, pWavPcm->fpFile);
+    if (bytesWritten != 1)
+        return false;
 
     pWavPcm->dwCurrentPosition++;
     pWavPcm->dwDataSize += pWavPcm->nBlockAlign;
+
+    return true;
 }
 
 unsigned int WavPcmFile_ReadOne(HWAVPCMFILE wavpcmfile)
@@ -296,7 +311,7 @@ unsigned int WavPcmFile_ReadOne(HWAVPCMFILE wavpcmfile)
     if (wavpcmfile == INVALID_HANDLE_VALUE)
         return 0;
 
-    WAVPCMFILE* pWavPcm = (WAVPCMFILE*) wavpcmfile;
+    WAVPCMFILE* pWavPcm = reinterpret_cast<WAVPCMFILE*>(wavpcmfile);
     if (pWavPcm->okWriting)
         return 0;
 
@@ -311,7 +326,7 @@ unsigned int WavPcmFile_ReadOne(HWAVPCMFILE wavpcmfile)
     pWavPcm->dwCurrentPosition++;
 
     // Decode first channel
-    unsigned int value;
+    unsigned int value = 0;
     switch (pWavPcm->nBitsPerSample)
     {
     case 8:
