@@ -44,7 +44,7 @@ bool BmpFile_SaveScreenshot(
     bih.biPlanes = 1;
     bih.biBitCount = 4;
     bih.biCompression = BI_RGB;
-    bih.biXPelsPerMeter = bih.biXPelsPerMeter = 2000;
+    bih.biXPelsPerMeter = bih.biYPelsPerMeter = 2000;
     hdr.bfSize = (uint32_t) sizeof(BITMAPFILEHEADER) + bih.biSize + bih.biSizeImage;
     hdr.bfOffBits = (uint32_t) sizeof(BITMAPFILEHEADER) + bih.biSize + sizeof(RGBQUAD) * 16;
 

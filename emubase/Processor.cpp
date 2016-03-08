@@ -186,7 +186,7 @@ void CProcessor::Done()
 
 void CProcessor::RegisterMethodRef(uint16_t start, uint16_t end, CProcessor::ExecuteMethodRef methodref)
 {
-    for (int opcode = start; opcode <= end; opcode++ )
+    for (size_t opcode = start; opcode <= end; opcode++)
         m_pExecuteMethodMap[opcode] = methodref;
 }
 
@@ -208,6 +208,9 @@ CProcessor::CProcessor (CMotherboard* pBoard)
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     //m_VIRQrq = false;
     m_haltpin = false;
+    m_instruction = m_instructionpc = m_addrsrc = m_addrdest = 0;
+    m_regsrc = m_methsrc = m_regdest = m_methdest = 0;
+    m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 }
 
 void CProcessor::Start ()
@@ -236,7 +239,7 @@ void CProcessor::Stop ()
     m_waitmode = false;
     m_psw = 0340;
     m_internalTick = 0;
-    m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = m_IRQ2rq = false;
+    m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ1rq = m_IRQ2rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
     m_haltpin = false;
@@ -965,7 +968,7 @@ void CProcessor::ExecuteSEN ()
 void CProcessor::ExecuteSENC ()
 {
     SetN(true);
-    SetZ(true);
+    SetC(true);
     m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSENV ()

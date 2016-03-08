@@ -37,6 +37,8 @@ CFloppyDrive::CFloppyDrive()
     okReadOnly = false;
     datatrack = dataside = 0;
     dataptr = 0;
+    memset(data, 0, sizeof(data));
+    memset(marker, 0, sizeof(marker));
 }
 
 void CFloppyDrive::Reset()
@@ -55,7 +57,7 @@ CFloppyController::CFloppyController()
     m_pDrive = NULL;
     m_datareg = m_writereg = m_shiftreg = 0;
     m_writing = m_searchsync = m_writemarker = m_crccalculus = false;
-    m_writeflag = m_shiftflag = false;
+    m_writeflag = m_shiftflag = m_shiftmarker = false;
     m_trackchanged = false;
     m_status = FLOPPY_STATUS_TRACK0 | FLOPPY_STATUS_WRITEPROTECT;
     m_flags = FLOPPY_CMD_CORRECTION500 | FLOPPY_CMD_SIDEUP | FLOPPY_CMD_DIR | FLOPPY_CMD_SKIPSYNC;
@@ -473,11 +475,11 @@ void CFloppyController::FlushChanges()
 
         // Check file length
         ::fseek(m_pDrive->fpFile, 0, SEEK_END);
-        uint32_t currentFileSize = ::ftell(m_pDrive->fpFile);
-        while (currentFileSize < (uint32_t)(foffset + 5120))
+        size_t currentFileSize = ::ftell(m_pDrive->fpFile);
+        while (currentFileSize < (size_t)(foffset + 5120))
         {
             uint8_t datafill[512];  ::memset(datafill, 0, 512);
-            uint32_t bytesToWrite = ((uint32_t)(foffset + 5120) - currentFileSize) % 512;
+            size_t bytesToWrite = ((size_t)(foffset + 5120) - currentFileSize) % 512;
             if (bytesToWrite == 0) bytesToWrite = 512;
             ::fwrite(datafill, 1, bytesToWrite, m_pDrive->fpFile);
             //TODO: Проверка на ошибки записи
@@ -514,7 +516,7 @@ static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker,
     memset(data, 0, FLOPPY_RAWTRACKSIZE);
     memset(marker, 0, FLOPPY_RAWMARKERSIZE);
     uint32_t count;
-    int ptr = 0;
+    size_t ptr = 0;
 
     int gap = 42;  // GAP4a + GAP1 length
     for (uint8_t sect = 0; sect < 10; sect++)
