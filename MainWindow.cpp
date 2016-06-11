@@ -34,6 +34,7 @@ TCHAR g_szWindowClass[MAX_LOADSTRING];      // Main window class name
 
 HWND m_hwndToolbar = NULL;
 HWND m_hwndStatusbar = NULL;
+HWND m_hwndSplitter = (HWND)INVALID_HANDLE_VALUE;
 
 
 
@@ -102,6 +103,7 @@ void MainWindow_RegisterClass()
 
     ToolWindow_RegisterClass();
     OverlappedWindow_RegisterClass();
+    SplitterWindow_RegisterClass();
 
     // Register view classes
     ScreenView_RegisterClass();
@@ -523,6 +525,8 @@ void MainWindow_AdjustWindowLayout()
         int yDisasm = cyDebug + 4;
         int cyDisasm = yMemory - yDisasm - 4;
         SetWindowPos(g_hwndDisasm, NULL, cxScreen + 4, yDisasm, cxDebug, cyDisasm, SWP_NOZORDER);
+
+        SetWindowPos(m_hwndSplitter, NULL, cxScreen + 4, yMemory - 4, cxDebug, 4, SWP_NOZORDER);
     }
 
     SetWindowPos(m_hwndToolbar, NULL, 4, 4, cxScreen, cyToolbar, SWP_NOZORDER);
@@ -582,6 +586,7 @@ void MainWindow_ShowHideDebug()
             CreateDisasmView(g_hwnd, xDebugLeft, yDisasmTop, cxDebugWidth, cyDisasmHeight);
         if (g_hwndMemory == INVALID_HANDLE_VALUE)
             CreateMemoryView(g_hwnd, xDebugLeft, yMemoryTop, cxDebugWidth, cyMemoryHeight);
+        m_hwndSplitter = SplitterWindow_Create(g_hwnd, g_hwndDisasm, g_hwndMemory);
 
         MainWindow_AdjustWindowLayout();
     }
