@@ -30,7 +30,6 @@
     <ClCompile Include="util\WavPcmFile.cpp">
       <Filter>util</Filter>
     </ClCompile>
-    <ClCompile Include="BKBTL.cpp" />
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="ConsoleView.cpp" />
     <ClCompile Include="DebugView.cpp" />
@@ -49,6 +48,7 @@
     <ClCompile Include="TapeView.cpp" />
     <ClCompile Include="TeletypeView.cpp" />
     <ClCompile Include="ToolWindow.cpp" />
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="emubase\Board.h">
@@ -72,7 +72,6 @@
     <ClInclude Include="util\WavPcmFile.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="BKBTL.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Dialogs.h" />
     <ClInclude Include="Emulator.h" />
@@ -81,6 +80,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ToolWindow.h" />
     <ClInclude Include="Views.h" />
+    <ClInclude Include="Main.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="BKBTL.ico">

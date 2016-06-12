@@ -18,7 +18,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include <vfw.h>
 #include <commctrl.h>
 
-#include "BKBTL.h"
+#include "Main.h"
 #include "Emulator.h"
 #include "Dialogs.h"
 #include "Views.h"

@@ -352,14 +352,6 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\BKBTL.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\BKBTL.h"
-			>
-		</File>
-		<File
 			RelativePath=".\Common.cpp"
 			>
 		</File>
@@ -405,6 +397,14 @@
 		</File>
 		<File
 			RelativePath=".\KeyboardView.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\Main.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\Main.h"
 			>
 		</File>
 		<File

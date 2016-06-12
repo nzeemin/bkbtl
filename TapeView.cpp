@@ -12,7 +12,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #include "stdafx.h"
 #include <commdlg.h>
-#include "BKBTL.h"
+#include "Main.h"
 #include "Views.h"
 #include "ToolWindow.h"
 #include "util\\WavPcmFile.h"

@@ -11,7 +11,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 // ToolWindow.cpp
 
 #include "stdafx.h"
-#include "BKBTL.h"
+#include "Main.h"
 #include "ToolWindow.h"
 #include <Windowsx.h>
 

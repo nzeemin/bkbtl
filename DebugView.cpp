@@ -12,7 +12,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #include "stdafx.h"
 #include <commctrl.h>
-#include "BKBTL.h"
+#include "Main.h"
 #include "Views.h"
 #include "ToolWindow.h"
 #include "Emulator.h"
