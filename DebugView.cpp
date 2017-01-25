@@ -34,10 +34,11 @@ HWND m_hwndDebugToolbar = (HWND) INVALID_HANDLE_VALUE;
 
 WORD m_wDebugCpuR[9];  // Old register values - R0..R7, PSW
 BOOL m_okDebugCpuRChanged[9];  // Register change flags
+WORD m_wDebugCpuPswOld;  // PSW value on previous step
 
 void DebugView_DoDraw(HDC hdc);
 BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM lParam);
-void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged);
+void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged, WORD oldPsw);
 void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, int x, int y);
 void DebugView_DrawPorts(HDC hdc, const CMotherboard* pBoard, int x, int y);
 void DebugView_UpdateWindowText();
@@ -75,6 +76,7 @@ void DebugView_Init()
 {
     memset(m_wDebugCpuR, 255, sizeof(m_wDebugCpuR));
     memset(m_okDebugCpuRChanged, 1, sizeof(m_okDebugCpuRChanged));
+    m_wDebugCpuPswOld = 0;
 }
 
 void DebugView_Create(HWND hwndParent, int x, int y, int width, int height)
@@ -228,6 +230,7 @@ void DebugView_OnUpdate()
     }
     WORD pswCPU = pCPU->GetPSW();
     m_okDebugCpuRChanged[8] = (m_wDebugCpuR[8] != pswCPU);
+    m_wDebugCpuPswOld = m_wDebugCpuR[8];
     m_wDebugCpuR[8] = pswCPU;
 }
 
@@ -250,10 +253,11 @@ void DebugView_DoDraw(HDC hdc)
     ASSERT(pDebugPU != NULL);
     WORD* arrR = m_wDebugCpuR;
     BOOL* arrRChanged = m_okDebugCpuRChanged;
+    WORD oldPsw = m_wDebugCpuPswOld;
 
     //TextOut(hdc, cxChar * 1, 2 + 1 * cyLine, _T("CPU"), 3);
 
-    DebugView_DrawProcessor(hdc, pDebugPU, 30 + cxChar * 2, 2 + 1 * cyLine, arrR, arrRChanged);
+    DebugView_DrawProcessor(hdc, pDebugPU, 30 + cxChar * 2, 2 + 1 * cyLine, arrR, arrRChanged, oldPsw);
 
     // Draw stack for the current processor
     DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, 30 + 35 * cxChar, 2 + 0 * cyLine);
@@ -283,7 +287,7 @@ void DebugView_DrawRectangle(HDC hdc, int x1, int y1, int x2, int y2)
     ::SelectObject(hdc, hOldBrush);
 }
 
-void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged)
+void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged, WORD oldPsw)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
     COLORREF colorText = GetSysColor(COLOR_WINDOWTEXT);
@@ -311,8 +315,18 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
     WORD psw = arrR[8]; // pProc->GetPSW();
     DrawOctalValue(hdc, x + cxChar * 3, y + 9 * cyLine, psw);
     DrawHexValue(hdc, x + cxChar * 10, y + 9 * cyLine, psw);
+    ::SetTextColor(hdc, colorText);
     TextOut(hdc, x + cxChar * 15, y + 8 * cyLine, _T("       HP  TNZVC"), 16);
-    DrawBinaryValue(hdc, x + cxChar * 15, y + 9 * cyLine, psw);
+
+    // PSW value bits colored bit-by-bit
+    TCHAR buffera[2];  buffera[1] = 0;
+    for (int i = 0; i < 16; i++)
+    {
+        WORD bitpos = 1 << i;
+        buffera[0] = (psw & bitpos) ? '1' : '0';
+        ::SetTextColor(hdc, ((psw & bitpos) != (oldPsw & bitpos)) ? COLOR_RED : colorText);
+        TextOut(hdc, x + cxChar * (15 + 15 - i), y + 9 * cyLine, buffera, 1);
+    }
 
     ::SetTextColor(hdc, colorText);
 

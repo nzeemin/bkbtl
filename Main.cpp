@@ -38,6 +38,7 @@ long m_nMainLastFrameTicks = 0;
 
 BOOL InitInstance(HINSTANCE, int);
 void DoneInstance();
+void ParseCommandLine();
 
 
 //////////////////////////////////////////////////////////////////////
@@ -79,7 +80,7 @@ int APIENTRY _tWinMain(
 
     // Main message loop
     MSG msg;
-    while (true)
+    for (;;)
     {
         ::QueryPerformanceCounter(&nFrameStartTime);
 
@@ -133,13 +134,15 @@ int APIENTRY _tWinMain(
                 if (nTimeElapsed > 0 && nTimeElapsed < nFrameDelay)
                 {
                     LONG nTimeToSleep = (LONG)(nFrameDelay - nTimeElapsed);
-                    ::Sleep((DWORD) nTimeToSleep / 2);
-                    ScreenView_ScanKeyboard();
-                    ::Sleep((DWORD) nTimeToSleep / 2);
+                    ::Sleep((DWORD)nTimeToSleep);
                 }
             }
 #endif
         }
+
+        //// Time bomb for perfomance analysis
+        //if (Emulator_GetUptime() >= 300)  // 5 minutes
+        //    ::PostQuitMessage(0);
     }
 endprog:
 
@@ -176,6 +179,9 @@ BOOL InitInstance(HINSTANCE /*hInstance*/, int /*nCmdShow*/)
     Settings_Init();
     Joystick_Init();
     Joystick_SelectJoystick(Settings_GetJoystick());
+
+    ParseCommandLine();  // Override settings by command-line option if needed
+
     if (!Emulator_Init())
         return FALSE;
 
@@ -202,6 +208,11 @@ void DoneInstance()
 
     Joystick_Done();
     Settings_Done();
+}
+
+void ParseCommandLine()
+{
+    //TODO
 }
 
 

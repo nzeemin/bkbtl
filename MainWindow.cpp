@@ -141,6 +141,7 @@ BOOL CreateMainWindow()
 
     MainWindow_RestoreSettings();
 
+    MainWindow_ShowHideToolbar();
     MainWindow_ShowHideKeyboard();
     MainWindow_ShowHideTape();
     MainWindow_ShowHideDebug();
@@ -243,7 +244,7 @@ BOOL MainWindow_InitStatusbar()
 
     int statusbarParts[3];
     statusbarParts[0] = 300;
-    statusbarParts[1] = 380;
+    statusbarParts[1] = 350;
     statusbarParts[2] = -1;
     SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts) / sizeof(int), (LPARAM) statusbarParts);
 
@@ -543,6 +544,8 @@ void MainWindow_ShowHideDebug()
     if (!Settings_GetDebug())
     {
         // Delete debug views
+        if (m_hwndSplitter != INVALID_HANDLE_VALUE)
+            DestroyWindow(m_hwndSplitter);
         if (g_hwndConsole != INVALID_HANDLE_VALUE)
             DestroyWindow(g_hwndConsole);
         if (g_hwndDebug != INVALID_HANDLE_VALUE)
@@ -764,14 +767,6 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY1, (g_pBoard->IsFloppyImageAttached(1) ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY2, (g_pBoard->IsFloppyImageAttached(2) ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY3, (g_pBoard->IsFloppyImageAttached(3) ? MF_CHECKED : MF_UNCHECKED));
-    //MainWindow_SetStatusbarBitmap(StatusbarPartMZ0,
-    //        g_pBoard->IsFloppyImageAttached(0) ? ((g_pBoard->IsFloppyReadOnly(0)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
-    //MainWindow_SetStatusbarBitmap(StatusbarPartMZ1,
-    //        g_pBoard->IsFloppyImageAttached(1) ? ((g_pBoard->IsFloppyReadOnly(1)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
-    //MainWindow_SetStatusbarBitmap(StatusbarPartMZ2,
-    //        g_pBoard->IsFloppyImageAttached(2) ? ((g_pBoard->IsFloppyReadOnly(2)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
-    //MainWindow_SetStatusbarBitmap(StatusbarPartMZ3,
-    //        g_pBoard->IsFloppyImageAttached(3) ? ((g_pBoard->IsFloppyReadOnly(3)) ? IDI_DISKETTEWP : IDI_DISKETTE) : 0);
     MainWindow_SetToolbarImage(ID_EMULATOR_FLOPPY0,
             g_pBoard->IsFloppyImageAttached(0) ? (g_pBoard->IsFloppyReadOnly(0) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
     MainWindow_SetToolbarImage(ID_EMULATOR_FLOPPY1,
@@ -933,7 +928,8 @@ bool MainWindow_DoCommand(int commandId)
 
 void MainWindow_DoViewDebug()
 {
-    //MainWindow_DoViewScreenMode(1);  // Switch to Normal Height mode
+    int mode = ScreenView_GetScreenMode();
+    MainWindow_DoViewScreenMode(mode & 1);  // Switch to Normal Height mode
 
     Settings_SetDebug(!Settings_GetDebug());
     MainWindow_ShowHideDebug();
@@ -975,7 +971,7 @@ void MainWindow_DoViewScreenColor()
 
 void MainWindow_DoViewScreenMode(int newMode)
 {
-    //if (Settings_GetDebug() && newMode == 2) return;  // Deny switching to Double Height in Debug mode
+    if (Settings_GetDebug() && newMode > 1) return;  // Deny switching to Double Height in Debug mode
 
     ScreenView_SetScreenMode(newMode);
 
@@ -1043,21 +1039,11 @@ void MainWindow_DoEmulatorJoystick(int joystick)
 
 void MainWindow_DoFileLoadState()
 {
-    // File Open dialog
     TCHAR bufFileName[MAX_PATH];
-    *bufFileName = 0;
-    OPENFILENAME ofn;
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = g_hwnd;
-    ofn.hInstance = g_hInst;
-    ofn.lpstrTitle = _T("Open state image to load");
-    ofn.lpstrFilter = _T("BK state images (*.bkst)\0*.bkst\0All Files (*.*)\0*.*\0\0");
-    ofn.Flags = OFN_FILEMUSTEXIST;
-    ofn.lpstrFile = bufFileName;
-    ofn.nMaxFile = sizeof(bufFileName) / sizeof(TCHAR);
-
-    BOOL okResult = GetOpenFileName(&ofn);
+    BOOL okResult = ShowOpenDialog(g_hwnd,
+            _T("Open state image to load"),
+            _T("BK state images (*.bkst)\0*.bkst\0All Files (*.*)\0*.*\0\0"),
+            bufFileName);
     if (! okResult) return;
 
     Emulator_LoadImage(bufFileName);
@@ -1154,19 +1140,10 @@ void MainWindow_DoEmulatorFloppy(int slot)
 
         // File Open dialog
         TCHAR bufFileName[MAX_PATH];
-        *bufFileName = 0;
-        OPENFILENAME ofn;
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = g_hwnd;
-        ofn.hInstance = g_hInst;
-        ofn.lpstrTitle = _T("Open floppy image to attach");
-        ofn.lpstrFilter = _T("BK floppy images (*.img, *.bkd)\0*.img;*.bkd\0All Files (*.*)\0*.*\0\0");
-        ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-        ofn.lpstrFile = bufFileName;
-        ofn.nMaxFile = sizeof(bufFileName) / sizeof(TCHAR);
-
-        BOOL okResult = GetOpenFileName(&ofn);
+        BOOL okResult = ShowOpenDialog(g_hwnd,
+                _T("Open floppy image to attach"),
+                _T("BK floppy images (*.img, *.bkd)\0*.img;*.bkd\0All Files (*.*)\0*.*\0\0"),
+                bufFileName);
         if (! okResult) return;
 
         if (! g_pBoard->AttachFloppyImage(slot, bufFileName))
@@ -1174,6 +1151,7 @@ void MainWindow_DoEmulatorFloppy(int slot)
             AlertWarning(_T("Failed to attach floppy image."));
             return;
         }
+
         Settings_SetFloppyFilePath(slot, bufFileName);
     }
     MainWindow_UpdateMenu();

@@ -21,7 +21,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 extern TCHAR g_szTitle[MAX_LOADSTRING];            // The title bar text
 extern TCHAR g_szWindowClass[MAX_LOADSTRING];      // Main window class name
 
-
 extern HINSTANCE g_hInst; // current instance
 
 
@@ -103,7 +102,7 @@ void Settings_SetDebug(BOOL flag);
 BOOL Settings_GetDebug();
 void Settings_SetAutostart(BOOL flag);
 BOOL Settings_GetAutostart();
-void Settings_SetRealSpeed(WORD flag);
+void Settings_SetRealSpeed(WORD speed);
 WORD Settings_GetRealSpeed();
 void Settings_SetSound(BOOL flag);
 BOOL Settings_GetSound();
