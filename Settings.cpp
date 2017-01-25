@@ -23,8 +23,6 @@ TCHAR m_Settings_IniPath[MAX_PATH];
 BOOL m_Settings_Toolbar = TRUE;
 BOOL m_Settings_Debug = FALSE;
 BOOL m_Settings_Debug_Valid = FALSE;
-BOOL m_Settings_RealSpeed = FALSE;
-BOOL m_Settings_RealSpeed_Valid = FALSE;
 BOOL m_Settings_Sound = FALSE;
 BOOL m_Settings_Sound_Valid = FALSE;
 WORD m_Settings_SoundVolume = 0x7fff;
@@ -305,23 +303,7 @@ BOOL Settings_GetAutostart()
     return (BOOL) dwValue;
 }
 
-void Settings_SetRealSpeed(BOOL flag)
-{
-    m_Settings_RealSpeed = flag;
-    m_Settings_RealSpeed_Valid = TRUE;
-    Settings_SaveDwordValue(_T("RealSpeed"), (DWORD) flag);
-}
-BOOL Settings_GetRealSpeed()
-{
-    if (!m_Settings_RealSpeed_Valid)
-    {
-        DWORD dwValue = (DWORD) FALSE;
-        Settings_LoadDwordValue(_T("RealSpeed"), &dwValue);
-        m_Settings_RealSpeed = (BOOL) dwValue;
-        m_Settings_RealSpeed_Valid = TRUE;
-    }
-    return m_Settings_RealSpeed;
-}
+SETTINGS_GETSET_DWORD(RealSpeed, _T("RealSpeed"), WORD, 1);
 
 void Settings_SetSound(BOOL flag)
 {
