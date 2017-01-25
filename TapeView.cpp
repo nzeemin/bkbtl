@@ -17,6 +17,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "ToolWindow.h"
 #include "util\\WavPcmFile.h"
 #include "Emulator.h"
+#include "Dialogs.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -89,7 +90,7 @@ void TapeView_Done()
 {
 }
 
-void CreateTapeView(HWND hwndParent, int x, int y, int width, int height)
+void TapeView_Create(HWND hwndParent, int x, int y, int width, int height)
 {
     ASSERT(hwndParent != NULL);
 
@@ -302,19 +303,10 @@ void TapeView_DoOpenWav()
 
     // File Open dialog
     TCHAR bufFileName[MAX_PATH];
-    *bufFileName = 0;
-    OPENFILENAME ofn;
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = g_hwnd;
-    ofn.hInstance = g_hInst;
-    ofn.lpstrTitle = _T("Open WAV file");
-    ofn.lpstrFilter = _T("WAV files (*.wav)\0*.wav\0All Files (*.*)\0*.*\0\0");
-    ofn.Flags = OFN_FILEMUSTEXIST;
-    ofn.lpstrFile = bufFileName;
-    ofn.nMaxFile = sizeof(bufFileName) / sizeof(TCHAR);
-
-    BOOL okResult = GetOpenFileName(&ofn);
+    BOOL okResult = ShowOpenDialog(g_hwnd,
+            _T("Open WAV file"),
+            _T("WAV files (*.wav)\0*.wav\0All Files (*.*)\0*.*\0\0"),
+            bufFileName);
     if (! okResult) return;
 
     TapeView_OpenTape(bufFileName);
@@ -329,19 +321,11 @@ void TapeView_DoSaveWav()
 
     // File Save dialog
     TCHAR bufFileName[MAX_PATH];
-    *bufFileName = 0;
-    OPENFILENAME ofn;
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = g_hwnd;
-    ofn.hInstance = g_hInst;
-    ofn.lpstrTitle = _T("Save WAV file");
-    ofn.lpstrFilter = _T("WAV files (*.wav)\0*.wav\0All Files (*.*)\0*.*\0\0");
-    ofn.Flags = OFN_FILEMUSTEXIST;
-    ofn.lpstrFile = bufFileName;
-    ofn.nMaxFile = sizeof(bufFileName) / sizeof(TCHAR);
-
-    BOOL okResult = GetSaveFileName(&ofn);
+    BOOL okResult = ShowSaveDialog(g_hwnd,
+            _T("Save WAV file"),
+            _T("WAV files (*.wav)\0*.wav\0All Files (*.*)\0*.*\0\0"),
+            _T("wav"),
+            bufFileName);
     if (! okResult) return;
 
     TapeView_CreateTape(bufFileName);

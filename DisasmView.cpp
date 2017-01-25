@@ -90,7 +90,7 @@ void DisasmView_RegisterClass()
     RegisterClassEx(&wcex);
 }
 
-void CreateDisasmView(HWND hwndParent, int x, int y, int width, int height)
+void DisasmView_Create(HWND hwndParent, int x, int y, int width, int height)
 {
     ASSERT(hwndParent != NULL);
 

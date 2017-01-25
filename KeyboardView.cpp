@@ -153,7 +153,7 @@ void KeyboardView_Done()
 {
 }
 
-void CreateKeyboardView(HWND hwndParent, int x, int y, int width, int height)
+void KeyboardView_Create(HWND hwndParent, int x, int y, int width, int height)
 {
     ASSERT(hwndParent != NULL);
 

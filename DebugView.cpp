@@ -77,7 +77,7 @@ void DebugView_Init()
     memset(m_okDebugCpuRChanged, 1, sizeof(m_okDebugCpuRChanged));
 }
 
-void CreateDebugView(HWND hwndParent, int x, int y, int width, int height)
+void DebugView_Create(HWND hwndParent, int x, int y, int width, int height)
 {
     ASSERT(hwndParent != NULL);
 

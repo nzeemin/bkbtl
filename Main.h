@@ -95,8 +95,6 @@ void Settings_SetConfiguration(int configuration);
 int  Settings_GetConfiguration();
 void Settings_SetFloppyFilePath(int slot, LPCTSTR sFilePath);
 void Settings_GetFloppyFilePath(int slot, LPTSTR buffer);
-void Settings_SetCartridgeFilePath(int slot, LPCTSTR sFilePath);
-void Settings_GetCartridgeFilePath(int slot, LPTSTR buffer);
 void Settings_SetScreenViewMode(int mode);
 int  Settings_GetScreenViewMode();
 void Settings_SetScreenHeightMode(int mode);

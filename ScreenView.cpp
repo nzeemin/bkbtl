@@ -117,7 +117,7 @@ void ScreenView_CreateDisplay()
 }
 
 // Create Screen View as child of Main Window
-void CreateScreenView(HWND hwndParent, int x, int y, int cxWidth)
+void ScreenView_Create(HWND hwndParent, int x, int y, int cxWidth)
 {
     ASSERT(hwndParent != NULL);
 

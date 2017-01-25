@@ -31,7 +31,7 @@ HFONT m_hfontTeletype = NULL;
 //////////////////////////////////////////////////////////////////////
 
 
-void CreateTeletypeView(int x, int y, int width, int height)
+void TeletypeView_Create(int x, int y, int width, int height)
 {
     //int cxBorder = ::GetSystemMetrics(SM_CXDLGFRAME);
     //int cyBorder = ::GetSystemMetrics(SM_CYDLGFRAME);

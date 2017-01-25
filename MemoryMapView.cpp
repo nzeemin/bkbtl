@@ -71,7 +71,7 @@ void MemoryMapView_RegisterClass()
     RegisterClassEx(&wcex);
 }
 
-void CreateMemoryMapView(int x, int y)
+void MemoryMapView_Create(int x, int y)
 {
     int cxBorder = ::GetSystemMetrics(SM_CXDLGFRAME);
     int cyBorder = ::GetSystemMetrics(SM_CYDLGFRAME);
