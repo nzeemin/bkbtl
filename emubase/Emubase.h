@@ -80,23 +80,24 @@ class CFloppyController
 {
 protected:
     CFloppyDrive m_drivedata[4];
-    int  m_drive;       // Drive number: from 0 to 3; -1 if not selected
-    CFloppyDrive* m_pDrive;  // Current drive; NULL if not selected
+    int m_drive;            // Drive number: from 0 to 3; -1 if not selected
+    CFloppyDrive* m_pDrive; // Current drive; NULL if not selected
     uint16_t m_track;       // Track number: from 0 to 79
     uint16_t m_side;        // Disk side: 0 or 1
     uint16_t m_status;      // See FLOPPY_STATUS_XXX defines
     uint16_t m_flags;       // See FLOPPY_CMD_XXX defines
     uint16_t m_datareg;     // Read mode data register
     uint16_t m_writereg;    // Write mode data register
-    bool m_writeflag;   // Write mode data register has data
-    bool m_writemarker; // Write marker in m_marker
+    bool m_writeflag;       // Write mode data register has data
+    bool m_writemarker;     // Write marker in m_marker
     uint16_t m_shiftreg;    // Write mode shift register
-    bool m_shiftflag;   // Write mode shift register has data
-    bool m_shiftmarker; // Write marker in m_marker
-    bool m_writing;     // TRUE = write mode, false = read mode
-    bool m_searchsync;  // Read sub-mode: TRUE = search for sync, false = just read
-    bool m_crccalculus; // TRUE = CRC is calculated now
-    bool m_trackchanged;  // TRUE = m_data was changed - need to save it into the file
+    bool m_shiftflag;       // Write mode shift register has data
+    bool m_shiftmarker;     // Write marker in m_marker
+    bool m_writing;         // TRUE = write mode, false = read mode
+    bool m_searchsync;      // Read sub-mode: TRUE = search for sync, false = just read
+    bool m_crccalculus;     // TRUE = CRC is calculated now
+    bool m_trackchanged;    // TRUE = m_data was changed - need to save it into the file
+    bool m_okTrace;         // Trace mode on/off
 
 public:
     CFloppyController();
@@ -116,6 +117,7 @@ public:
     void SetCommand(uint16_t cmd);  // Writing to port 177130 - commands
     void WriteData(uint16_t Data);  // Writing to port 177132 - data
     void Periodic();            // Rotate disk; call it each 64 us - 15625 times per second
+    void SetTrace(bool okTrace) { m_okTrace = okTrace; }  // Set trace mode on/off
 
 private:
     void PrepareTrack();
