@@ -194,6 +194,18 @@ CProcessor* ConsoleView_GetCurrentProcessor()
     return g_pBoard->GetCPU();
 }
 
+void ConsoleView_PrintFormat(LPCTSTR pszFormat, ...)
+{
+    TCHAR buffer[512];
+
+    va_list ptr;
+    va_start(ptr, pszFormat);
+    _vsntprintf_s(buffer, 512, 512 - 1, pszFormat, ptr);
+    va_end(ptr);
+
+    ConsoleView_Print(buffer);
+}
+
 void ConsoleView_Print(LPCTSTR message)
 {
     if (m_hwndConsoleLog == INVALID_HANDLE_VALUE) return;
@@ -420,12 +432,13 @@ void ConsoleView_ShowHelp()
             _T("  rN XXXXXX  Set register N to value XXXXXX; N=0..7,ps\r\n")
             _T("  s          Step Into; executes one instruction\r\n")
             _T("  so         Step Over; executes and stops after the current instruction\r\n")
-            _T("  u          Save memory dump to file memdumpXPU.bin\r\n")
+            _T("  u          Save memory dump to file memdump.bin\r\n")
 #if !defined(PRODUCT)
             _T("  t          Tracing on/off to trace.log file\r\n")
             _T("  tXXXXXX    Set tracing flags\r\n")
+            _T("  tc         Clear trace.log file\r\n")
 #endif
-        );
+                     );
 }
 
 void DoConsoleCommand()
@@ -608,10 +621,15 @@ void DoConsoleCommand()
         break;
 #if !defined(PRODUCT)
     case _T('t'):
+        if (command[1] == _T('c'))  // "tc" -- clear trace log
+        {
+            DebugLogClear();
+            ConsoleView_Print(_T("  Trace log cleared.\r\n"));
+        }
+        else
         {
             DWORD dwTrace = (g_pBoard->GetTrace() == TRACE_NONE ? TRACE_ALL : TRACE_NONE);
-            //TODO: Implement "tc" command -- clear trace log
-            if (command[1] != 0)
+            if (command[1] != 0)  // "tXXXXXX" -- trace with flags specified
             {
                 WORD value;
                 if (!ParseOctalValue(command + 1, &value))
@@ -624,10 +642,10 @@ void DoConsoleCommand()
 
             g_pBoard->SetTrace(dwTrace);
             if (dwTrace != TRACE_NONE)
-                ConsoleView_Print(_T("  Trace is ON.\r\n"));  //TODO: Print trace flags
+                ConsoleView_PrintFormat(_T("  Trace ON, trace flags %06o\r\n"), (uint16_t)g_pBoard->GetTrace());
             else
             {
-                ConsoleView_Print(_T("  Trace is OFF.\r\n"));
+                ConsoleView_Print(_T("  Trace OFF.\r\n"));
                 DebugLogCloseFile();
             }
         }
