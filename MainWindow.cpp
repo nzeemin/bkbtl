@@ -37,7 +37,6 @@ HWND m_hwndStatusbar = NULL;
 HWND m_hwndSplitter = (HWND)INVALID_HANDLE_VALUE;
 
 
-
 BOOL m_MainWindow_Fullscreen = FALSE;
 LONG m_MainWindow_FullscreenOldStyle = 0;
 BOOL m_MainWindow_FullscreenOldMaximized = FALSE;
@@ -1059,7 +1058,10 @@ void MainWindow_DoFileSaveState()
             bufFileName);
     if (! okResult) return;
 
-    Emulator_SaveImage(bufFileName);
+    if (!Emulator_SaveImage(bufFileName))
+    {
+        AlertWarning(_T("Failed to save image file."));
+    }
 }
 
 void MainWindow_DoFileScreenshot()

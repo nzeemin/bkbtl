@@ -57,8 +57,8 @@ void Emulator_PrepareScreenRGB32(void* pBits, int screenMode);
 void Emulator_OnUpdate();
 uint16_t Emulator_GetChangeRamStatus(uint16_t address);
 
-void Emulator_SaveImage(LPCTSTR sFilePath);
-void Emulator_LoadImage(LPCTSTR sFilePath);
+bool Emulator_SaveImage(LPCTSTR sFilePath);
+bool Emulator_LoadImage(LPCTSTR sFilePath);
 
 
 //////////////////////////////////////////////////////////////////////

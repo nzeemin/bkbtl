@@ -71,8 +71,8 @@ enum BKConfiguration
 #define FLOPPY_FSM_WAITFORTERM2	3
 
 // Emulator image constants
-#define BKIMAGE_HEADER_SIZE 256
-#define BKIMAGE_SIZE (BKIMAGE_HEADER_SIZE + (32 + 64 * 3) * 1024)
+#define BKIMAGE_HEADER_SIZE 32
+#define BKIMAGE_SIZE 200704
 #define BKIMAGE_HEADER1 0x30304B41  // "BK00"
 #define BKIMAGE_HEADER2 0x214C5442  // "BTL!"
 #define BKIMAGE_VERSION 0x00010000  // 1.0
@@ -221,8 +221,8 @@ private:  // Access to I/O ports
     uint8_t     GetPortByte(uint16_t address);
     void        SetPortByte(uint16_t address, uint8_t byte);
 public:  // Saving/loading emulator status
-    //void        SaveToImage(uint8_t* pImage);
-    //void        LoadFromImage(const uint8_t* pImage);
+    void        SaveToImage(uint8_t* pImage);
+    void        LoadFromImage(const uint8_t* pImage);
 private:  // Ports: implementation
     uint16_t    m_Port177560;       // Serial port input state register
     uint16_t    m_Port177562;       // Serial port input data register

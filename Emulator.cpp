@@ -1077,20 +1077,22 @@ void CALLBACK Emulator_PrepareScreenColor1024x768(const uint8_t* pVideoBuffer, i
 //   4 bytes        BK uptime
 //   12 bytes       Not used
 
-void Emulator_SaveImage(LPCTSTR sFilePath)
+bool Emulator_SaveImage(LPCTSTR sFilePath)
 {
     // Create file
     HANDLE hFile = CreateFile(sFilePath,
             GENERIC_WRITE, FILE_SHARE_READ, NULL,
             CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
-    {
-        AlertWarning(_T("Failed to save image file."));
-        return;
-    }
+        return false;
 
     // Allocate memory
     uint8_t* pImage = (uint8_t*) ::malloc(BKIMAGE_SIZE);  memset(pImage, 0, BKIMAGE_SIZE);
+    if (pImage == NULL)
+    {
+        ::CloseHandle(hFile);
+        return false;
+    }
     ::memset(pImage, 0, BKIMAGE_SIZE);
     // Prepare header
     uint32_t* pHeader = (uint32_t*) pImage;
@@ -1099,30 +1101,28 @@ void Emulator_SaveImage(LPCTSTR sFilePath)
     *pHeader++ = BKIMAGE_VERSION;
     *pHeader++ = BKIMAGE_SIZE;
     // Store emulator state to the image
-    //g_pBoard->SaveToImage(pImage);
+    g_pBoard->SaveToImage(pImage);
     *(uint32_t*)(pImage + 16) = m_dwEmulatorUptime;
 
     // Save image to the file
     DWORD dwBytesWritten = 0;
     WriteFile(hFile, pImage, BKIMAGE_SIZE, &dwBytesWritten, NULL);
-    //TODO: Check if dwBytesWritten != BKIMAGE_SIZE
-
-    // Free memory, close file
     ::free(pImage);
     CloseHandle(hFile);
+    if (dwBytesWritten != BKIMAGE_SIZE)
+        return false;
+
+    return true;
 }
 
-void Emulator_LoadImage(LPCTSTR sFilePath)
+bool Emulator_LoadImage(LPCTSTR sFilePath)
 {
     // Open file
     HANDLE hFile = CreateFile(sFilePath,
             GENERIC_READ, FILE_SHARE_READ, NULL,
             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
-    {
-        AlertWarning(_T("Failed to load image file."));
-        return;
-    }
+        return false;
 
     // Read header
     uint32_t bufHeader[BKIMAGE_HEADER_SIZE / sizeof(uint32_t)];
@@ -1142,9 +1142,10 @@ void Emulator_LoadImage(LPCTSTR sFilePath)
     //TODO: Check if dwBytesRead != BKIMAGE_SIZE
 
     // Restore emulator state from the image
-    //g_pBoard->LoadFromImage(pImage);
+    g_pBoard->LoadFromImage(pImage);
 
     m_dwEmulatorUptime = *(uint32_t*)(pImage + 16);
+    g_wEmulatorCpuPC = g_pBoard->GetCPU()->GetPC();
 
     // Free memory, close file
     ::free(pImage);
@@ -1153,6 +1154,8 @@ void Emulator_LoadImage(LPCTSTR sFilePath)
     g_okEmulatorRunning = false;
 
     MainWindow_UpdateAllViews();
+
+    return true;
 }
 
 
