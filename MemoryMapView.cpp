@@ -31,6 +31,9 @@ BITMAPINFO m_bmpinfoMemoryMap;
 HBITMAP m_hMemoryMapBitmap = NULL;
 DWORD * m_pMemoryMap_bits = NULL;
 
+const int m_nMemoryMap_ViewCX = 512;
+const int m_nMemoryMap_ViewCY = 512;
+
 int m_nMemoryMap_xpos = 0;
 int m_nMemoryMap_ypos = 0;
 int m_nMemoryMap_scale = 2;
@@ -79,8 +82,8 @@ void MemoryMapView_Create(int x, int y)
     int cyScroll = ::GetSystemMetrics(SM_CYHSCROLL);
     int cyCaption = ::GetSystemMetrics(SM_CYSMCAPTION);
 
-    int width = 256 * 2 + cxScroll + cxBorder * 2;
-    int height = 256 * 2 + cyScroll + cyBorder * 2 + cyCaption;
+    int width = m_nMemoryMap_ViewCX + cxScroll + cxBorder * 2;
+    int height = m_nMemoryMap_ViewCY + cyScroll + cyBorder * 2 + cyCaption;
     g_hwndMemoryMap = CreateWindowEx(
             WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
             CLASSNAME_OVERLAPPEDWINDOW, _T("BK Memory Map"),
@@ -190,15 +193,6 @@ LRESULT CALLBACK MemoryMapViewViewerWndProc(HWND hWnd, UINT message, WPARAM wPar
     return (LRESULT)FALSE;
 }
 
-BOOL MemoryMapView_OnMouseWheel(WPARAM wParam, LPARAM /*lParam*/)
-{
-    short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-
-    MemoryMapView_Zoom(zDelta > 0);
-
-    return FALSE;
-}
-
 void MemoryMapView_Zoom(BOOL inout)
 {
     if (inout)
@@ -217,16 +211,14 @@ void MemoryMapView_Zoom(BOOL inout)
     InvalidateRect(m_hwndMemoryMapViewer, NULL, FALSE);
     MemoryMapView_UpdateScrollPos();
 }
-void MemoryMapView_Scroll(int dx, int dy)
+void MemoryMapView_ScrollTo(int newxpos, int newypos)
 {
-    int newxpos = m_nMemoryMap_xpos + dx;
-    int newypos = m_nMemoryMap_ypos + dy;
-
-    int maxpos = 256 * (m_nMemoryMap_scale - 2);  //INCORRECT
+    int maxxpos = 256 - m_nMemoryMap_ViewCX / m_nMemoryMap_scale;
+    int maxypos = 256 - m_nMemoryMap_ViewCY / m_nMemoryMap_scale;
     if (newxpos < 0) newxpos = 0;
-    if (newxpos > maxpos) newxpos = maxpos;
+    if (newxpos > maxxpos) newxpos = maxxpos;
     if (newypos < 0) newypos = 0;
-    if (newypos > maxpos) newypos = maxpos;
+    if (newypos > maxypos) newypos = maxypos;
 
     m_nMemoryMap_xpos = newxpos;
     m_nMemoryMap_ypos = newypos;
@@ -234,6 +226,21 @@ void MemoryMapView_Scroll(int dx, int dy)
     InvalidateRect(m_hwndMemoryMapViewer, NULL, TRUE);
 
     MemoryMapView_UpdateScrollPos();
+}
+void MemoryMapView_Scroll(int dx, int dy)
+{
+    int newxpos = m_nMemoryMap_xpos + dx;
+    int newypos = m_nMemoryMap_ypos + dy;
+    MemoryMapView_ScrollTo(newxpos, newypos);
+}
+
+BOOL MemoryMapView_OnMouseWheel(WPARAM wParam, LPARAM /*lParam*/)
+{
+    short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+    MemoryMapView_Scroll(0, (zDelta > 0) ? -24 : 24);
+
+    return FALSE;
 }
 
 BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
@@ -266,7 +273,7 @@ BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
 
 BOOL MemoryMapView_OnHScroll(WPARAM wParam, LPARAM /*lParam*/)
 {
-    //WORD scrollpos = HIWORD(wParam);
+    WORD scrollpos = HIWORD(wParam);
     WORD scrollcmd = LOWORD(wParam);
     switch (scrollcmd)
     {
@@ -277,21 +284,21 @@ BOOL MemoryMapView_OnHScroll(WPARAM wParam, LPARAM /*lParam*/)
         MemoryMapView_Scroll(-8, 0);
         break;
     case SB_PAGEDOWN:
-        MemoryMapView_Scroll(32, 0);  //TODO
+        MemoryMapView_Scroll(m_nMemoryMap_ViewCX / m_nMemoryMap_scale, 0);
         break;
     case SB_PAGEUP:
-        MemoryMapView_Scroll(32, 0);  //TODO
+        MemoryMapView_Scroll(-m_nMemoryMap_ViewCX / m_nMemoryMap_scale, 0);
         break;
-        //case SB_THUMBPOSITION:
-        //    MemoryMapView_ScrollTo(scrollpos * 16);
-        //    break;
+    case SB_THUMBPOSITION:
+        MemoryMapView_ScrollTo(scrollpos, m_nMemoryMap_ypos);
+        break;
     }
 
     return FALSE;
 }
 BOOL MemoryMapView_OnVScroll(WPARAM wParam, LPARAM /*lParam*/)
 {
-    //WORD scrollpos = HIWORD(wParam);
+    WORD scrollpos = HIWORD(wParam);
     WORD scrollcmd = LOWORD(wParam);
     switch (scrollcmd)
     {
@@ -302,14 +309,14 @@ BOOL MemoryMapView_OnVScroll(WPARAM wParam, LPARAM /*lParam*/)
         MemoryMapView_Scroll(0, -8);
         break;
     case SB_PAGEDOWN:
-        MemoryMapView_Scroll(0, 32);  //TODO
+        MemoryMapView_Scroll(0, m_nMemoryMap_ViewCY / m_nMemoryMap_scale);
         break;
     case SB_PAGEUP:
-        MemoryMapView_Scroll(0, -32);  //TODO
+        MemoryMapView_Scroll(0, -m_nMemoryMap_ViewCY / m_nMemoryMap_scale);
         break;
-        //case SB_THUMBPOSITION:
-        //    MemoryMapView_ScrollTo(scrollpos * 16);
-        //    break;
+    case SB_THUMBPOSITION:
+        MemoryMapView_ScrollTo(m_nMemoryMap_xpos, scrollpos);
+        break;
     }
 
     return FALSE;
@@ -338,6 +345,29 @@ void MemoryMapView_RedrawMap()
     HDC hdc = GetDC(g_hwndMemoryMap);
     MemoryMapView_OnDraw(hdc);
     ::ReleaseDC(g_hwndMemoryMap, hdc);
+}
+
+void MemoryMapView_UpdateScrollPos()
+{
+    SCROLLINFO siH;
+    ZeroMemory(&siH, sizeof(siH));
+    siH.cbSize = sizeof(siH);
+    siH.fMask = SIF_PAGE | SIF_POS | SIF_RANGE | SIF_DISABLENOSCROLL;
+    siH.nPage = m_nMemoryMap_ViewCX / m_nMemoryMap_scale;
+    siH.nPos = m_nMemoryMap_xpos;
+    siH.nMin = 0;
+    siH.nMax = 256 - 1;
+    SetScrollInfo(m_hwndMemoryMapViewer, SB_HORZ, &siH, TRUE);
+
+    SCROLLINFO siV;
+    ZeroMemory(&siV, sizeof(siV));
+    siV.cbSize = sizeof(siV);
+    siV.fMask = SIF_PAGE | SIF_POS | SIF_RANGE | SIF_DISABLENOSCROLL;
+    siV.nPage = m_nMemoryMap_ViewCY / m_nMemoryMap_scale;
+    siV.nPos = m_nMemoryMap_ypos;
+    siV.nMin = 0;
+    siV.nMax = 256 - 1;
+    SetScrollInfo(m_hwndMemoryMapViewer, SB_VERT, &siV, TRUE);
 }
 
 void MemoryMapView_PrepareBitmap()
@@ -383,29 +413,6 @@ void MemoryMapView_PrepareBitmap()
             pBits++;
         }
     }
-}
-
-void MemoryMapView_UpdateScrollPos()
-{
-    SCROLLINFO siV;
-    ZeroMemory(&siV, sizeof(siV));
-    siV.cbSize = sizeof(siV);
-    siV.fMask = SIF_PAGE | SIF_POS | SIF_RANGE | SIF_DISABLENOSCROLL;
-    siV.nPage = 256 * 2 / m_nMemoryMap_scale;
-    siV.nPos = m_nMemoryMap_ypos;  //TODO
-    siV.nMin = 0;
-    siV.nMax = m_nMemoryMap_scale * 256 - 512;
-    SetScrollInfo(m_hwndMemoryMapViewer, SB_VERT, &siV, TRUE);
-
-    SCROLLINFO siH;
-    ZeroMemory(&siH, sizeof(siH));
-    siH.cbSize = sizeof(siH);
-    siH.fMask = SIF_PAGE | SIF_POS | SIF_RANGE | SIF_DISABLENOSCROLL;
-    siH.nPage = 256 * 2 / m_nMemoryMap_scale;
-    siH.nPos = m_nMemoryMap_xpos;  //TODO
-    siH.nMin = 0;
-    siH.nMax = m_nMemoryMap_scale * 256 - 512;
-    SetScrollInfo(m_hwndMemoryMapViewer, SB_HORZ, &siH, TRUE);
 }
 
 
