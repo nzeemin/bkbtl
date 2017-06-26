@@ -40,6 +40,7 @@ void MainWindow_ShowHideDebug();
 void MainWindow_ShowHideToolbar();
 void MainWindow_ShowHideKeyboard();
 void MainWindow_ShowHideTape();
+void MainWindow_ShowHideMemoryMap();
 void MainWindow_ShowHideSpriteViewer();
 void MainWindow_AdjustWindowSize();
 
@@ -119,6 +120,8 @@ void Settings_SetKeyboard(BOOL flag);
 BOOL Settings_GetKeyboard();
 void Settings_SetTape(BOOL flag);
 BOOL Settings_GetTape();
+void Settings_SetMemoryMap(BOOL flag);
+BOOL Settings_GetMemoryMap();
 
 
 //////////////////////////////////////////////////////////////////////

@@ -32,7 +32,7 @@ HBITMAP m_hMemoryMapBitmap = NULL;
 DWORD * m_pMemoryMap_bits = NULL;
 
 const int m_nMemoryMap_ViewCX = 256;
-const int m_nMemoryMap_ViewCY = 512;
+const int m_nMemoryMap_ViewCY = 256;
 
 int m_nMemoryMap_xpos = 0;
 int m_nMemoryMap_ypos = 0;
@@ -74,22 +74,19 @@ void MemoryMapView_RegisterClass()
     RegisterClassEx(&wcex);
 }
 
-void MemoryMapView_Create(int x, int y)
+void MemoryMapView_Create(HWND hwndParent, int x, int y)
 {
-    int cxBorder = ::GetSystemMetrics(SM_CXDLGFRAME);
-    int cyBorder = ::GetSystemMetrics(SM_CYDLGFRAME);
     int cxScroll = ::GetSystemMetrics(SM_CXVSCROLL);
     int cyScroll = ::GetSystemMetrics(SM_CYHSCROLL);
-    int cyCaption = ::GetSystemMetrics(SM_CYSMCAPTION);
+    int cyCaption = TOOLWINDOW_CAPTION_HEIGHT;
 
-    int width = m_nMemoryMap_ViewCX + cxScroll + cxBorder * 2;
-    int height = m_nMemoryMap_ViewCY + cyScroll + cyBorder * 2 + cyCaption;
-    g_hwndMemoryMap = CreateWindowEx(
-            WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
-            CLASSNAME_OVERLAPPEDWINDOW, _T("BK Memory Map"),
-            WS_POPUPWINDOW | WS_CAPTION | WS_VISIBLE,
+    int width = m_nMemoryMap_ViewCX + cxScroll;
+    int height = m_nMemoryMap_ViewCY + cyScroll + cyCaption;
+    g_hwndMemoryMap = CreateWindow(
+            CLASSNAME_TOOLWINDOW, _T("Memory Map"),
+            WS_CHILD | WS_VISIBLE,
             x, y, width, height,
-            NULL, NULL, g_hInst, NULL);
+            hwndParent, NULL, g_hInst, NULL);
 
     // ToolWindow subclassing
     m_wndprocMemoryMapToolWindow = (WNDPROC) LongToPtr( SetWindowLongPtr(
@@ -105,7 +102,6 @@ void MemoryMapView_Create(int x, int y)
 
     MemoryMapView_InitBitmap();
     MemoryMapView_UpdateScrollPos();
-    ::SetFocus(m_hwndMemoryMapViewer);
 }
 
 void MemoryMapView_InitBitmap()

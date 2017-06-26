@@ -227,5 +227,7 @@ SETTINGS_GETSET_DWORD(Keyboard, _T("Keyboard"), BOOL, TRUE);
 
 SETTINGS_GETSET_DWORD(Tape, _T("Tape"), BOOL, FALSE);
 
+SETTINGS_GETSET_DWORD(MemoryMap, _T("MemoryMap"), BOOL, FALSE);
+
 
 //////////////////////////////////////////////////////////////////////

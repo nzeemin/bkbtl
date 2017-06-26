@@ -146,6 +146,7 @@ BOOL CreateMainWindow()
     MainWindow_ShowHideKeyboard();
     MainWindow_ShowHideTape();
     MainWindow_ShowHideDebug();
+    MainWindow_ShowHideMemoryMap();
 
     MainWindow_RestorePositionAndShow();
 
@@ -520,13 +521,25 @@ void MainWindow_AdjustWindowLayout()
         SetWindowPos(g_hwndDebug, NULL, cxScreen + 4, 0, cxDebug, cyDebug, SWP_NOZORDER);
 
         int yMemory = yTape;
+        int cxMemory = rc.right - cxScreen - 4;
         int cyMemory = rc.bottom - yMemory;
-        SetWindowPos(g_hwndMemory, NULL, cxScreen + 4, yMemory, cxDebug, cyMemory, SWP_NOZORDER);
+        SetWindowPos(g_hwndMemory, NULL, cxScreen + 4, yMemory, cxMemory, cyMemory, SWP_NOZORDER);
 
-        //RECT rcDisasm;  GetWindowRect(g_hwndDisasm, &rcDisasm);
         int yDisasm = cyDebug + 4;
         int cyDisasm = yMemory - yDisasm - 4;
-        SetWindowPos(g_hwndDisasm, NULL, cxScreen + 4, yDisasm, cxDebug, cyDisasm, SWP_NOZORDER);
+        int cxDisasm = cxDebug;
+
+        if (Settings_GetMemoryMap())
+        {
+            RECT rcMemoryMap;  GetWindowRect(g_hwndMemoryMap, &rcMemoryMap);
+            int cxMemoryMap = rcMemoryMap.right - rcMemoryMap.left;
+            int cyMemoryMap = rcMemoryMap.bottom - rcMemoryMap.top;
+            cxDisasm -= cxMemoryMap + 4;
+            int xMemoryMap = rc.right - cxMemoryMap;
+            SetWindowPos(g_hwndMemoryMap, NULL, xMemoryMap, yDisasm, cxMemoryMap, cyMemoryMap, SWP_NOZORDER);
+        }
+
+        SetWindowPos(g_hwndDisasm, NULL, cxScreen + 4, yDisasm, cxDisasm, cyDisasm, SWP_NOZORDER);
 
         SetWindowPos(m_hwndSplitter, NULL, cxScreen + 4, yMemory - 4, cxDebug, 4, SWP_NOZORDER);
     }
@@ -670,15 +683,22 @@ void MainWindow_ShowHideTape()
 
 void MainWindow_ShowHideMemoryMap()
 {
-    if (g_hwndMemoryMap == INVALID_HANDLE_VALUE)
+    if (!Settings_GetMemoryMap())
     {
-        RECT rcScreen;  ::GetWindowRect(g_hwndScreen, &rcScreen);
-        MemoryMapView_Create(rcScreen.right, rcScreen.top);
+        if (g_hwndMemoryMap != INVALID_HANDLE_VALUE)
+        {
+            ::DestroyWindow(g_hwndMemoryMap);
+            g_hwndMemoryMap = (HWND)INVALID_HANDLE_VALUE;
+        }
     }
     else
     {
-        ::SetFocus(g_hwndMemoryMap);
+        if (g_hwndMemoryMap == INVALID_HANDLE_VALUE)
+            MemoryMapView_Create(g_hwnd, 0, 0);
     }
+
+    MainWindow_AdjustWindowLayout();
+    MainWindow_UpdateMenu();
 }
 
 void MainWindow_ShowHideSpriteViewer()
@@ -953,6 +973,7 @@ void MainWindow_DoViewDebug()
 }
 void MainWindow_DoDebugMemoryMap()
 {
+    Settings_SetMemoryMap(!Settings_GetMemoryMap());
     MainWindow_ShowHideMemoryMap();
 }
 void MainWindow_DoViewSpriteViewer()
