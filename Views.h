@@ -22,6 +22,7 @@ const LPCTSTR CLASSNAME_DEBUGVIEW       = _T("BKBTLDEBUG");
 const LPCTSTR CLASSNAME_DISASMVIEW      = _T("BKBTLDISASM");
 const LPCTSTR CLASSNAME_MEMORYVIEW      = _T("BKBTLMEMORY");
 const LPCTSTR CLASSNAME_MEMORYMAPVIEW   = _T("BKBTLMEMORYMAP");
+const LPCTSTR CLASSNAME_SPRITEVIEW      = _T("BKBTLSPRITE");
 const LPCTSTR CLASSNAME_TELETYPEVIEW    = _T("BKBTLTELETYPE");
 const LPCTSTR CLASSNAME_CONSOLEVIEW     = _T("BKBTLCONSOLE");
 const LPCTSTR CLASSNAME_TAPEVIEW        = _T("BKBTLTAPE");
@@ -108,6 +109,16 @@ LRESULT CALLBACK MemoryMapViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MemoryMapViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void MemoryMapView_RedrawMap();
 
+
+//////////////////////////////////////////////////////////////////////
+// SpriteView
+
+extern HWND g_hwndSprite;  // Sprite view window handler
+
+void SpriteView_RegisterClass();
+void SpriteView_Create(int x, int y);
+LRESULT CALLBACK SpriteViewWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK SpriteViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 //////////////////////////////////////////////////////////////////////
 // TeletypeView

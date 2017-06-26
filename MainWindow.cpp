@@ -60,6 +60,7 @@ void MainWindow_DoViewKeyboard();
 void MainWindow_DoViewTape();
 void MainWindow_DoViewScreenColor();
 void MainWindow_DoViewScreenMode(int newMode);
+void MainWindow_DoViewSpriteViewer();
 void MainWindow_DoEmulatorRun();
 void MainWindow_DoEmulatorAutostart();
 void MainWindow_DoEmulatorReset();
@@ -110,6 +111,7 @@ void MainWindow_RegisterClass()
     MemoryView_RegisterClass();
     DebugView_RegisterClass();
     MemoryMapView_RegisterClass();
+    SpriteView_RegisterClass();
     DisasmView_RegisterClass();
     ConsoleView_RegisterClass();
     TapeView_RegisterClass();
@@ -679,6 +681,19 @@ void MainWindow_ShowHideMemoryMap()
     }
 }
 
+void MainWindow_ShowHideSpriteViewer()
+{
+    if (g_hwndSprite == INVALID_HANDLE_VALUE)
+    {
+        RECT rcScreen;  ::GetWindowRect(g_hwndScreen, &rcScreen);
+        SpriteView_Create(rcScreen.right, rcScreen.top - 4 - ::GetSystemMetrics(SM_CYSMCAPTION));
+    }
+    else
+    {
+        ::SetFocus(g_hwndSprite);
+    }
+}
+
 void MainWindow_ShowHideTeletype()
 {
     if (g_hwndTeletype == INVALID_HANDLE_VALUE)
@@ -793,6 +808,9 @@ bool MainWindow_DoCommand(int commandId)
         break;
     case ID_VIEW_MEMORYMAP:
         MainWindow_DoDebugMemoryMap();
+        break;
+    case ID_DEBUG_SPRITES:
+        MainWindow_DoViewSpriteViewer();
         break;
     case ID_DEBUG_TELETYPE:
         MainWindow_DoDebugTeletype();
@@ -936,6 +954,10 @@ void MainWindow_DoViewDebug()
 void MainWindow_DoDebugMemoryMap()
 {
     MainWindow_ShowHideMemoryMap();
+}
+void MainWindow_DoViewSpriteViewer()
+{
+    MainWindow_ShowHideSpriteViewer();
 }
 void MainWindow_DoDebugTeletype()
 {
@@ -1205,6 +1227,8 @@ void MainWindow_UpdateAllViews()
         InvalidateRect(g_hwndMemory, NULL, TRUE);
     if (g_hwndMemoryMap != NULL)
         InvalidateRect(g_hwndMemoryMap, NULL, TRUE);
+    if (g_hwndSprite != NULL)
+        InvalidateRect(g_hwndSprite, NULL, TRUE);
 }
 
 void MainWindow_SetToolbarImage(int commandId, int imageIndex)

@@ -31,12 +31,12 @@ BITMAPINFO m_bmpinfoMemoryMap;
 HBITMAP m_hMemoryMapBitmap = NULL;
 DWORD * m_pMemoryMap_bits = NULL;
 
-const int m_nMemoryMap_ViewCX = 512;
+const int m_nMemoryMap_ViewCX = 256;
 const int m_nMemoryMap_ViewCY = 512;
 
 int m_nMemoryMap_xpos = 0;
 int m_nMemoryMap_ypos = 0;
-int m_nMemoryMap_scale = 2;
+int m_nMemoryMap_scale = 1;
 
 void MemoryMapView_OnDraw(HDC hdc);
 BOOL MemoryMapView_OnKeyDown(WPARAM vkey, LPARAM lParam);

@@ -168,6 +168,7 @@
     <ClCompile Include="ScreenView.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SoundGen.cpp" />
+    <ClCompile Include="SpriteView.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Product|Win32'">Create</PrecompiledHeader>
