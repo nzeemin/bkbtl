@@ -102,6 +102,8 @@ void Settings_SetScreenHeightMode(int mode);
 int  Settings_GetScreenHeightMode();
 void Settings_SetDebug(BOOL flag);
 BOOL Settings_GetDebug();
+void Settings_GetDebugFontName(LPTSTR buffer);
+void Settings_SetDebugFontName(LPCTSTR sFontName);
 void Settings_SetAutostart(BOOL flag);
 BOOL Settings_GetAutostart();
 void Settings_SetRealSpeed(WORD speed);
@@ -122,6 +124,10 @@ void Settings_SetTape(BOOL flag);
 BOOL Settings_GetTape();
 void Settings_SetMemoryMap(BOOL flag);
 BOOL Settings_GetMemoryMap();
+WORD Settings_GetSpriteAddress();
+void Settings_SetSpriteAddress(WORD value);
+WORD Settings_GetSpriteWidth();
+void Settings_SetSpriteWidth(WORD value);
 
 
 //////////////////////////////////////////////////////////////////////

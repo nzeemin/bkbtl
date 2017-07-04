@@ -103,6 +103,11 @@ void SpriteView_Create(int x, int y)
             0, 0, rcClient.right, rcClient.bottom,
             g_hwndSprite, NULL, g_hInst, NULL);
 
+    m_wSprite_BaseAddress = Settings_GetSpriteAddress();
+    m_nSprite_width = (int)Settings_GetSpriteWidth();
+    if (m_nSprite_width <= 0) m_nSprite_width = 1;
+    if (m_nSprite_width > 32) m_nSprite_width = 32;
+
     SpriteView_InitBitmap();
     SpriteView_UpdateWindowText();
     SpriteView_UpdateScrollPos();
@@ -214,6 +219,7 @@ void SpriteView_GoToAddress(WORD address)
         return;
 
     m_wSprite_BaseAddress = address;
+    Settings_SetSpriteAddress(m_wSprite_BaseAddress);
 
     SpriteView_UpdateWindowText();
     SpriteView_PrepareBitmap();
@@ -227,6 +233,7 @@ void SpriteView_SetSpriteWidth(int width)
         return;
 
     m_nSprite_width = width;
+    Settings_SetSpriteWidth((WORD)width);
 
     SpriteView_UpdateWindowText();
     SpriteView_PrepareBitmap();

@@ -354,6 +354,37 @@ void ShowSettingsDialog()
     DialogBox(g_hInst, MAKEINTRESOURCE(IDD_SETTINGS), g_hwnd, SettingsProc);
 }
 
+int CALLBACK SettingsDialog_EnumFontProc(const LOGFONT* lpelfe, const TEXTMETRIC* /*lpntme*/, DWORD /*FontType*/, LPARAM lParam)
+{
+    if ((lpelfe->lfPitchAndFamily & FIXED_PITCH) == 0)
+        return TRUE;
+    if (lpelfe->lfFaceName[0] == _T('@'))  // Skip vertical fonts
+        return TRUE;
+
+    HWND hCombo = (HWND)lParam;
+
+    int item = ::SendMessage(hCombo, CB_FINDSTRING, 0, (LPARAM)lpelfe->lfFaceName);
+    if (item < 0)
+        ::SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)lpelfe->lfFaceName);
+
+    return TRUE;
+}
+
+void FillDebugFontCombo(HWND hCombo)
+{
+    LOGFONT logfont;  ZeroMemory(&logfont, sizeof logfont);
+    logfont.lfCharSet = DEFAULT_CHARSET;
+    logfont.lfWeight = FW_NORMAL;
+    logfont.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
+
+    HDC hdc = GetDC(NULL);
+    EnumFontFamiliesEx(hdc, &logfont, (FONTENUMPROC)SettingsDialog_EnumFontProc, (LPARAM)hCombo, 0);
+    ReleaseDC(NULL, hdc);
+
+    Settings_GetDebugFontName(logfont.lfFaceName);
+    ::SendMessage(hCombo, CB_SELECTSTRING, 0, (LPARAM)logfont.lfFaceName);
+}
+
 INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
 {
     switch (message)
@@ -366,6 +397,8 @@ INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*l
             SendMessage(hVolume, TBM_SETTICFREQ, 0x1000, 0);
             SendMessage(hVolume, TBM_SETPOS, TRUE, (LPARAM)Settings_GetSoundVolume());
 
+            HWND hDebugFont = GetDlgItem(hDlg, IDC_DEBUGFONT);
+            FillDebugFontCombo(hDebugFont);
             return (INT_PTR)FALSE;
         }
     case WM_COMMAND:
@@ -376,6 +409,11 @@ INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*l
                 HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
                 DWORD volume = SendMessage(hVolume, TBM_GETPOS, 0, 0);
                 Settings_SetSoundVolume((WORD)volume);
+
+                TCHAR buffer[32];
+
+                GetDlgItemText(hDlg, IDC_DEBUGFONT, buffer, 32);
+                Settings_SetDebugFontName(buffer);
             }
 
             EndDialog(hDlg, LOWORD(wParam));
