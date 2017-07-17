@@ -879,6 +879,12 @@ bool MainWindow_DoCommand(int commandId)
         if (!g_okEmulatorRunning && Settings_GetDebug())
             ConsoleView_StepOver();
         break;
+    case ID_DEBUG_MEMORY_WORDBYTE:
+        MemoryView_SwitchWordByte();
+        break;
+    case ID_DEBUG_MEMORY_GOTO:
+        MemoryView_SelectAddress();
+        break;
     case ID_EMULATOR_RESET:
         MainWindow_DoEmulatorReset();
         break;

@@ -11,6 +11,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 // MemoryView.cpp
 
 #include "stdafx.h"
+#include <commctrl.h>
 #include "Main.h"
 #include "Views.h"
 #include "ToolWindow.h"
@@ -21,6 +22,12 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 //////////////////////////////////////////////////////////////////////
 
+// Colors
+#define COLOR_RED       RGB(255,0,0)
+#define COLOR_BLUE      RGB(0,0,255)
+#define COLOR_GREEN     RGB(128,192,128)
+#define COLOR_NA        RGB(128,128,128)
+
 
 HWND g_hwndMemory = (HWND) INVALID_HANDLE_VALUE;  // Memory view window handler
 WNDPROC m_wndprocMemoryToolWindow = NULL;  // Old window proc address of the ToolWindow
@@ -29,6 +36,7 @@ int m_cyLineMemory = 0;  // Line height in pixels
 int m_nPageSize = 0;  // Page size in lines
 
 HWND m_hwndMemoryViewer = (HWND) INVALID_HANDLE_VALUE;
+HWND m_hwndMemoryToolbar = (HWND) INVALID_HANDLE_VALUE;
 
 void MemoryView_OnDraw(HDC hdc);
 BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM lParam);
@@ -81,6 +89,8 @@ void MemoryView_Create(HWND hwndParent, int x, int y, int width, int height)
 {
     ASSERT(hwndParent != NULL);
 
+    m_okMemoryByteMode = Settings_GetDebugMemoryByte();
+
     g_hwndMemory = CreateWindow(
             CLASSNAME_TOOLWINDOW, NULL,
             WS_CHILD | WS_VISIBLE,
@@ -101,7 +111,37 @@ void MemoryView_Create(HWND hwndParent, int x, int y, int width, int height)
             0, 0, rcClient.right, rcClient.bottom,
             g_hwndMemory, NULL, g_hInst, NULL);
 
-    MemoryView_ScrollTo(0);
+    m_hwndMemoryToolbar = CreateWindowEx(0, TOOLBARCLASSNAME, NULL,
+            WS_CHILD | WS_VISIBLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | CCS_NOPARENTALIGN | CCS_NODIVIDER | CCS_VERT,
+            4, 4, 32, 32 * 6, m_hwndMemoryViewer,
+            (HMENU) 102,
+            g_hInst, NULL);
+
+    TBADDBITMAP addbitmap;
+    addbitmap.hInst = g_hInst;
+    addbitmap.nID = IDB_TOOLBAR;
+    SendMessage(m_hwndMemoryToolbar, TB_ADDBITMAP, 2, (LPARAM) &addbitmap);
+
+    SendMessage(m_hwndMemoryToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0);
+    SendMessage(m_hwndMemoryToolbar, TB_SETBUTTONSIZE, 0, (LPARAM) MAKELONG (26, 26));
+
+    TBBUTTON buttons[2];
+    ZeroMemory(buttons, sizeof(buttons));
+    for (int i = 0; i < sizeof(buttons) / sizeof(TBBUTTON); i++)
+    {
+        buttons[i].fsState = TBSTATE_ENABLED | TBSTATE_WRAP;
+        buttons[i].fsStyle = BTNS_BUTTON | TBSTYLE_GROUP;
+        buttons[i].iString = -1;
+    }
+    buttons[0].idCommand = ID_DEBUG_MEMORY_GOTO;
+    buttons[0].iBitmap = 19;
+    buttons[1].idCommand = ID_DEBUG_MEMORY_WORDBYTE;
+    buttons[1].iBitmap = 18;
+
+    SendMessage(m_hwndMemoryToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons);
+
+    MemoryView_ScrollTo(Settings_GetDebugMemoryAddress());
+    //MemoryView_UpdateToolbar();
 }
 
 // Adjust position of client windows
@@ -137,6 +177,9 @@ LRESULT CALLBACK MemoryViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
     UNREFERENCED_PARAMETER(lParam);
     switch (message)
     {
+    case WM_COMMAND:
+        ::PostMessage(g_hwnd, WM_COMMAND, wParam, lParam);
+        break;
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
@@ -166,7 +209,6 @@ LRESULT CALLBACK MemoryViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
     return (LRESULT)FALSE;
 }
 
-
 void MemoryView_OnDraw(HDC hdc)
 {
     ASSERT(g_pBoard != NULL);
@@ -182,8 +224,8 @@ void MemoryView_OnDraw(HDC hdc)
     m_cyLineMemory = cyLine;
 
     TCHAR buffer[7];
-    const TCHAR* ADDRESS_LINE = _T("address  0      2      4      6      10     12     14     16");
-    TextOut(hdc, cxChar * 4, 0, ADDRESS_LINE, (int) _tcslen(ADDRESS_LINE));
+    const TCHAR* ADDRESS_LINE = _T(" addr   0      2      4      6      10     12     14     16");
+    TextOut(hdc, cxChar * 5, 0, ADDRESS_LINE, (int) _tcslen(ADDRESS_LINE));
 
     RECT rcClip;
     GetClipBox(hdc, &rcClip);
@@ -202,33 +244,18 @@ void MemoryView_OnDraw(HDC hdc)
         for (int j = 0; j < 8; j++)    // Draw words as octal value
         {
             // Get word from memory
-            WORD word = 0;
             int addrtype;
-            BOOL okHalt = FALSE;
-            WORD wChanged = 0;
-            //switch (m_Mode) {
-            //    case MEMMODE_RAM0:
-            //    case MEMMODE_RAM1:
-            //    case MEMMODE_RAM2:
-            //        word = g_pBoard->GetRAMWord(m_Mode, address);
-            //        wChanged = Emulator_GetChangeRamStatus(m_Mode, address);
-            //        break;
-            //    case MEMMODE_ROM:  // ROM - only 32 Kbytes
-            //        if (address < 0100000)
-            //            okValid = FALSE;
-            //        else
-            //            word = g_pBoard->GetROMWord(address - 0100000);
-            //        break;
-            //    case MEMMODE_CPU:
-            okHalt = g_pBoard->GetCPU()->IsHaltMode();
-            word = g_pBoard->GetWordView(address, okHalt, FALSE, &addrtype);
-            wChanged = Emulator_GetChangeRamStatus(address);
-            //        break;
-            //}
+            BOOL okHalt = g_pBoard->GetCPU()->IsHaltMode();
+            WORD word = g_pBoard->GetWordView(address, okHalt, FALSE, &addrtype);
+            BOOL okValid = (addrtype != ADDRTYPE_IO) && (addrtype != ADDRTYPE_DENY);
+            WORD wChanged = Emulator_GetChangeRamStatus(address);
 
-            if ((addrtype & (ADDRTYPE_IO | ADDRTYPE_DENY)) == 0)
+            if (okValid)
             {
-                ::SetTextColor(hdc, (wChanged != 0) ? RGB(255, 0, 0) : colorText);
+                if (addrtype == ADDRTYPE_ROM)
+                    ::SetTextColor(hdc, COLOR_BLUE);
+                else
+                    ::SetTextColor(hdc, (wChanged != 0) ? COLOR_RED : colorText);
                 if (m_okMemoryByteMode)
                 {
                     PrintOctalValue(buffer, (word & 0xff));
@@ -238,6 +265,19 @@ void MemoryView_OnDraw(HDC hdc)
                 }
                 else
                     DrawOctalValue(hdc, x, y, word);
+            }
+            else  // !okValid
+            {
+                if (addrtype == ADDRTYPE_IO)
+                {
+                    ::SetTextColor(hdc, COLOR_GREEN);
+                    TextOut(hdc, x, y, _T("  IO"), 4);
+                }
+                else
+                {
+                    ::SetTextColor(hdc, COLOR_NA);
+                    TextOut(hdc, x, y, _T("  NA"), 4);
+                }
             }
 
             // Prepare characters to draw at right
@@ -271,8 +311,8 @@ void MemoryView_OnDraw(HDC hdc)
     if (::GetFocus() == m_hwndMemoryViewer)
     {
         RECT rcFocus = rcClient;
-        rcFocus.left += cxChar * 4;
-        rcFocus.top += cyLine;
+        rcFocus.left += cxChar * 5 - 1;
+        rcFocus.top += cyLine - 1;
         rcFocus.right = cxChar * (63 + 24);
         DrawFocusRect(hdc, &rcFocus);
     }
@@ -290,6 +330,21 @@ LPCTSTR MemoryView_GetMemoryModeName()
     //	return _T("UKWN");  // Unknown mode
     //  }
     return _T("");  //STUB
+}
+
+void MemoryView_SwitchWordByte()
+{
+    m_okMemoryByteMode = !m_okMemoryByteMode;
+    Settings_SetDebugMemoryByte(m_okMemoryByteMode);
+
+    InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
+}
+
+void MemoryView_SelectAddress()
+{
+    WORD value = m_wBaseAddress;
+    if (InputBoxOctal(m_hwndMemoryViewer, _T("Go To Address"), _T("Address (octal):"), &value))
+        MemoryView_ScrollTo(value);
 }
 
 void MemoryView_UpdateWindowText()
@@ -328,17 +383,11 @@ BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
         MemoryView_Scroll(m_nPageSize * 16);
         break;
     case 0x47:  // G - Go To Address
-        {
-            WORD value = m_wBaseAddress;
-            if (InputBoxOctal(m_hwndMemoryViewer, _T("Go To Address"), _T("Address (octal):"), &value))
-                MemoryView_ScrollTo(value);
-            SetFocus(m_hwndMemoryViewer);
-            break;
-        }
+        MemoryView_SelectAddress();
+        break;
     case 0x42:  // B - change byte/word mode
     case 0x57:  // W
-        m_okMemoryByteMode = !m_okMemoryByteMode;
-        InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
+        MemoryView_SwitchWordByte();
         break;
     default:
         return TRUE;
@@ -389,6 +438,8 @@ BOOL MemoryView_OnVScroll(WPARAM wParam, LPARAM /*lParam*/)
 void MemoryView_ScrollTo(WORD wAddress)
 {
     m_wBaseAddress = wAddress & ((WORD)~1);
+    Settings_SetDebugMemoryAddress(m_wBaseAddress);
+
     InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
 
     MemoryView_UpdateScrollPos();
@@ -400,6 +451,8 @@ void MemoryView_Scroll(int nDelta)
 
     m_wBaseAddress += (WORD)nDelta;
     m_wBaseAddress = m_wBaseAddress & ((WORD)~1);
+    Settings_SetDebugMemoryAddress(m_wBaseAddress);
+
     InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
 
     MemoryView_UpdateScrollPos();
