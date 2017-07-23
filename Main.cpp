@@ -112,7 +112,7 @@ int APIENTRY _tWinMain(
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);
         }
-#if 1
+
         if (g_okEmulatorRunning && !Settings_GetSound())
         {
             if (Settings_GetRealSpeed() == 0)
@@ -129,7 +129,7 @@ int APIENTRY _tWinMain(
                     nFrameDelay = 1000 / 25 * 4 - 1;
                 else if (Settings_GetRealSpeed() == 0x7fff)  // Speed 50%
                     nFrameDelay = 1000 / 25 * 2 - 1;
-                else if (Settings_GetRealSpeed() == 2)
+                else if (Settings_GetRealSpeed() == 2)  // Speed 200%
                     nFrameDelay = 1000 / 25 / 2 - 1;
                 if (nTimeElapsed > 0 && nTimeElapsed < nFrameDelay)
                 {
@@ -137,7 +137,6 @@ int APIENTRY _tWinMain(
                     ::Sleep((DWORD)nTimeToSleep);
                 }
             }
-#endif
         }
 
         //// Time bomb for perfomance analysis
@@ -191,6 +190,7 @@ BOOL InitInstance(HINSTANCE /*hInstance*/, int /*nCmdShow*/)
         return FALSE;
 
     Emulator_SetSound(Settings_GetSound());
+    Emulator_SetSpeed(Settings_GetRealSpeed());
     Emulator_SetCovox(Settings_GetCovox());
 
     if (!CreateMainWindow())

@@ -1054,6 +1054,7 @@ void MainWindow_DoEmulatorReset()
 void MainWindow_DoEmulatorSpeed(WORD speed)
 {
     Settings_SetRealSpeed(speed);
+    Emulator_SetSpeed(speed);
 
     MainWindow_UpdateMenu();
 }
