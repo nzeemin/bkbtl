@@ -20,6 +20,7 @@
 #define IDD_CREATEDISK                  144
 #define IDD_LOADBIN                     145
 #define IDD_SETTINGS                    146
+#define IDB_KEYBOARD11M                 147
 #define IDC_EDIT1                       1000
 #define IDC_BUILDDATE                   1001
 #define IDC_EDITADDR                    1001
@@ -91,7 +92,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        147
+#define _APS_NEXT_RESOURCE_VALUE        148
 #define _APS_NEXT_COMMAND_VALUE         32872
 #define _APS_NEXT_CONTROL_VALUE         1008
 #define _APS_NEXT_SYMED_VALUE           110

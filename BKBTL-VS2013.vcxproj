@@ -190,7 +190,7 @@
     <ClInclude Include="Emulator.h" />
     <ClInclude Include="Joystick.h" />
     <ClInclude Include="Main.h" />
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="res\Resource.h" />
     <ClInclude Include="SoundGen.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ToolWindow.h" />
@@ -199,15 +199,14 @@
     <ClInclude Include="Views.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="BKBTL.ico" />
-    <Image Include="diskette.ico" />
-    <Image Include="diskettewp.ico" />
-    <Image Include="keyboard.bmp" />
-    <Image Include="small.ico" />
-    <Image Include="Toolbar.bmp" />
+    <Image Include="res\BKBTL.ico" />
+    <Image Include="res\Keyboard.bmp" />
+    <Image Include="res\Keyboard11m.bmp" />
+    <Image Include="res\small.ico" />
+    <Image Include="res\Toolbar.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="BKBTL.rc" />
+    <ResourceCompile Include="res\BKBTL.rc" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="manifest.xml" />

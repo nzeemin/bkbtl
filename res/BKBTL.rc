@@ -72,8 +72,6 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // remains consistent on all systems.
 IDI_BKBTL               ICON                    "BKBTL.ico"
 IDI_SMALL               ICON                    "small.ico"
-IDI_DISKETTE            ICON                    "diskette.ico"
-IDI_DISKETTEWP          ICON                    "diskettewp.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -291,7 +289,8 @@ END
 // Bitmap
 //
 
-IDB_KEYBOARD            BITMAP                  "keyboard.bmp"
+IDB_KEYBOARD            BITMAP                  "Keyboard.bmp"
+IDB_KEYBOARD11M         BITMAP                  "Keyboard11m.bmp"
 IDB_TOOLBAR             BITMAP                  "Toolbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
