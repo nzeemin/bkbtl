@@ -1172,6 +1172,7 @@ void MainWindow_DoEmulatorConf(BKConfiguration configuration)
 
     MainWindow_UpdateMenu();
     MainWindow_UpdateAllViews();
+    KeyboardView_Update();
 }
 
 void MainWindow_DoEmulatorFloppy(int slot)

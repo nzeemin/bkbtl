@@ -35,8 +35,9 @@ void Keyboard_DrawKey(HDC hdc, BYTE keyscan);
 //////////////////////////////////////////////////////////////////////
 
 const int KEYBOARD_KEYS_ARRAY_WIDTH = 5;
-// Keyboard key mapping to bitmap
-const WORD m_arrKeyboardKeys[] =
+
+// Keyboard key mapping to bitmap for BK0010-01 keyboard
+const WORD m_arrKeyboardKeys1[] =
 {
     /*   x1,y1    w,h      code  AR2code  */
     3,  3, 51, 34,    BK_KEY_REPEAT, // ÏÎÂÒ
@@ -120,7 +121,98 @@ const WORD m_arrKeyboardKeys[] =
     469, 179, 35, 34,    0033, // Down
     505, 144, 34, 69,    0031, // Right
 };
-const int m_nKeyboardKeysCount = sizeof(m_arrKeyboardKeys) / sizeof(WORD) / KEYBOARD_KEYS_ARRAY_WIDTH;
+const int m_nKeyboardKeys1Count = sizeof(m_arrKeyboardKeys1) / sizeof(WORD) / KEYBOARD_KEYS_ARRAY_WIDTH;
+
+// Keyboard key mapping to bitmap for BK0011M keyboard
+const WORD m_arrKeyboardKeys2[] =
+{
+    /*   x1,y1    w,h      code  AR2code  */
+    3, 2, 51, 34, BK_KEY_REPEAT, // ÏÎÂÒ
+    56, 2, 51, 34, 0003, // ÊÒ
+    109, 2, 51, 34, 0213, // Arrow right    =|=>|
+    162, 2, 51, 34, 0026, // Arrow left     |<===
+    215, 2, 51, 34, 0027, // Arrow right    |===>
+    268, 2, 51, 34, 0202, // ÈÍÄ ÑÓ
+    321, 2, 51, 34, 0204, // ÁËÎÊ ÐÅÄ
+    374, 2, 50, 34, 0200, // STEP
+    426, 2, 60, 34, 0014, // ÑÁÐ
+    489, 2, 60, 34, BK_KEY_STOP, // STOP
+
+    3, 38, 34, 34, BK_KEY_BACKSHIFT, // Big Arrow Down
+    38, 38, 34, 34, 0073, // ; +
+    73, 38, 34, 34, 0061, // 1 !
+    109, 38, 34, 34, 0062, // 2 "
+    144, 38, 34, 34, 0063, // 3 #
+    179, 38, 34, 34, 0064, // 4 $
+    214, 38, 35, 34, 0065, // 5 %
+    250, 38, 34, 34, 0066, // 6 &
+    285, 38, 34, 34, 0067, // 7 '
+    320, 38, 34, 34, 0070, // 8 (
+    356, 38, 34, 34, 0071, // 9 )
+    391, 38, 34, 34, 0060, // 0 {
+    427, 38, 34, 34, 0055, // - =
+    462, 38, 34, 34, 0072, // : *
+    498, 38, 50, 34, 0030, // Backspace
+
+    4, 73, 50, 34, 0015, // TAB
+    55, 73, 34, 34, 0112, // É J
+    90, 73, 34, 34, 0103, // Ö C
+    126, 73, 34, 34, 0125, // Ó U
+    161, 73, 34, 34, 0113, // Ê K
+    197, 73, 34, 34, 0105, // Å E
+    232, 73, 34, 34, 0116, // Í N
+    267, 73, 34, 34, 0107, // Ã G
+    302, 73, 34, 34, 0133, // Ø [
+    338, 73, 34, 34, 0135, // Ù ]
+    373, 73, 34, 34, 0132, // Ç Z
+    409, 73, 34, 34, 0110, // Õ H
+    444, 73, 34, 34, 0137, // Ú }
+    480, 73, 34, 34, 0057, // / ?
+    514, 73, 34, 34, 0023, // ÂÑ
+
+    2, 109, 60, 34, 0000, // ÑÓ
+    64, 109, 34, 34, 0106, // Ô F
+    99, 109, 35, 34, 0131, // Û Y
+    135, 109, 34, 34, 0127, // Â W
+    170, 109, 34, 34, 0101, // À A
+    205, 109, 34, 34, 0120, // Ï P
+    240, 109, 34, 34, 0122, // Ð R
+    276, 109, 34, 34, 0117, // Î O
+    311, 109, 34, 34, 0114, // Ë L
+    347, 109, 34, 34, 0104, // Ä D
+    382, 109, 34, 34, 0126, // Æ V
+    418, 109, 34, 34, 0134, // Ý Backslash
+    453, 109, 34, 34, 0056, // . >
+    488, 109, 60, 34, 0012, // ENTER
+
+    2, 144, 44, 34, BK_KEY_UPPER, // ÇÀÃË
+    47, 144, 34, 34, BK_KEY_LOWER, // ÑÒÐ
+    82, 144, 34, 34, 0121, // ß Q
+    117, 144, 34, 34, 0136, // × ^
+    152, 144, 34, 34, 0123, // Ñ S
+    188, 144, 34, 34, 0115, // Ì M
+    223, 144, 34, 34, 0111, // È I
+    258, 144, 34, 34, 0124, // Ò T
+    294, 144, 34, 34, 0130, // Ü X
+    329, 144, 34, 34, 0102, // Á B
+    365, 144, 34, 34, 0100, // Þ @
+    400, 144, 43, 34, 0054, // , <
+
+    2, 179, 69, 34, 0016, // RUS
+    72, 179, 44, 34, BK_KEY_AR2, // AR2
+    117, 180, 256, 34, 0040, // Space bar
+    374, 179, 69, 34, 0017, // LAT
+
+    444, 144, 34, 69, 0010, // Left
+    479, 144, 35, 34, 0032, // Up
+    479, 179, 35, 34, 0033, // Down
+    515, 144, 34, 69, 0031, // Right
+};
+const int m_nKeyboardKeys2Count = sizeof(m_arrKeyboardKeys2) / sizeof(WORD) / KEYBOARD_KEYS_ARRAY_WIDTH;
+
+const WORD* m_arrKeyboardKeys = m_arrKeyboardKeys1;
+int m_nKeyboardKeysCount = m_nKeyboardKeys1Count;
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -151,6 +243,11 @@ void KeyboardView_Init()
 
 void KeyboardView_Done()
 {
+}
+
+void KeyboardView_Update()
+{
+    ::InvalidateRect(g_hwndKeyboard, NULL, TRUE);
 }
 
 void KeyboardView_Create(HWND hwndParent, int x, int y, int width, int height)
@@ -241,6 +338,20 @@ LRESULT CALLBACK KeyboardViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 void KeyboardView_OnDraw(HDC hdc)
 {
+    int bitmapresourceid;
+    if ((Emulator_GetConfiguration() & BK_COPT_BK0011) == 0)
+    {
+        m_arrKeyboardKeys = m_arrKeyboardKeys1;
+        m_nKeyboardKeysCount = m_nKeyboardKeys1Count;
+        bitmapresourceid = IDB_KEYBOARD;
+    }
+    else
+    {
+        m_arrKeyboardKeys = m_arrKeyboardKeys2;
+        m_nKeyboardKeysCount = m_nKeyboardKeys2Count;
+        bitmapresourceid = IDB_KEYBOARD11M;
+    }
+
     RECT rc;  ::GetClientRect(g_hwndKeyboard, &rc);
 
     // Keyboard background
@@ -250,7 +361,7 @@ void KeyboardView_OnDraw(HDC hdc)
     ::SelectObject(hdc, hOldBrush);
     ::DeleteObject(hBkBrush);
 
-    HBITMAP hBmp = ::LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_KEYBOARD));
+    HBITMAP hBmp = ::LoadBitmap(g_hInst, MAKEINTRESOURCE(bitmapresourceid));
     HDC hdcMem = ::CreateCompatibleDC(hdc);
     HGDIOBJ hOldBitmap = ::SelectObject(hdcMem, hBmp);
 
@@ -277,7 +388,6 @@ void KeyboardView_OnDraw(HDC hdc)
     //    rcKey.top = m_nKeyboardBitmapTop + m_arrKeyboardKeys[i * KEYBOARD_KEYS_ARRAY_WIDTH + 1];
     //    rcKey.right = rcKey.left + m_arrKeyboardKeys[i * KEYBOARD_KEYS_ARRAY_WIDTH + 2];
     //    rcKey.bottom = rcKey.top + m_arrKeyboardKeys[i * KEYBOARD_KEYS_ARRAY_WIDTH + 3];
-
     //    ::DrawFocusRect(hdc, &rcKey);
     //}
 }

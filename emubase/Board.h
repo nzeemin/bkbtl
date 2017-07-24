@@ -160,6 +160,7 @@ public:  // Debug
     void        SetTrace(uint32_t dwTrace);
 public:  // System control
     void        SetConfiguration(uint16_t conf);
+    uint16_t    GetConfiguration() const { return m_Configuration; }
     void        Reset();  // Reset computer
     void        LoadROM(int bank, const uint8_t* pBuffer);  // Load 8 KB ROM image from the biffer
     void        LoadRAM(int startbank, const uint8_t* pBuffer, int length);  // Load data into the RAM

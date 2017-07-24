@@ -36,6 +36,7 @@ extern uint16_t g_wEmulatorPrevPpuPC;  // Previous PC value
 
 bool Emulator_Init();
 bool Emulator_InitConfiguration(BKConfiguration configuration);
+BKConfiguration Emulator_GetConfiguration();
 void Emulator_Done();
 void Emulator_SetCPUBreakpoint(uint16_t address);
 void Emulator_SetPPUBreakpoint(uint16_t address);

@@ -216,6 +216,11 @@ void Emulator_Done()
     ::free(g_pEmulatorChangedRam);
 }
 
+BKConfiguration Emulator_GetConfiguration()
+{
+    return (BKConfiguration)g_pBoard->GetConfiguration();
+}
+
 bool Emulator_InitConfiguration(BKConfiguration configuration)
 {
     g_pBoard->SetConfiguration((uint16_t)configuration);
