@@ -89,14 +89,14 @@ enum BKConfiguration
 #define BK_KEY_STOP         0277
 
 // События от джойстика - передавать в метод KeyboardEvent
-#define BK_KEY_JOYSTICK_BUTTON1 0210
-#define BK_KEY_JOYSTICK_BUTTON2 0211
-#define BK_KEY_JOYSTICK_BUTTON3 0212
-#define BK_KEY_JOYSTICK_BUTTON4 0213
-#define BK_KEY_JOYSTICK_RIGHT   0214
-#define BK_KEY_JOYSTICK_DOWN    0215
-#define BK_KEY_JOYSTICK_LEFT    0216
-#define BK_KEY_JOYSTICK_UP      0217
+#define BK_KEY_JOYSTICK_BUTTON1 0260
+#define BK_KEY_JOYSTICK_BUTTON2 0261
+#define BK_KEY_JOYSTICK_BUTTON3 0262
+#define BK_KEY_JOYSTICK_BUTTON4 0263
+#define BK_KEY_JOYSTICK_RIGHT   0264
+#define BK_KEY_JOYSTICK_DOWN    0265
+#define BK_KEY_JOYSTICK_LEFT    0266
+#define BK_KEY_JOYSTICK_UP      0267
 
 // Состояния клавиатуры БК - возвращаются из метода GetKeyboardRegister
 #define KEYB_RUS		0x01

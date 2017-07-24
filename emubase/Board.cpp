@@ -460,7 +460,7 @@ bool CMotherboard::SystemFrame()
 // Key pressed or released
 void CMotherboard::KeyboardEvent(uint8_t scancode, bool okPressed, bool okAr2)
 {
-    if ((scancode & 0xf8) == 0210)  // События от джойстика
+    if ((scancode & 0370) == 0260)  // События от джойстика
     {
         uint16_t mask = 0;
         switch (scancode)
@@ -508,7 +508,8 @@ void CMotherboard::KeyboardEvent(uint8_t scancode, bool okPressed, bool okAr2)
         m_Port177660 |= 0200;  // "Key ready" flag in keyboard state register
         if ((m_Port177660 & 0100) == 0100)  // Keyboard interrupt enabled
         {
-            m_pCPU->InterruptVIRQ(1, (okAr2 ? 0274 : 060));
+            uint16_t intvec = ((okAr2 || (scancode & 0200) != 0) ? 0274 : 060);
+            m_pCPU->InterruptVIRQ(1, intvec);
         }
     }
 }
