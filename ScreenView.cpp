@@ -32,6 +32,8 @@ HBITMAP m_hbmp = NULL;
 DWORD * m_bits = NULL;
 int m_cxScreenWidth = BK_SCREEN_WIDTH;
 int m_cyScreenHeight = BK_SCREEN_HEIGHT;
+int m_xScreenOffset = 0;
+int m_yScreenOffset = 0;
 BYTE m_ScreenKeyState[256];
 int m_ScreenMode = 0;
 
@@ -123,7 +125,7 @@ void ScreenView_Create(HWND hwndParent, int x, int y, int cxWidth)
 
     int xLeft = x;
     int yTop = y;
-    int cyScreenHeight = 4 + m_cyScreenHeight + 4;
+    int cyScreenHeight = 4 + BK_SCREEN_HEIGHT + 4;
     int cyHeight = cyScreenHeight;
     cxWidth = 4 + m_cxScreenWidth + 4;
 
@@ -195,9 +197,6 @@ void ScreenView_SetScreenMode(int newMode)
     m_cyScreenHeight = cyHeight;
     ScreenView_CreateDisplay();
 
-    RECT rc;  ::GetWindowRect(g_hwndScreen, &rc);
-    ::SetWindowPos(g_hwndScreen, NULL, 0, 0, 4 + cxWidth + 4, 4 + cyHeight + 4, SWP_NOZORDER | SWP_NOMOVE);
-
     ScreenView_RedrawScreen();
 }
 
@@ -205,25 +204,34 @@ void ScreenView_OnDraw(HDC hdc)
 {
     if (m_bits == NULL) return;
 
+    HBRUSH hBrush = ::CreateSolidBrush(COLOR_BK_BACKGROUND);
+    HGDIOBJ hOldBrush = ::SelectObject(hdc, hBrush);
+
     RECT rc;  ::GetClientRect(g_hwndScreen, &rc);
-    int x = (rc.right - m_cxScreenWidth) / 2;
+    m_xScreenOffset = 0;
+    m_yScreenOffset = 0;
+    if (rc.right > m_cxScreenWidth)
+    {
+        m_xScreenOffset = (rc.right - m_cxScreenWidth) / 2;
+        ::PatBlt(hdc, 0, 0, m_xScreenOffset, rc.bottom, PATCOPY);
+        ::PatBlt(hdc, rc.right, 0, m_cxScreenWidth + m_xScreenOffset - rc.right, rc.bottom, PATCOPY);
+    }
+    if (rc.bottom > m_cyScreenHeight)
+    {
+        m_yScreenOffset = (rc.bottom - m_cyScreenHeight) / 2;
+        ::PatBlt(hdc, m_xScreenOffset, 0, m_cxScreenWidth, m_yScreenOffset, PATCOPY);
+        int frombottom = rc.bottom - m_yScreenOffset - m_cyScreenHeight;
+        ::PatBlt(hdc, m_xScreenOffset, rc.bottom, m_cxScreenWidth, -frombottom, PATCOPY);
+    }
+
+    ::SelectObject(hdc, hOldBrush);
+    ::DeleteObject(hBrush);
 
     DrawDibDraw(m_hdd, hdc,
-            x, 4, -1, -1,
+            m_xScreenOffset, m_yScreenOffset, -1, -1,
             &m_bmpinfo.bmiHeader, m_bits, 0, 0,
             m_cxScreenWidth, m_cyScreenHeight,
             0);
-
-    // Empty border
-    HBRUSH hBrush = ::CreateSolidBrush(COLOR_BK_BACKGROUND);
-    //HGDIOBJ hOldBrush = ::SelectObject(hdc, ::GetSysColorBrush(COLOR__BTNFACE));
-    HGDIOBJ hOldBrush = ::SelectObject(hdc, hBrush);
-    PatBlt(hdc, 0, 0, rc.right, 4, PATCOPY);
-    PatBlt(hdc, 0, 0, x, rc.bottom, PATCOPY);
-    PatBlt(hdc, x + m_cxScreenWidth, 0, rc.right - x - m_cxScreenWidth, rc.bottom, PATCOPY);
-    PatBlt(hdc, 0, rc.bottom, rc.right, -4, PATCOPY);
-    ::SelectObject(hdc, hOldBrush);
-    ::DeleteObject(hBrush);
 }
 
 void ScreenView_RedrawScreen()
