@@ -148,7 +148,6 @@ BOOL CreateMainWindow()
     MainWindow_ShowHideKeyboard();
     MainWindow_ShowHideTape();
     MainWindow_ShowHideDebug();
-    MainWindow_ShowHideMemoryMap();
 
     MainWindow_RestorePositionAndShow();
 
@@ -598,6 +597,8 @@ void MainWindow_ShowHideDebug()
             DestroyWindow(g_hwndDisasm);
         if (g_hwndMemory != INVALID_HANDLE_VALUE)
             DestroyWindow(g_hwndMemory);
+        if (g_hwndMemoryMap != INVALID_HANDLE_VALUE)
+            DestroyWindow(g_hwndMemoryMap);
 
         MainWindow_AdjustWindowSize();
         MainWindow_AdjustWindowLayout();
@@ -633,6 +634,8 @@ void MainWindow_ShowHideDebug()
             DisasmView_Create(g_hwnd, xDebugLeft, yDisasmTop, cxDebugWidth, cyDisasmHeight);
         if (g_hwndMemory == INVALID_HANDLE_VALUE)
             MemoryView_Create(g_hwnd, xDebugLeft, yMemoryTop, cxDebugWidth, cyMemoryHeight);
+        if (g_hwndMemoryMap == INVALID_HANDLE_VALUE && Settings_GetMemoryMap())
+            MemoryMapView_Create(g_hwnd, xDebugLeft, yMemoryTop);
         m_hwndSplitter = SplitterWindow_Create(g_hwnd, g_hwndDisasm, g_hwndMemory);
 
         MainWindow_AdjustWindowLayout();
@@ -721,7 +724,7 @@ void MainWindow_ShowHideMemoryMap()
             g_hwndMemoryMap = (HWND)INVALID_HANDLE_VALUE;
         }
     }
-    else
+    else if (Settings_GetDebug())
     {
         if (g_hwndMemoryMap == INVALID_HANDLE_VALUE)
             MemoryMapView_Create(g_hwnd, 0, 0);
@@ -769,6 +772,7 @@ void MainWindow_UpdateMenu()
     // View|Debug check
     CheckMenuItem(hMenu, ID_VIEW_TOOLBAR, (Settings_GetToolbar() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_DEBUG, (Settings_GetDebug() ? MF_CHECKED : MF_UNCHECKED));
+    CheckMenuItem(hMenu, ID_VIEW_MEMORYMAP, (Settings_GetMemoryMap() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_KEYBOARD, (Settings_GetKeyboard() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_TAPE, (Settings_GetTape() ? MF_CHECKED : MF_UNCHECKED));
     // View|Color Screen
