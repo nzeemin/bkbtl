@@ -89,17 +89,17 @@ void MainWindow_RegisterClass()
     WNDCLASSEX wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style			= CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc	= MainWindow_WndProc;
-    wcex.cbClsExtra		= 0;
-    wcex.cbWndExtra		= 0;
-    wcex.hInstance		= g_hInst;
-    wcex.hIcon			= LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_BKBTL));
-    wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground	= (HBRUSH)(COLOR_BTNFACE + 1);
-    wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_BKBTL);
-    wcex.lpszClassName	= g_szWindowClass;
-    wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.style          = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc    = MainWindow_WndProc;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = g_hInst;
+    wcex.hIcon          = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_BKBTL));
+    wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground  = (HBRUSH)(COLOR_BTNFACE + 1);
+    wcex.lpszMenuName   = MAKEINTRESOURCE(IDC_BKBTL);
+    wcex.lpszClassName  = g_szWindowClass;
+    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
     RegisterClassEx(&wcex);
 
@@ -237,7 +237,7 @@ BOOL MainWindow_InitToolbar()
 BOOL MainWindow_InitStatusbar()
 {
     TCHAR buffer[100];
-    wsprintf(buffer, _T("BK Back to Life - version %s"), _T(BKBTL_VERSION_STRING));
+    wsprintf(buffer, _T("%s - version %s"), g_szTitle, _T(BKBTL_VERSION_STRING));
     m_hwndStatusbar = CreateStatusWindow(
             WS_CHILD | WS_VISIBLE | SBT_TOOLTIPS | CCS_NOPARENTALIGN | CCS_NODIVIDER,
             buffer,
@@ -318,10 +318,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
     switch (message)
     {
     case WM_ACTIVATE:
-        if (Settings_GetDebug())
-            ConsoleView_Activate();
-        else
-            SetFocus(g_hwndScreen);
+        SetFocus(g_hwndScreen);
         break;
     case WM_COMMAND:
         {
@@ -334,7 +331,6 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
         break;
     case WM_DESTROY:
         MainWindow_SavePosition();
-        //ScreenView_DoneRender();
         PostQuitMessage(0);
         break;
     case WM_SIZE:
@@ -601,9 +597,6 @@ void MainWindow_ShowHideDebug()
             DestroyWindow(g_hwndMemoryMap);
 
         MainWindow_AdjustWindowSize();
-        MainWindow_AdjustWindowLayout();
-
-        SetFocus(g_hwndScreen);
     }
     else  // Debug Views ON
     {
@@ -637,11 +630,13 @@ void MainWindow_ShowHideDebug()
         if (g_hwndMemoryMap == INVALID_HANDLE_VALUE && Settings_GetMemoryMap())
             MemoryMapView_Create(g_hwnd, xDebugLeft, yMemoryTop);
         m_hwndSplitter = SplitterWindow_Create(g_hwnd, g_hwndDisasm, g_hwndMemory);
-
-        MainWindow_AdjustWindowLayout();
     }
 
+    MainWindow_AdjustWindowLayout();
+
     MainWindow_UpdateMenu();
+
+    SetFocus(g_hwndScreen);
 }
 
 void MainWindow_ShowHideToolbar()

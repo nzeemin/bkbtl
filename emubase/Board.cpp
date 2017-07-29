@@ -366,13 +366,13 @@ bool CMotherboard::SystemFrame()
     {
         for (int procticks = 0; procticks < frameProcTicks; procticks++)  // CPU ticks
         {
-            if (m_pCPU->GetPC() == m_CPUbp)
-                return false;  // Breakpoint
 #if !defined(PRODUCT)
             if ((m_dwTrace & TRACE_CPU) && m_pCPU->GetInternalTick() == 0)
                 TraceInstruction(m_pCPU, this, m_pCPU->GetPC(), m_dwTrace);
 #endif
             m_pCPU->Execute();
+            if (m_pCPU->GetPC() == m_CPUbp)
+                return false;  // Breakpoint
 
             timerTicks++;
             if (timerTicks >= 128)

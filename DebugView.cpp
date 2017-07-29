@@ -382,12 +382,12 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
         {
             SetTextColor(hdc, colorText);
             TextOut(hdc, x + 2 * cxChar, y, _T(">>"), 2);
-            if (current != previous) ::SetTextColor(hdc, COLOR_RED);
+            if (current != previous) SetTextColor(hdc, COLOR_RED);
             TextOut(hdc, x, y, REGISTER_NAME[reg], 2);
         }
         else if (address == previous)
         {
-            ::SetTextColor(hdc, COLOR_BLUE);
+            SetTextColor(hdc, COLOR_BLUE);
             TextOut(hdc, x + 2 * cxChar, y, _T(">"), 1);
         }
 

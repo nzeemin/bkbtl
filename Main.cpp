@@ -95,7 +95,6 @@ int APIENTRY _tWinMain(
                 if (Emulator_SystemFrame())
                 {
                     ScreenView_RedrawScreen();
-                    MemoryMapView_RedrawMap();
                 }
             }
         }

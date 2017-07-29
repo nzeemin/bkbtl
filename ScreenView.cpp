@@ -371,11 +371,11 @@ void ScreenView_ProcessKeyboard()
     WORD keyevent = ScreenView_GetKeyEventFromQueue();
     if (keyevent != 0)
     {
-        BOOL pressed = ((keyevent & 0x8000) != 0);
-        BOOL ctrl = ((keyevent & 0x4000) != 0);
+        bool pressed = ((keyevent & 0x8000) != 0);
+        bool ctrl = ((keyevent & 0x4000) != 0);
         BYTE bkscan = LOBYTE(keyevent);
 
-        if (((bkscan & 0xf8) == 0210) && Settings_GetJoystick() != 0)  // Skip joystick events if NumPad joystick is off
+        if (((bkscan & 0370) == 0260) && Settings_GetJoystick() != 0)  // Skip joystick events if NumPad joystick is off
             return;
 
 //#if !defined(PRODUCT)

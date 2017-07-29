@@ -154,7 +154,7 @@ public:  // Memory access  //TODO: Make it private
     uint16_t    GetROMWord(uint16_t offset) const;
     uint8_t     GetROMByte(uint16_t offset) const;
 public:  // Debug
-    void        DebugTicks();  // One Debug PPU tick -- use for debug step or debug breakpoint
+    void        DebugTicks();  // One Debug CPU tick -- use for debug step or debug breakpoint
     void        SetCPUBreakpoint(uint16_t bp) { m_CPUbp = bp; } // Set CPU breakpoint
     uint32_t    GetTrace() const { return m_dwTrace; }
     void        SetTrace(uint32_t dwTrace);

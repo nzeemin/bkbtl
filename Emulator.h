@@ -27,8 +27,6 @@ extern uint8_t* g_pEmulatorRam;  // RAM values - for change tracking
 extern uint8_t* g_pEmulatorChangedRam;  // RAM change flags
 extern uint16_t g_wEmulatorCpuPC;      // Current PC value
 extern uint16_t g_wEmulatorPrevCpuPC;  // Previous PC value
-extern uint16_t g_wEmulatorPpuPC;      // Current PC value
-extern uint16_t g_wEmulatorPrevPpuPC;  // Previous PC value
 
 
 //////////////////////////////////////////////////////////////////////
@@ -39,7 +37,6 @@ bool Emulator_InitConfiguration(BKConfiguration configuration);
 BKConfiguration Emulator_GetConfiguration();
 void Emulator_Done();
 void Emulator_SetCPUBreakpoint(uint16_t address);
-void Emulator_SetPPUBreakpoint(uint16_t address);
 bool Emulator_IsBreakpoint();
 void Emulator_SetSound(bool soundOnOff);
 void Emulator_SetCovox(bool covoxOnOff);

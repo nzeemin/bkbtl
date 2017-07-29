@@ -189,10 +189,10 @@ LRESULT CALLBACK SpriteViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
         return (LRESULT)SpriteView_OnKeyDown(wParam, lParam);
         //case WM_HSCROLL:
         //    return (LRESULT)SpriteView_OnHScroll(wParam, lParam);
-        //case WM_VSCROLL:
-        //    return (LRESULT)SpriteView_OnVScroll(wParam, lParam);
-        //case WM_MOUSEWHEEL:
-        //    return (LRESULT)SpriteView_OnMouseWheel(wParam, lParam);
+    case WM_VSCROLL:
+        return (LRESULT)SpriteView_OnVScroll(wParam, lParam);
+    case WM_MOUSEWHEEL:
+        return (LRESULT)SpriteView_OnMouseWheel(wParam, lParam);
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -263,7 +263,6 @@ BOOL SpriteView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
         else
             SpriteView_GoToAddress(m_wSprite_BaseAddress - 1);
         break;
-        break;
     case VK_DOWN:
         if (GetKeyState(VK_CONTROL) & 0x8000)
             SpriteView_GoToAddress(m_wSprite_BaseAddress + (WORD)m_nSprite_width);
@@ -289,6 +288,42 @@ BOOL SpriteView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
     return FALSE;
 }
 
+BOOL SpriteView_OnMouseWheel(WPARAM wParam, LPARAM /*lParam*/)
+{
+    short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+    int nDelta = zDelta / 120;
+    if (nDelta > 4) nDelta = 4;
+    if (nDelta < -4) nDelta = -4;
+
+    SpriteView_GoToAddress(m_wSprite_BaseAddress - (WORD)(nDelta * 3 * m_nSprite_width));
+
+    return FALSE;
+}
+
+BOOL SpriteView_OnVScroll(WPARAM wParam, LPARAM /*lParam*/)
+{
+    //WORD scrollpos = HIWORD(wParam);
+    WORD scrollcmd = LOWORD(wParam);
+    switch (scrollcmd)
+    {
+    case SB_LINEDOWN:
+        SpriteView_GoToAddress(m_wSprite_BaseAddress + (WORD)m_nSprite_width);
+        break;
+    case SB_LINEUP:
+        SpriteView_GoToAddress(m_wSprite_BaseAddress - (WORD)m_nSprite_width);
+        break;
+        //case SB_PAGEDOWN:
+        //    break;
+        //case SB_PAGEUP:
+        //    break;
+        //case SB_THUMBPOSITION:
+        //    break;
+    }
+
+    return FALSE;
+}
+
 void SpriteView_UpdateScrollPos()
 {
     //TODO
@@ -310,10 +345,10 @@ void SpriteView_PrepareBitmap()
             for (int w = 0; w < m_nSprite_width; w++)
             {
                 // Get byte from memory
-                BOOL okValid = TRUE;
+                int addrtype = 0;
                 BOOL okHalt = FALSE;
                 okHalt = g_pBoard->GetCPU()->IsHaltMode();
-                WORD value = g_pBoard->GetWordView(address & ~1, okHalt, FALSE, &okValid);
+                WORD value = g_pBoard->GetWordView(address & ~1, okHalt, FALSE, &addrtype);
                 if (address & 1)
                     value = value >> 8;
 
