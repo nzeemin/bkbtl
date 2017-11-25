@@ -2183,8 +2183,8 @@ void CProcessor::LoadFromImage(const uint8_t* pImage)
     // Registers R0..R7
     ::memcpy(m_R, pwImage, 2 * 8);
     // Saved PC and PSW - skip
-    *pwImage++;
-    *pwImage++;
+    pwImage++;
+    pwImage++;
     // Stopped flag
     m_okStopped = (*pwImage++ != 0);
 }

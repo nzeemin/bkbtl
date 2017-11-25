@@ -304,7 +304,7 @@ TCHAR Translate_BK_Unicode(BYTE ch)
     if (ch < 32) return _T('·');
     if (ch < 127) return (TCHAR) ch;
     if (ch == 127) return (TCHAR) 0x25A0;
-    if (ch >= 128 && ch < 160) return _T('·');
+    if (/*ch >= 128 &&*/ ch < 160) return _T('·');
     return BK_CHAR_CODES[ch - 160];
 }
 
