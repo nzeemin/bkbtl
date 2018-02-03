@@ -10,11 +10,12 @@ matrix:
   fast_finish: false
 
 platform:
-  - x86
+  - Win32
 
 configuration:
   - Debug
   - Release
+  - Product
 
 environment:
   matrix:

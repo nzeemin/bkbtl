@@ -1,5 +1,7 @@
 # bkbtl - BKBTL emulator, Win32 version
 
+[![Build status](https://ci.appveyor.com/api/projects/status/a1p2sovj2ew7iime?svg=true)](https://ci.appveyor.com/project/nzeemin/bkbtl)
+
 Moved from [code.google.com/p/bkbtl/](http://code.google.com/p/bkbtl/)
 
 **BKBTL** -- **BK Back to Life!** -- is [BK0010/BK0011](http://en.wikipedia.org/wiki/Elektronika_BK) emulator.
