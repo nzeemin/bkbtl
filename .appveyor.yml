@@ -1,0 +1,25 @@
+image: Visual Studio 2015
+
+init:
+  - git config --global core.autocrlf input
+
+clone_folder: C:\projects\bkbtl
+shallow_clone: true
+
+matrix:
+  fast_finish: false
+
+platform:
+  - x86
+
+configuration:
+  - Debug
+  - Release
+
+environment:
+  matrix:
+    - toolchain: msvc13
+
+build:
+  project: BKBTL-VS2013.sln
+
