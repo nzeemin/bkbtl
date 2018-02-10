@@ -19,7 +19,8 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 bool BmpFile_SaveScreenshot(
     const uint32_t* pBits,
     const uint32_t* palette,
-    LPCTSTR sFileName)
+    LPCTSTR sFileName,
+    int screenWidth, int screenHeight)
 {
     ASSERT(pBits != NULL);
     ASSERT(palette != NULL);
@@ -38,8 +39,8 @@ bool BmpFile_SaveScreenshot(
     BITMAPINFOHEADER bih;
     ::ZeroMemory(&bih, sizeof(bih));
     bih.biSize = sizeof( BITMAPINFOHEADER );
-    bih.biWidth = BK_SCREEN_WIDTH;
-    bih.biHeight = BK_SCREEN_HEIGHT;
+    bih.biWidth = screenWidth;
+    bih.biHeight = screenHeight;
     bih.biSizeImage = bih.biWidth * bih.biHeight / 2;
     bih.biPlanes = 1;
     bih.biBitCount = 4;
@@ -55,7 +56,7 @@ bool BmpFile_SaveScreenshot(
     // Prepare the image data
     const uint32_t * psrc = pBits;
     uint8_t * pdst = pData;
-    for (int i = 0; i < 512 * 256; i++)
+    for (int i = 0; i < screenWidth * screenHeight; i++)
     {
         uint32_t rgb = *psrc;
         psrc++;
@@ -145,7 +146,7 @@ void SavePngChunkChecksum(uint8_t * chunk)
     SaveValueMSB(crcplace, value);
 }
 
-bool PngFile_WriteHeader(FILE * fpFile, uint8_t bitdepth)
+bool PngFile_WriteHeader(FILE * fpFile, uint8_t bitdepth, int screenWidth, int screenHeight)
 {
     const uint8_t pngheader[] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a };
     size_t dwBytesWritten = ::fwrite(pngheader, 1, sizeof(pngheader), fpFile);
@@ -155,8 +156,8 @@ bool PngFile_WriteHeader(FILE * fpFile, uint8_t bitdepth)
     uint8_t IHDRchunk[12 + 13];
     SaveValueMSB(IHDRchunk, 13);
     memcpy(IHDRchunk + 4, "IHDR", 4);
-    SaveValueMSB(IHDRchunk + 8, BK_SCREEN_WIDTH);
-    SaveValueMSB(IHDRchunk + 12, BK_SCREEN_HEIGHT);
+    SaveValueMSB(IHDRchunk + 8, screenWidth);
+    SaveValueMSB(IHDRchunk + 12, screenHeight);
     *(IHDRchunk + 16) = bitdepth;  // Bit depth
     *(IHDRchunk + 17) = 3;  // Color type: indexed color
     *(IHDRchunk + 18) = 0;  // No compression
@@ -185,11 +186,12 @@ bool PngFile_WriteEnd(FILE * fpFile)
 
 bool PngFile_WritePalette(FILE * fpFile, const uint32_t* palette)
 {
+    int palsize = 4;
     uint8_t PLTEchunk[12 + 4 * 3];
-    SaveValueMSB(PLTEchunk, 4 * 3);
+    SaveValueMSB(PLTEchunk, palsize * 3);
     memcpy(PLTEchunk + 4, "PLTE", 4);
     uint8_t * p = PLTEchunk + 8;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < palsize; i++)
     {
         uint32_t color = *(palette++);
         *(p++) = (uint8_t)(color >> 16);
@@ -204,13 +206,13 @@ bool PngFile_WritePalette(FILE * fpFile, const uint32_t* palette)
     return true;
 }
 
-bool PngFile_WriteImageData4(FILE * fpFile, uint32_t framenum, const uint32_t* pBits, const uint32_t* palette)
+bool PngFile_WriteImageData4(FILE * fpFile, uint32_t framenum, const uint32_t* pBits, const uint32_t* palette, int screenWidth, int screenHeight)
 {
     // The IDAT chunk data format defined by RFC-1950 "ZLIB Compressed Data Format Specification version 3.3"
     // http://www.ietf.org/rfc/rfc1950.txt
     // We use uncomressed DEFLATE format, see RFC-1951
     // http://tools.ietf.org/html/rfc1951
-    uint32_t pDataLength = 8 + 2 + (6 + BK_SCREEN_WIDTH / 2) * BK_SCREEN_HEIGHT + 4/*adler*/ + 4;
+    uint32_t pDataLength = 8 + 2 + (6 + screenWidth / 2) * screenHeight + 4/*adler*/ + 4;
     if (framenum > 1) pDataLength += 4;
     uint8_t * pData = (uint8_t *) ::calloc(pDataLength, 1);
     SaveValueMSB(pData, pDataLength - 12);
@@ -224,19 +226,19 @@ bool PngFile_WriteImageData4(FILE * fpFile, uint32_t framenum, const uint32_t* p
 
     uint8_t * pdst = pDataStart + 2;
     uint32_t adler = 1L;
-    for (int line = 0; line < 256; line++)
+    for (int line = 0; line < screenHeight; line++)
     {
-        const uint16_t linelen = (512 / 2) + 1;  // Each line is 257-byte block of non-compressed data
-        *(pdst++) = (line < 256 - 1) ? 0 : 1;  // Last?
+        const uint16_t linelen = (uint16_t) (screenWidth / 2) + 1; // Each line is 257-byte block of non-compressed data
+        *(pdst++) = (line < screenHeight - 1) ? 0 : 1;  // Last?
         *(pdst++) = linelen & 0xff;
         *(pdst++) = (linelen >> 8) & 0xff;
-        *(pdst++) = ~linelen & 0xff;
+        *(pdst++) = (~linelen) & 0xff;
         *(pdst++) = (~linelen >> 8) & 0xff;
 
         uint8_t * pline = pdst;
         *(pdst++) = 0;  // additional "filter-type" byte at the beginning of every scanline
-        const uint32_t * psrc = pBits + ((256 - 1 - line) * 512);
-        for (int i = 0; i < 512; i++)
+        const uint32_t * psrc = pBits + ((screenHeight - 1 - line) * screenWidth);
+        for (int i = 0; i < screenWidth; i++)
         {
             uint32_t rgb = *(psrc++);
             uint8_t color = 0;
@@ -276,7 +278,8 @@ bool PngFile_WriteImageData4(FILE * fpFile, uint32_t framenum, const uint32_t* p
 bool PngFile_SaveScreenshot(
     const uint32_t* pBits,
     const uint32_t* palette,
-    LPCTSTR sFileName)
+    LPCTSTR sFileName,
+    int screenWidth, int screenHeight)
 {
     ASSERT(pBits != NULL);
     ASSERT(palette != NULL);
@@ -287,7 +290,7 @@ bool PngFile_SaveScreenshot(
     if (fpFile == NULL)
         return false;
 
-    if (!PngFile_WriteHeader(fpFile, 4))
+    if (!PngFile_WriteHeader(fpFile, 4, screenWidth, screenHeight))
     {
         ::fclose(fpFile);
         return false;
@@ -299,7 +302,7 @@ bool PngFile_SaveScreenshot(
         return false;
     }
 
-    if (!PngFile_WriteImageData4(fpFile, 0, pBits, palette))
+    if (!PngFile_WriteImageData4(fpFile, 0, pBits, palette, screenWidth, screenHeight))
     {
         ::fclose(fpFile);
         return false;
@@ -340,14 +343,14 @@ bool PngFile_WriteActl(FILE * fpFile, uint32_t numframes)
     return true;
 }
 
-bool PngFile_WriteFctl(FILE * fpFile, uint32_t framenum)
+bool PngFile_WriteFctl(FILE * fpFile, uint32_t framenum, int screenWidth, int screenHeight)
 {
     uint8_t acTLchunk[12 + 26];
     SaveValueMSB(acTLchunk, 26);
     memcpy(acTLchunk + 4, "fcTL", 4);
     SaveValueMSB(acTLchunk + 8 + 0, framenum);  // Sequence number
-    SaveValueMSB(acTLchunk + 8 + 4, BK_SCREEN_WIDTH);
-    SaveValueMSB(acTLchunk + 8 + 8, BK_SCREEN_HEIGHT);
+    SaveValueMSB(acTLchunk + 8 + 4, screenWidth);
+    SaveValueMSB(acTLchunk + 8 + 8, screenHeight);
     SaveValueMSB(acTLchunk + 8 + 12, 0);  // X
     SaveValueMSB(acTLchunk + 8 + 16, 0);  // Y
     SaveWordMSB(acTLchunk + 8 + 20,  1);  // Frame delay fraction numerator

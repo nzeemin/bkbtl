@@ -168,7 +168,7 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
         statedSize = fileSize;
 
     uint8_t tagHeader[8];
-    uint8_t formatTag[16];
+    uint16_t formatTag[8];
     bool formatSpecified = false;
     uint16_t formatType = 1, channels = 1, bitsPerSample = 1, blockAlign = 0;
     uint32_t sampleFrequency = 22050, bytesPerSecond, dataOffset = 0, dataSize = 0;
@@ -199,12 +199,12 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
                 return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to read format tag
             }
 
-            formatType = *(uint16_t*)(formatTag);
-            channels = *(uint16_t*)(formatTag + 2);
-            sampleFrequency = *(uint32_t*)(formatTag + 4);
-            bytesPerSecond = *(uint32_t*)(formatTag + 8);
-            blockAlign = *(uint16_t*)(formatTag + 12);
-            bitsPerSample = *(uint16_t*)(formatTag + 14);
+            formatType = formatTag[0];
+            channels = formatTag[1];
+            sampleFrequency = formatTag[2];
+            bytesPerSecond = formatTag[4];
+            blockAlign = formatTag[6];
+            bitsPerSample = formatTag[7];
 
             if (formatType != WAV_FORMAT_PCM)
             {

@@ -398,16 +398,20 @@ BOOL ScreenView_SaveScreenshot(LPCTSTR sFileName)
     ASSERT(sFileName != NULL);
     ASSERT(m_bits != NULL);
 
-    DWORD* pBits = (DWORD*) ::calloc(BK_SCREEN_WIDTH * BK_SCREEN_HEIGHT, sizeof(uint32_t));
+    DWORD* pBits = (DWORD*) ::calloc(m_cxScreenWidth * m_cyScreenHeight, sizeof(uint32_t));
     const uint32_t* colors = Emulator_GetPalette(m_ScreenMode);
     Emulator_PrepareScreenRGB32(pBits, m_ScreenMode);
 
     LPCTSTR sFileNameExt = _tcsrchr(sFileName, _T('.'));
     BOOL result = FALSE;
     if (sFileNameExt != NULL && _tcsicmp(sFileNameExt, _T(".png")) == 0)
-        result = PngFile_SaveScreenshot((const uint32_t *)pBits, (const uint32_t *)colors, sFileName);
+        result = PngFile_SaveScreenshot(
+                (const uint32_t *)pBits, (const uint32_t *)colors,
+                sFileName, m_cxScreenWidth, m_cyScreenHeight);
     else
-        result = BmpFile_SaveScreenshot((const uint32_t *)pBits, (const uint32_t *)colors, sFileName);
+        result = BmpFile_SaveScreenshot(
+                (const uint32_t *)pBits, (const uint32_t *)colors,
+                sFileName, m_cxScreenWidth, m_cyScreenHeight);
 
     ::free(pBits);
 
