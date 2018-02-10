@@ -181,8 +181,8 @@ bool Emulator_Init()
     g_pBoard = new CMotherboard();
 
     // Allocate memory for old RAM values
-    g_pEmulatorRam = (uint8_t*) ::malloc(65536);  ::memset(g_pEmulatorRam, 0, 65536);
-    g_pEmulatorChangedRam = (uint8_t*) ::malloc(65536);  ::memset(g_pEmulatorChangedRam, 0, 65536);
+    g_pEmulatorRam = (uint8_t*) ::calloc(65536, 1);
+    g_pEmulatorChangedRam = (uint8_t*) ::calloc(65536, 1);
 
     g_pBoard->Reset();
 
@@ -661,7 +661,7 @@ void Emulator_FakeTape_ReadFile()
                 break;  // Wrong Length
 
             // Read the file
-            pData = (uint8_t*)malloc(filesize);
+            pData = (uint8_t*)calloc(filesize, 1);
             if (::fread(pData, 1, filesize, fpFile) != filesize)
                 break;  // Reading error
 
@@ -715,7 +715,7 @@ void Emulator_FakeTape_WriteFile()
             uint16_t filesize = g_pBoard->GetRAMWord(0324);
             uint16_t filestart = g_pBoard->GetRAMWord(0322);
 
-            pData = (uint8_t*)malloc(filesize);
+            pData = (uint8_t*)calloc(filesize, 1);
 
             // Copy from memory
             for (uint16_t i = 0; i < filesize; i++)
@@ -1112,7 +1112,7 @@ bool Emulator_SaveImage(LPCTSTR sFilePath)
         return false;
 
     // Allocate memory
-    uint8_t* pImage = (uint8_t*) ::malloc(BKIMAGE_SIZE);  memset(pImage, 0, BKIMAGE_SIZE);
+    uint8_t* pImage = (uint8_t*) ::calloc(BKIMAGE_SIZE, 1);
     if (pImage == NULL)
     {
         ::CloseHandle(hFile);
@@ -1158,7 +1158,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
     //TODO: Check version and size
 
     // Allocate memory
-    uint8_t* pImage = (uint8_t*) ::malloc(BKIMAGE_SIZE);  ::memset(pImage, 0, BKIMAGE_SIZE);
+    uint8_t* pImage = (uint8_t*) ::calloc(BKIMAGE_SIZE, 1);
 
     // Read image
     SetFilePointer(hFile, 0, NULL, FILE_BEGIN);

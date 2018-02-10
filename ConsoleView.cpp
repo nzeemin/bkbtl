@@ -37,7 +37,7 @@ void ClearConsole();
 void PrintConsolePrompt();
 void PrintRegister(LPCTSTR strName, WORD value);
 void PrintMemoryDump(CProcessor* pProc, WORD address, int lines);
-void SaveMemoryDump(CProcessor* pProc);
+BOOL SaveMemoryDump(CProcessor* pProc);
 void DoConsoleCommand();
 void ConsoleView_AdjustWindowLayout();
 LRESULT CALLBACK ConsoleEditWndProc(HWND, UINT, WPARAM, LPARAM);
@@ -273,7 +273,7 @@ void PrintRegister(LPCTSTR strName, WORD value)
     ConsoleView_Print(buffer);
 }
 
-void SaveMemoryDump(CProcessor* /*pProc*/)
+BOOL SaveMemoryDump(CProcessor* /*pProc*/)
 {
     BYTE buf[65536];
     for (int i = 0; i < 65536; i++)
@@ -281,18 +281,18 @@ void SaveMemoryDump(CProcessor* /*pProc*/)
         buf[i] = g_pBoard->GetByte((uint16_t)i, 1);
     }
 
-    // Create file
-    HANDLE file;
-    file = CreateFile(_T("memdump.bin"),
+    const TCHAR fname[] = _T("memdump.bin");
+    HANDLE file = ::CreateFile(fname,
             GENERIC_WRITE, FILE_SHARE_READ, NULL,
             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-    //SetFilePointer(Common_LogFile, 0, NULL, FILE_END);
-
-    DWORD dwLength = 65536;
     DWORD dwBytesWritten = 0;
-    WriteFile(file, buf, dwLength, &dwBytesWritten, NULL);
-    CloseHandle(file);
+    ::WriteFile(file, buf, 65536, &dwBytesWritten, NULL);
+    ::CloseHandle(file);
+    if (dwBytesWritten != 65536)
+        return false;
+
+    return true;
 }
 
 // Print memory dump

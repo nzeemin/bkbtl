@@ -35,7 +35,7 @@ CMotherboard::CMotherboard ()
 
     // Allocate memory for RAM and ROM
     m_pRAM = (uint8_t*) ::malloc(128 * 1024);  //::memset(m_pRAM, 0, 128 * 1024);
-    m_pROM = (uint8_t*) ::malloc(64 * 1024);  ::memset(m_pROM, 0, 64 * 1024);
+    m_pROM = (uint8_t*) ::calloc(64 * 1024, 1);
 
     SetConfiguration(BK_CONF_BK0010_BASIC);  // Default configuration
 
