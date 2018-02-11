@@ -42,8 +42,8 @@ protected:  // Statics
 
 protected:  // Processor state
     int         m_internalTick;     // How many ticks waiting to the end of current instruction
-    uint16_t        m_psw;              // Processor Status Word (PSW)
-    uint16_t        m_R[8];             // Registers (R0..R5, R6=SP, R7=PC)
+    uint16_t    m_psw;              // Processor Status Word (PSW)
+    uint16_t    m_R[8];             // Registers (R0..R5, R6=SP, R7=PC)
     bool        m_okStopped;        // "Processor stopped" flag
     bool        m_userspace;        // Read TRUE if user space is used -- CPU is accessing I/O from HALT mode using user space
     bool        m_stepmode;         // Read TRUE if it's step mode

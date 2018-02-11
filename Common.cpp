@@ -127,10 +127,10 @@ void DebugLog(LPCTSTR message)
 
     SetFilePointer(Common_LogFile, 0, NULL, FILE_END);
 
-    DWORD dwLength = lstrlen(message) * sizeof(TCHAR);
+    int nLength = lstrlen(message) * sizeof(TCHAR);
 
     char ascii[256];  *ascii = 0;
-    WideCharToMultiByte(CP_ACP, 0, message, dwLength, ascii, 256, NULL, NULL);
+    WideCharToMultiByte(CP_ACP, 0, message, nLength, ascii, 256, NULL, NULL);
 
     DWORD dwBytesWritten = 0;
     //WriteFile(Common_LogFile, message, dwLength, &dwBytesWritten, NULL);

@@ -76,7 +76,9 @@ BOOL Settings_LoadDwordValue(LPCTSTR sName, DWORD* dwValue)
 
 BOOL Settings_SaveBinaryValue(LPCTSTR sName, const void * pData, int size)
 {
-    TCHAR* buffer = (TCHAR*) ::calloc((size * 2 + 1), sizeof(TCHAR));
+    TCHAR* buffer = (TCHAR*) ::calloc(size * 2 + 1, sizeof(TCHAR));
+    if (buffer == NULL)
+        return FALSE;
     const BYTE* p = (const BYTE*) pData;
     TCHAR* buf = buffer;
     for (int i = 0; i < size; i++)
@@ -96,8 +98,10 @@ BOOL Settings_SaveBinaryValue(LPCTSTR sName, const void * pData, int size)
 
 BOOL Settings_LoadBinaryValue(LPCTSTR sName, void * pData, int size)
 {
-    size_t buffersize = (size * 2 + 1) * sizeof(TCHAR);
-    TCHAR* buffer = (TCHAR*) ::calloc(buffersize, 1);
+    size_t buffersize = size * 2 + 1;
+    TCHAR* buffer = (TCHAR*) ::calloc(buffersize, sizeof(TCHAR));
+    if (buffer == NULL)
+        return FALSE;
     if (!Settings_LoadStringValue(sName, buffer, buffersize))
     {
         free(buffer);

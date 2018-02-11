@@ -119,7 +119,7 @@ void ScreenView_CreateDisplay()
 }
 
 // Create Screen View as child of Main Window
-void ScreenView_Create(HWND hwndParent, int x, int y, int cxWidth)
+void ScreenView_Create(HWND hwndParent, int x, int y)
 {
     ASSERT(hwndParent != NULL);
 
@@ -127,7 +127,7 @@ void ScreenView_Create(HWND hwndParent, int x, int y, int cxWidth)
     int yTop = y;
     int cyScreenHeight = 4 + BK_SCREEN_HEIGHT + 4;
     int cyHeight = cyScreenHeight;
-    cxWidth = 4 + m_cxScreenWidth + 4;
+    int cxWidth = 4 + m_cxScreenWidth + 4;
 
     g_hwndScreen = CreateWindow(
             CLASSNAME_SCREENVIEW, NULL,

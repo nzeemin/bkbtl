@@ -52,6 +52,11 @@ bool BmpFile_SaveScreenshot(
     DWORD dwBytesWritten = 0;
 
     uint8_t * pData = (uint8_t *) ::calloc(bih.biSizeImage, 1);
+    if (pData == NULL)
+    {
+        CloseHandle(hFile);
+        return false;
+    }
 
     // Prepare the image data
     const uint32_t * psrc = pBits;
@@ -81,27 +86,28 @@ bool BmpFile_SaveScreenshot(
     WriteFile(hFile, &hdr, sizeof(BITMAPFILEHEADER), &dwBytesWritten, NULL);
     if (dwBytesWritten != sizeof(BITMAPFILEHEADER))
     {
-        ::free(pData);
+        ::free(pData);  CloseHandle(hFile);
         return false;
     }
     WriteFile(hFile, &bih, sizeof(BITMAPINFOHEADER), &dwBytesWritten, NULL);
     if (dwBytesWritten != sizeof(BITMAPINFOHEADER))
     {
-        ::free(pData);
+        ::free(pData);  CloseHandle(hFile);
         return false;
     }
     WriteFile(hFile, palette, sizeof(RGBQUAD) * 16, &dwBytesWritten, NULL);
     if (dwBytesWritten != sizeof(RGBQUAD) * 16)
     {
-        ::free(pData);
+        ::free(pData);  CloseHandle(hFile);
         return false;
     }
     WriteFile(hFile, pData, bih.biSizeImage, &dwBytesWritten, NULL);
-    ::free(pData);
     if (dwBytesWritten != bih.biSizeImage)
+    {
+        ::free(pData);  CloseHandle(hFile);
         return false;
-
-    // Close file
+    }
+    ::free(pData);
     CloseHandle(hFile);
 
     return true;
@@ -215,6 +221,8 @@ bool PngFile_WriteImageData4(FILE * fpFile, uint32_t framenum, const uint32_t* p
     uint32_t pDataLength = 8 + 2 + (6 + screenWidth / 2) * screenHeight + 4/*adler*/ + 4;
     if (framenum > 1) pDataLength += 4;
     uint8_t * pData = (uint8_t *) ::calloc(pDataLength, 1);
+    if (pData == NULL)
+        return false;
     SaveValueMSB(pData, pDataLength - 12);
     memcpy(pData + 4, (framenum <= 1) ? "IDAT" : "fdAT", 4);
     if (framenum > 1) SaveValueMSB(pData + 8, framenum);

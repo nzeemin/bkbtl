@@ -662,6 +662,8 @@ void Emulator_FakeTape_ReadFile()
 
             // Read the file
             pData = (uint8_t*)calloc(filesize, 1);
+            if (pData == NULL)
+                break;
             if (::fread(pData, 1, filesize, fpFile) != filesize)
                 break;  // Reading error
 
@@ -716,6 +718,8 @@ void Emulator_FakeTape_WriteFile()
             uint16_t filestart = g_pBoard->GetRAMWord(0322);
 
             pData = (uint8_t*)calloc(filesize, 1);
+            if (pData == NULL)
+                break;
 
             // Copy from memory
             for (uint16_t i = 0; i < filesize; i++)
@@ -1153,18 +1157,31 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
     uint32_t bufHeader[BKIMAGE_HEADER_SIZE / sizeof(uint32_t)];
     DWORD dwBytesRead = 0;
     ReadFile(hFile, bufHeader, BKIMAGE_HEADER_SIZE, &dwBytesRead, NULL);
-    //TODO: Check if dwBytesRead != BKIMAGE_HEADER_SIZE
+    if (dwBytesRead != BKIMAGE_HEADER_SIZE)
+    {
+        CloseHandle(hFile);
+        return false;
+    }
 
     //TODO: Check version and size
 
     // Allocate memory
     uint8_t* pImage = (uint8_t*) ::calloc(BKIMAGE_SIZE, 1);
+    if (pImage == NULL)
+    {
+        CloseHandle(hFile);
+        return false;
+    }
 
     // Read image
     SetFilePointer(hFile, 0, NULL, FILE_BEGIN);
     dwBytesRead = 0;
     ReadFile(hFile, pImage, BKIMAGE_SIZE, &dwBytesRead, NULL);
-    //TODO: Check if dwBytesRead != BKIMAGE_SIZE
+    if (dwBytesRead != BKIMAGE_SIZE)
+    {
+        CloseHandle(hFile);
+        return false;
+    }
 
     // Restore emulator state from the image
     g_pBoard->LoadFromImage(pImage);
