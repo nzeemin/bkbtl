@@ -80,9 +80,11 @@
 #define ID_VIEW_SCREENMODE3             32830
 #define ID_VIEW_SCREENMODE4             32831
 #define ID_VIEW_SCREENMODE5             32832
-#define ID_FILE_SETTINGS                32833
-#define ID_FILE_SAVESCREENSHOTAS        32834
-#define ID_DEBUG_SPRITES                32835
+#define ID_VIEW_SCREENMODE6             32833
+#define ID_VIEW_SCREENMODE7             32834
+#define ID_FILE_SETTINGS                32843
+#define ID_FILE_SAVESCREENSHOTAS        32844
+#define ID_DEBUG_SPRITES                32845
 #define ID_DEBUG_MEMORY_WORDBYTE        32870
 #define ID_DEBUG_MEMORY_GOTO            32871
 #define IDC_STATIC                      -1
