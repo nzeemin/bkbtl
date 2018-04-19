@@ -25,7 +25,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 
 
-CMotherboard* g_pBoard = NULL;
+CMotherboard* g_pBoard = nullptr;
 BKConfiguration g_nEmulatorConfiguration;  // Current configuration
 bool g_okEmulatorRunning = false;
 
@@ -41,8 +41,8 @@ uint32_t m_dwTickCount = 0;
 uint32_t m_dwEmulatorUptime = 0;  // BK uptime, seconds, from turn on or reset, increments every 25 frames
 long m_nUptimeFrameCount = 0;
 
-uint8_t* g_pEmulatorRam;  // RAM values - for change tracking
-uint8_t* g_pEmulatorChangedRam;  // RAM change flags
+uint8_t* g_pEmulatorRam = nullptr;  // RAM values - for change tracking
+uint8_t* g_pEmulatorChangedRam = nullptr;  // RAM change flags
 uint16_t g_wEmulatorCpuPC = 0177777;      // Current PC value
 uint16_t g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
 
@@ -154,7 +154,7 @@ const uint32_t ScreenView_ColorPalettes[16][4] =
 bool Emulator_LoadRomFile(LPCTSTR strFileName, uint8_t* buffer, uint32_t fileOffset, uint32_t bytesToRead)
 {
     FILE* fpRomFile = ::_tfsopen(strFileName, _T("rb"), _SH_DENYWR);
-    if (fpRomFile == NULL)
+    if (fpRomFile == nullptr)
         return false;
 
     ASSERT(bytesToRead <= 8192);
@@ -179,7 +179,7 @@ bool Emulator_LoadRomFile(LPCTSTR strFileName, uint8_t* buffer, uint32_t fileOff
 
 bool Emulator_Init()
 {
-    ASSERT(g_pBoard == NULL);
+    ASSERT(g_pBoard == nullptr);
 
     CProcessor::Init();
 
@@ -206,15 +206,15 @@ bool Emulator_Init()
 
 void Emulator_Done()
 {
-    ASSERT(g_pBoard != NULL);
+    ASSERT(g_pBoard != nullptr);
 
     CProcessor::Done();
 
-    g_pBoard->SetSoundGenCallback(NULL);
+    g_pBoard->SetSoundGenCallback(nullptr);
     SoundGen_Finalize();
 
     delete g_pBoard;
-    g_pBoard = NULL;
+    g_pBoard = nullptr;
 
     // Free memory used for old RAM values
     ::free(g_pEmulatorRam);
@@ -355,7 +355,6 @@ bool Emulator_InitConfiguration(BKConfiguration configuration)
         g_pBoard->LoadROM(5, buffer);
     }
 
-
     g_nEmulatorConfiguration = configuration;
 
     g_pBoard->Reset();
@@ -398,14 +397,14 @@ void Emulator_Stop()
     SetWindowText(g_hwnd, _T("BK Back to Life [stop]"));
     MainWindow_UpdateMenu();
     // Reset FPS indicator
-    MainWindow_SetStatusbarText(StatusbarPartFPS, _T(""));
+    MainWindow_SetStatusbarText(StatusbarPartFPS, nullptr);
 
     MainWindow_UpdateAllViews();
 }
 
 void Emulator_Reset()
 {
-    ASSERT(g_pBoard != NULL);
+    ASSERT(g_pBoard != nullptr);
 
     g_pBoard->Reset();
 
@@ -432,10 +431,10 @@ bool Emulator_IsBreakpoint()
 
 void Emulator_SetSpeed(uint16_t realspeed)
 {
-    WORD speedpercent = 100;
+    uint16_t speedpercent = 100;
     switch (realspeed)
     {
-    case 0: speedpercent = 500; break;
+    case 0: speedpercent = 200; break;
     case 1: speedpercent = 100; break;
     case 2: speedpercent = 200; break;
     case 0x7fff: speedpercent = 50; break;
@@ -460,7 +459,7 @@ void Emulator_SetSound(bool soundOnOff)
         }
         else
         {
-            g_pBoard->SetSoundGenCallback(NULL);
+            g_pBoard->SetSoundGenCallback(nullptr);
             SoundGen_Finalize();
         }
     }
@@ -481,6 +480,8 @@ void Emulator_SetSoundAY(bool onoff)
 
 int Emulator_SystemFrame()
 {
+    SoundGen_SetVolume(Settings_GetSoundVolume());
+
     g_pBoard->SetCPUBreakpoint(m_wEmulatorCPUBreakpoint);
 
     ScreenView_ScanKeyboard();
@@ -620,12 +621,12 @@ void Emulator_FakeTape_ReadFile()
     TCHAR filename[24];
     Emulator_GetEmt36FileName(filename);
 
-    FILE* fpFile = NULL;
+    FILE* fpFile = nullptr;
     // First, if the filename specified, try to find it
     if (*filename != 0)
         fpFile = ::_tfsopen(filename, _T("rb"), _SH_DENYWR);
     // If file not found then ask user for the file
-    if (fpFile == NULL)
+    if (fpFile == nullptr)
     {
         TCHAR title[36];
         _sntprintf(title, 36, _T("Reading tape %s"), filename);
@@ -652,8 +653,8 @@ void Emulator_FakeTape_ReadFile()
     }
 
     uint8_t result = 2;  // EMT36 result = checksum error
-    uint8_t* pData = NULL;
-    if (fpFile != NULL)
+    uint8_t* pData = nullptr;
+    if (fpFile != nullptr)
     {
         for (;;)  // For breaks only
         {
@@ -673,7 +674,7 @@ void Emulator_FakeTape_ReadFile()
 
             // Read the file
             pData = (uint8_t*)calloc(filesize, 1);
-            if (pData == NULL)
+            if (pData == nullptr)
                 break;
             if (::fread(pData, 1, filesize, fpFile) != filesize)
                 break;  // Reading error
@@ -693,7 +694,7 @@ void Emulator_FakeTape_ReadFile()
         fclose(fpFile);
     }
 
-    if (pData != NULL)
+    if (pData != nullptr)
         free(pData);
 
     // Report EMT36 result
@@ -713,15 +714,15 @@ void Emulator_FakeTape_WriteFile()
     TCHAR filename[24];
     Emulator_GetEmt36FileName(filename);
 
-    FILE* fpFile = NULL;
+    FILE* fpFile = nullptr;
     // First, if the filename specified, try to open if
     if (*filename != 0)
         fpFile = ::_tfsopen(filename, _T("wb"), _SH_DENYWR);
     //TODO: If failed, ask user for file name
 
     uint8_t result = 2;  // EMT36 result = checksum error
-    uint8_t* pData = NULL;
-    if (fpFile != NULL)
+    uint8_t* pData = nullptr;
+    if (fpFile != nullptr)
     {
         for (;;)  // For breaks only
         {
@@ -729,7 +730,7 @@ void Emulator_FakeTape_WriteFile()
             uint16_t filestart = g_pBoard->GetRAMWord(0322);
 
             pData = (uint8_t*)calloc(filesize, 1);
-            if (pData == NULL)
+            if (pData == nullptr)
                 break;
 
             // Copy from memory
@@ -753,7 +754,7 @@ void Emulator_FakeTape_WriteFile()
         fclose(fpFile);
     }
 
-    if (pData != NULL)
+    if (pData != nullptr)
         free(pData);
 
     // Report EMT36 result
@@ -872,7 +873,7 @@ void Emulator_PrepareScreenRGB32(void* pImageBits, int screenMode)
     const uint32_t * pPalette = Emulator_GetPalette(screenMode);
 
     const uint8_t* pVideoBuffer = g_pBoard->GetVideoBuffer();
-    ASSERT(pVideoBuffer != NULL);
+    ASSERT(pVideoBuffer != nullptr);
 
     // Render to bitmap
     PREPARE_SCREEN_CALLBACK callback = ScreenModeReference[screenMode].callback;
@@ -1203,6 +1204,7 @@ void CALLBACK Emulator_PrepareScreenColor1024x768(const uint8_t* pVideoBuffer, i
 //   4 bytes        BK_IMAGE_SIZE
 //   4 bytes        BK uptime
 //   12 bytes       Not used
+//TODO: 256 bytes * 4 - Floppy 1..4 path
 
 bool Emulator_SaveImage(LPCTSTR sFilePath)
 {
@@ -1215,7 +1217,7 @@ bool Emulator_SaveImage(LPCTSTR sFilePath)
 
     // Allocate memory
     uint8_t* pImage = (uint8_t*) ::calloc(BKIMAGE_SIZE, 1);
-    if (pImage == NULL)
+    if (pImage == nullptr)
     {
         ::CloseHandle(hFile);
         return false;
@@ -1244,6 +1246,8 @@ bool Emulator_SaveImage(LPCTSTR sFilePath)
 
 bool Emulator_LoadImage(LPCTSTR sFilePath)
 {
+    Emulator_Stop();
+
     // Open file
     HANDLE hFile = CreateFile(sFilePath,
             GENERIC_READ, FILE_SHARE_READ, NULL,
@@ -1265,7 +1269,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
 
     // Allocate memory
     uint8_t* pImage = (uint8_t*) ::calloc(BKIMAGE_SIZE, 1);
-    if (pImage == NULL)
+    if (pImage == nullptr)
     {
         CloseHandle(hFile);
         return false;
