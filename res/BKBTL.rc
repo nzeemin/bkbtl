@@ -117,6 +117,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Sound",                       ID_EMULATOR_SOUND
         MENUITEM "Covox",                       ID_EMULATOR_COVOX
+        MENUITEM "AY",                          ID_EMULATOR_SOUNDAY
         MENUITEM SEPARATOR
         MENUITEM "Speed 50%",                   ID_EMULATOR_SPEED50
         MENUITEM "Speed 100%",                  ID_EMULATOR_REALSPEED

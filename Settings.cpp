@@ -238,7 +238,8 @@ SETTINGS_GETSET_DWORD(RealSpeed, _T("RealSpeed"), WORD, 1);
 
 SETTINGS_GETSET_DWORD(Sound, _T("Sound"), BOOL, FALSE);
 SETTINGS_GETSET_DWORD(SoundVolume, _T("SoundVolume"), WORD, 0x3fff);
-SETTINGS_GETSET_DWORD(Covox, _T("Covox"), BOOL, FALSE);
+SETTINGS_GETSET_DWORD(SoundCovox, _T("SoundCovox"), BOOL, FALSE);
+SETTINGS_GETSET_DWORD(SoundAY, _T("SoundAY"), BOOL, FALSE);
 
 SETTINGS_GETSET_DWORD(Joystick, _T("Joystick"), int, 0);
 

@@ -69,6 +69,7 @@ void MainWindow_DoEmulatorReset();
 void MainWindow_DoEmulatorSpeed(WORD speed);
 void MainWindow_DoEmulatorSound();
 void MainWindow_DoEmulatorCovox();
+void MainWindow_DoEmulatorSoundAY();
 void MainWindow_DoEmulatorJoystick(int joystickNum);
 void MainWindow_DoFileSaveState();
 void MainWindow_DoFileLoadState();
@@ -791,7 +792,8 @@ void MainWindow_UpdateMenu()
     // Emulator menu options
     CheckMenuItem(hMenu, ID_EMULATOR_AUTOSTART, (Settings_GetAutostart() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_EMULATOR_SOUND, (Settings_GetSound() ? MF_CHECKED : MF_UNCHECKED));
-    CheckMenuItem(hMenu, ID_EMULATOR_COVOX, (Settings_GetCovox() ? MF_CHECKED : MF_UNCHECKED));
+    CheckMenuItem(hMenu, ID_EMULATOR_COVOX, (Settings_GetSoundCovox() ? MF_CHECKED : MF_UNCHECKED));
+    CheckMenuItem(hMenu, ID_EMULATOR_SOUNDAY, (Settings_GetSoundAY() ? MF_CHECKED : MF_UNCHECKED));
 
     UINT speedcmd = 0;
     switch (Settings_GetRealSpeed())
@@ -945,6 +947,9 @@ bool MainWindow_DoCommand(int commandId)
         break;
     case ID_EMULATOR_COVOX:
         MainWindow_DoEmulatorCovox();
+        break;
+    case ID_EMULATOR_SOUNDAY:
+        MainWindow_DoEmulatorSoundAY();
         break;
     case ID_EMULATOR_JOYSTICKNUMPAD:
         MainWindow_DoEmulatorJoystick(0);
@@ -1105,9 +1110,17 @@ void MainWindow_DoEmulatorSound()
 }
 void MainWindow_DoEmulatorCovox()
 {
-    Settings_SetCovox(!Settings_GetCovox());
+    Settings_SetSoundCovox(!Settings_GetSoundCovox());
 
-    Emulator_SetCovox(Settings_GetCovox());
+    Emulator_SetCovox(Settings_GetSoundCovox());
+
+    MainWindow_UpdateMenu();
+}
+void MainWindow_DoEmulatorSoundAY()
+{
+    Settings_SetSoundAY(!Settings_GetSoundAY());
+
+    Emulator_SetSoundAY(Settings_GetSoundAY());
 
     MainWindow_UpdateMenu();
 }

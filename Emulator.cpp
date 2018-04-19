@@ -34,6 +34,7 @@ uint16_t m_wEmulatorCPUBreakpoint = 0177777;
 bool m_okEmulatorSound = false;
 uint16_t m_wEmulatorSoundSpeed = 100;
 bool m_okEmulatorCovox = false;
+bool m_okEmulatorSoundAY = false;
 
 long m_nFrameCount = 0;
 uint32_t m_dwTickCount = 0;
@@ -470,6 +471,12 @@ void Emulator_SetSound(bool soundOnOff)
 void Emulator_SetCovox(bool covoxOnOff)
 {
     m_okEmulatorCovox = covoxOnOff;
+}
+
+void Emulator_SetSoundAY(bool onoff)
+{
+    m_okEmulatorSoundAY = onoff;
+    g_pBoard->SetSoundAY(onoff);
 }
 
 int Emulator_SystemFrame()

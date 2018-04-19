@@ -167,6 +167,7 @@ public:  // System control
     void        Tick50();           // Tick 50 Hz - goes to CPU EVNT line
     void		TimerTick();		// Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
     void        ResetDevices();     // INIT signal
+    void        SetSoundAY(bool onoff);
 public:
     void        ExecuteCPU();  // Execute one CPU instruction
     bool        SystemFrame();  // Do one frame -- use for normal run
@@ -238,6 +239,8 @@ private:  // Ports: implementation
     uint16_t    m_Port177716;       // System register (read only)
     uint16_t    m_Port177716mem;    // System register (memory)
     uint16_t    m_Port177716tap;    // System register (tape)
+    bool        m_okSoundAY;
+    uint8_t     m_nSoundAYReg;      // AY current register
 private:  // Timer implementation
     uint16_t	m_timer;
     uint16_t	m_timerreload;

@@ -123,6 +123,8 @@ void CMotherboard::Reset ()
     m_timerreload = 011000;
     m_timerflags = 0177400;
 
+    SoundAY_Init();
+
     ResetDevices();
 
     m_pCPU->Start();
@@ -331,6 +333,11 @@ void CMotherboard::DebugTicks()
     m_pCPU->Execute();
     if (m_pFloppyCtl != NULL)
         m_pFloppyCtl->Periodic();
+}
+
+void CMotherboard::SetSoundAY(bool onoff)
+{
+    m_okSoundAY = onoff;
 }
 
 
@@ -898,6 +905,12 @@ uint16_t CMotherboard::GetPortView(uint16_t address) const
 
 void CMotherboard::SetPortByte(uint16_t address, uint8_t byte)
 {
+    if (address == 0177714 && m_okSoundAY)
+    {
+        SoundAY_SetReg(m_nSoundAYReg & 0xf, byte ^ 0xff);
+        return;
+    }
+
     uint16_t word;
     if (address & 1)
     {
@@ -953,6 +966,10 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         break;
 
     case 0177714:  // Parallel port register: printer and Covox
+        if (m_okSoundAY)
+        {
+            m_nSoundAYReg = (uint8_t)(word ^ 0xff);
+        }
         m_Port177714out = word;
         break;
 
@@ -1200,12 +1217,17 @@ void CMotherboard::DoSound(void)
     if (m_SoundGenCallback == NULL)
         return;
 
-    bool bSoundBit = (m_Port177716tap & 0100) != 0;
+    uint8_t value = (m_Port177716tap & 0100) != 0 ? 0xff : 0;
+    if (m_okSoundAY)
+    {
+        uint8_t bufferay[2];
+        SoundAY_Callback(bufferay, sizeof(bufferay));
+        uint8_t valueay = bufferay[sizeof(bufferay) - 1];
+        value = value | valueay;
+    }
 
-    if (bSoundBit)
-        (*m_SoundGenCallback)(0x1fff, 0x1fff);
-    else
-        (*m_SoundGenCallback)(0x0000, 0x0000);
+    uint16_t value16 = value << 5;
+    (*m_SoundGenCallback)(value16, value16);
 }
 
 void CMotherboard::SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate)

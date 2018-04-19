@@ -40,6 +40,7 @@ void Emulator_SetCPUBreakpoint(uint16_t address);
 bool Emulator_IsBreakpoint();
 void Emulator_SetSound(bool soundOnOff);
 void Emulator_SetCovox(bool covoxOnOff);
+void Emulator_SetSoundAY(bool onoff);
 void Emulator_Start();
 void Emulator_Stop();
 void Emulator_Reset();

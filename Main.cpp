@@ -190,7 +190,8 @@ BOOL InitInstance(HINSTANCE /*hInstance*/, int /*nCmdShow*/)
 
     Emulator_SetSound(Settings_GetSound());
     Emulator_SetSpeed(Settings_GetRealSpeed());
-    Emulator_SetCovox(Settings_GetCovox());
+    Emulator_SetCovox(Settings_GetSoundCovox());
+    Emulator_SetSoundAY(Settings_GetSoundAY());
 
     if (!CreateMainWindow())
         return FALSE;
