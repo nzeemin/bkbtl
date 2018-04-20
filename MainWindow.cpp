@@ -246,10 +246,11 @@ BOOL MainWindow_InitStatusbar()
     if (! m_hwndStatusbar)
         return FALSE;
 
-    int statusbarParts[3];
+    int statusbarParts[4];
     statusbarParts[0] = 300;
-    statusbarParts[1] = 350;
-    statusbarParts[2] = -1;
+    statusbarParts[1] = 45;
+    statusbarParts[2] = 350;
+    statusbarParts[3] = -1;
     SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts) / sizeof(int), (LPARAM) statusbarParts);
 
     return TRUE;
@@ -311,6 +312,13 @@ void MainWindow_RestorePositionAndShow()
 
     //if (Settings_GetWindowFullscreen())
     //    MainWindow_DoViewFullscreen();
+}
+
+void MainWindow_UpdateWindowTitle(LPCTSTR emustate)
+{
+    TCHAR buffer[100];
+    wsprintf(buffer, _T("%s [%s]"), g_szTitle, emustate);
+    SetWindowText(g_hwnd, buffer);
 }
 
 // Processes messages for the main window
@@ -862,9 +870,6 @@ bool MainWindow_DoCommand(int commandId)
     case ID_VIEW_MEMORYMAP:
         MainWindow_DoDebugMemoryMap();
         break;
-    case ID_DEBUG_SPRITES:
-        MainWindow_DoViewSpriteViewer();
-        break;
     case ID_DEBUG_TELETYPE:
         MainWindow_DoDebugTeletype();
         break;
@@ -917,6 +922,9 @@ bool MainWindow_DoCommand(int commandId)
     case ID_DEBUG_STEPOVER:
         if (!g_okEmulatorRunning && Settings_GetDebug())
             ConsoleView_StepOver();
+        break;
+    case ID_DEBUG_SPRITES:
+        MainWindow_DoViewSpriteViewer();
         break;
     case ID_DEBUG_MEMORY_WORDBYTE:
         MemoryView_SwitchWordByte();
@@ -1024,10 +1032,6 @@ void MainWindow_DoDebugMemoryMap()
     Settings_SetMemoryMap(!Settings_GetMemoryMap());
     MainWindow_ShowHideMemoryMap();
 }
-void MainWindow_DoViewSpriteViewer()
-{
-    MainWindow_ShowHideSpriteViewer();
-}
 void MainWindow_DoDebugTeletype()
 {
     MainWindow_ShowHideTeletype();
@@ -1046,6 +1050,10 @@ void MainWindow_DoViewTape()
 {
     Settings_SetTape(!Settings_GetTape());
     MainWindow_ShowHideTape();
+}
+void MainWindow_DoViewSpriteViewer()
+{
+    MainWindow_ShowHideSpriteViewer();
 }
 
 void MainWindow_DoViewScreenColor()

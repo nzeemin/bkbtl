@@ -25,6 +25,7 @@ CMotherboard::CMotherboard ()
     // Create devices
     m_pCPU = new CProcessor(this);
     m_pFloppyCtl = NULL;
+    m_pSoundAY = new CSoundAY();
 
     m_dwTrace = TRACE_NONE;
     m_TapeReadCallback = NULL;
@@ -48,6 +49,7 @@ CMotherboard::~CMotherboard ()
     delete m_pCPU;
     if (m_pFloppyCtl != NULL)
         delete m_pFloppyCtl;
+    delete m_pSoundAY;
 
     // Free memory
     ::free(m_pRAM);
@@ -123,8 +125,6 @@ void CMotherboard::Reset ()
     m_timerreload = 011000;
     m_timerflags = 0177400;
 
-    SoundAY_Init();
-
     ResetDevices();
 
     m_pCPU->Start();
@@ -164,6 +164,11 @@ bool CMotherboard::IsFloppyReadOnly(int slot)
     if (m_pFloppyCtl == NULL)
         return false;
     return m_pFloppyCtl->IsReadOnly(slot);
+}
+
+bool CMotherboard::IsFloppyEngineOn() const
+{
+    return m_pFloppyCtl->IsEngineOn();
 }
 
 bool CMotherboard::AttachFloppyImage(int slot, LPCTSTR sFileName)
@@ -241,6 +246,7 @@ void CMotherboard::ResetDevices()
 {
     if (m_pFloppyCtl != NULL)
         m_pFloppyCtl->Reset();
+    m_pSoundAY->Reset();
 
     // Reset ports
     m_Port177560 = m_Port177562 = 0;
@@ -907,7 +913,7 @@ void CMotherboard::SetPortByte(uint16_t address, uint8_t byte)
 {
     if (address == 0177714 && m_okSoundAY)
     {
-        SoundAY_SetReg(m_nSoundAYReg & 0xf, byte ^ 0xff);
+        m_pSoundAY->SetReg(m_nSoundAYReg & 0xf, byte ^ 0xff);
         return;
     }
 
@@ -1221,7 +1227,7 @@ void CMotherboard::DoSound(void)
     if (m_okSoundAY)
     {
         uint8_t bufferay[2];
-        SoundAY_Callback(bufferay, sizeof(bufferay));
+        m_pSoundAY->Callback(bufferay, sizeof(bufferay));
         uint8_t valueay = bufferay[sizeof(bufferay) - 1];
         value = value | valueay;
     }

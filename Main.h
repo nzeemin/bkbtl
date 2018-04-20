@@ -33,6 +33,7 @@ void MainWindow_RegisterClass();
 BOOL CreateMainWindow();
 void MainWindow_RestoreSettings();
 void MainWindow_UpdateMenu();
+void MainWindow_UpdateWindowTitle(LPCTSTR emustate);
 void MainWindow_UpdateAllViews();
 BOOL MainWindow_InitToolbar();
 BOOL MainWindow_InitStatusbar();
@@ -77,7 +78,8 @@ enum StatusbarParts
 {
     StatusbarPartMessage = 0,
     StatusbarPartFPS = 1,
-    StatusbarPartUptime = 2,
+    StatusbarPartFloppyEngine = 2,
+    StatusbarPartUptime = 3,
 };
 
 

@@ -58,7 +58,7 @@ enum
     TAPEMODE_STARTED = 1,
     TAPEMODE_READING = 2,
     TAPEMODE_FINISHED = -1
-} m_EmulatorTapeMode = TAPEMODE_STOPPED;
+} m_EmulatorTapeMode;
 int m_EmulatorTapeCount = 0;
 
 //Прототип функции преобразования экрана
@@ -382,7 +382,7 @@ void Emulator_Start()
     g_okEmulatorRunning = true;
 
     // Set title bar text
-    SetWindowText(g_hwnd, _T("BK Back to Life [run]"));
+    MainWindow_UpdateWindowTitle(_T("run"));
     MainWindow_UpdateMenu();
 
     m_nFrameCount = 0;
@@ -394,7 +394,7 @@ void Emulator_Stop()
     m_wEmulatorCPUBreakpoint = 0177777;
 
     // Reset title bar message
-    SetWindowText(g_hwnd, _T("BK Back to Life [stop]"));
+    MainWindow_UpdateWindowTitle(_T("stop"));
     MainWindow_UpdateMenu();
     // Reset FPS indicator
     MainWindow_SetStatusbarText(StatusbarPartFPS, nullptr);
@@ -502,6 +502,9 @@ int Emulator_SystemFrame()
         TCHAR buffer[16];
         swprintf_s(buffer, 16, _T("%03.f%%"), dSpeed);
         MainWindow_SetStatusbarText(StatusbarPartFPS, buffer);
+
+        bool floppyEngine = g_pBoard->IsFloppyEngineOn();
+        MainWindow_SetStatusbarText(StatusbarPartFloppyEngine, floppyEngine ? _T("Motor") : nullptr);
 
         m_nFrameCount = 0;
         m_dwTickCount = dwCurrentTicks;
@@ -1216,7 +1219,7 @@ bool Emulator_SaveImage(LPCTSTR sFilePath)
         return false;
 
     // Allocate memory
-    uint8_t* pImage = (uint8_t*) ::calloc(BKIMAGE_SIZE, 1);
+    uint8_t* pImage = static_cast<uint8_t*>(::calloc(BKIMAGE_SIZE, 1));
     if (pImage == nullptr)
     {
         ::CloseHandle(hFile);
@@ -1268,7 +1271,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
     //TODO: Check version and size
 
     // Allocate memory
-    uint8_t* pImage = (uint8_t*) ::calloc(BKIMAGE_SIZE, 1);
+    uint8_t* pImage = static_cast<uint8_t*>(::calloc(BKIMAGE_SIZE, 1));
     if (pImage == nullptr)
     {
         CloseHandle(hFile);

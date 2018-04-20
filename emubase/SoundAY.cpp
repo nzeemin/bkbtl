@@ -23,24 +23,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #define STEP2 length
 #define STEP  2
 
-struct AY8910
-{
-    int index;
-    int ready;
-    unsigned Regs[16];
-    int32_t lastEnable;
-    int32_t PeriodA, PeriodB, PeriodC, PeriodN, PeriodE;
-    int32_t CountA, CountB, CountC, CountN, CountE;
-    uint32_t VolA, VolB, VolC, VolE;
-    uint8_t EnvelopeA, EnvelopeB, EnvelopeC;
-    uint8_t OutputA, OutputB, OutputC, OutputN;
-    int8_t CountEnv;
-    uint8_t Hold, Alternate, Attack, Holding;
-    int32_t RNG;
-    unsigned int VolTable[32];
-
-} PSG;
-
 /* register id's */
 #define AY_AFINE	(0)
 #define AY_ACOARSE	(1)
@@ -60,12 +42,40 @@ struct AY8910
 #define AY_PORTA	(14)
 #define AY_PORTB	(15)
 
-void SoundAY_SetReg(int r, int v)
+
+unsigned int CSoundAY::VolTable[32];
+
+
+CSoundAY::CSoundAY()
+{
+    Reset();
+}
+
+void CSoundAY::Reset()
+{
+    index = 0;
+    memset(Regs, 0, sizeof(Regs));
+    lastEnable = 0;
+    PeriodA = PeriodB = PeriodC = PeriodN = PeriodE = STEP3;
+    CountA = CountB = CountC = CountN = CountE = 0;
+    VolA = VolB = VolC = VolE = 0;
+    EnvelopeA = EnvelopeB = EnvelopeC = 0;
+    OutputA = OutputB = OutputC = 0;
+    OutputN = 0xff;
+    CountEnv = 0;
+    Hold = Alternate = Attack = Holding = 0;
+    RNG = 1;
+
+    BuildMixerTable();
+
+    ready = 1;
+}
+
+void CSoundAY::SetReg(int r, int v)
 {
     int old;
 
-    if (PSG.Regs == NULL) return;
-    PSG.Regs[r] = v;
+    this->Regs[r] = v;
 
     /* A note about the period of tones, noise and envelope: for speed reasons,*/
     /* we count down from the period to 0, but careful studies of the chip     */
@@ -81,65 +91,65 @@ void SoundAY_SetReg(int r, int v)
     {
     case AY_AFINE:
     case AY_ACOARSE:
-        PSG.Regs[AY_ACOARSE] &= 0x0f;
-        old = PSG.PeriodA;
-        PSG.PeriodA = (PSG.Regs[AY_AFINE] + 256 * PSG.Regs[AY_ACOARSE]) * STEP3;
-        if (PSG.PeriodA == 0) PSG.PeriodA = STEP3;
-        PSG.CountA += PSG.PeriodA - old;
-        if (PSG.CountA <= 0) PSG.CountA = 1;
+        this->Regs[AY_ACOARSE] &= 0x0f;
+        old = this->PeriodA;
+        this->PeriodA = (this->Regs[AY_AFINE] + 256 * this->Regs[AY_ACOARSE]) * STEP3;
+        if (this->PeriodA == 0) this->PeriodA = STEP3;
+        this->CountA += this->PeriodA - old;
+        if (this->CountA <= 0) this->CountA = 1;
         break;
     case AY_BFINE:
     case AY_BCOARSE:
-        PSG.Regs[AY_BCOARSE] &= 0x0f;
-        old = PSG.PeriodB;
-        PSG.PeriodB = (PSG.Regs[AY_BFINE] + 256 * PSG.Regs[AY_BCOARSE]) * STEP3;
-        if (PSG.PeriodB == 0) PSG.PeriodB = STEP3;
-        PSG.CountB += PSG.PeriodB - old;
-        if (PSG.CountB <= 0) PSG.CountB = 1;
+        this->Regs[AY_BCOARSE] &= 0x0f;
+        old = this->PeriodB;
+        this->PeriodB = (this->Regs[AY_BFINE] + 256 * this->Regs[AY_BCOARSE]) * STEP3;
+        if (this->PeriodB == 0) this->PeriodB = STEP3;
+        this->CountB += this->PeriodB - old;
+        if (this->CountB <= 0) this->CountB = 1;
         break;
     case AY_CFINE:
     case AY_CCOARSE:
-        PSG.Regs[AY_CCOARSE] &= 0x0f;
-        old = PSG.PeriodC;
-        PSG.PeriodC = (PSG.Regs[AY_CFINE] + 256 * PSG.Regs[AY_CCOARSE]) * STEP3;
-        if (PSG.PeriodC == 0) PSG.PeriodC = STEP3;
-        PSG.CountC += PSG.PeriodC - old;
-        if (PSG.CountC <= 0) PSG.CountC = 1;
+        this->Regs[AY_CCOARSE] &= 0x0f;
+        old = this->PeriodC;
+        this->PeriodC = (this->Regs[AY_CFINE] + 256 * this->Regs[AY_CCOARSE]) * STEP3;
+        if (this->PeriodC == 0) this->PeriodC = STEP3;
+        this->CountC += this->PeriodC - old;
+        if (this->CountC <= 0) this->CountC = 1;
         break;
     case AY_NOISEPER:
-        PSG.Regs[AY_NOISEPER] &= 0x1f;
-        old = PSG.PeriodN;
-        PSG.PeriodN = PSG.Regs[AY_NOISEPER] * STEP3;
-        if (PSG.PeriodN == 0) PSG.PeriodN = STEP3;
-        PSG.CountN += PSG.PeriodN - old;
-        if (PSG.CountN <= 0) PSG.CountN = 1;
+        this->Regs[AY_NOISEPER] &= 0x1f;
+        old = this->PeriodN;
+        this->PeriodN = this->Regs[AY_NOISEPER] * STEP3;
+        if (this->PeriodN == 0) this->PeriodN = STEP3;
+        this->CountN += this->PeriodN - old;
+        if (this->CountN <= 0) this->CountN = 1;
         break;
     case AY_ENABLE:
-        PSG.lastEnable = PSG.Regs[AY_ENABLE];
+        this->lastEnable = this->Regs[AY_ENABLE];
         break;
     case AY_AVOL:
-        PSG.Regs[AY_AVOL] &= 0x1f;
-        PSG.EnvelopeA = PSG.Regs[AY_AVOL] & 0x10;
-        PSG.VolA = PSG.EnvelopeA ? PSG.VolE : PSG.VolTable[PSG.Regs[AY_AVOL] ? PSG.Regs[AY_AVOL] * 2 + 1 : 0];
+        this->Regs[AY_AVOL] &= 0x1f;
+        this->EnvelopeA = this->Regs[AY_AVOL] & 0x10;
+        this->VolA = this->EnvelopeA ? this->VolE : this->VolTable[this->Regs[AY_AVOL] ? this->Regs[AY_AVOL] * 2 + 1 : 0];
         break;
     case AY_BVOL:
-        PSG.Regs[AY_BVOL] &= 0x1f;
-        PSG.EnvelopeB = PSG.Regs[AY_BVOL] & 0x10;
-        PSG.VolB = PSG.EnvelopeB ? PSG.VolE : PSG.VolTable[PSG.Regs[AY_BVOL] ? PSG.Regs[AY_BVOL] * 2 + 1 : 0];
+        this->Regs[AY_BVOL] &= 0x1f;
+        this->EnvelopeB = this->Regs[AY_BVOL] & 0x10;
+        this->VolB = this->EnvelopeB ? this->VolE : this->VolTable[this->Regs[AY_BVOL] ? this->Regs[AY_BVOL] * 2 + 1 : 0];
         break;
     case AY_CVOL:
-        PSG.Regs[AY_CVOL] &= 0x1f;
-        PSG.EnvelopeC = PSG.Regs[AY_CVOL] & 0x10;
-        PSG.VolC = PSG.EnvelopeC ? PSG.VolE : PSG.VolTable[PSG.Regs[AY_CVOL] ? PSG.Regs[AY_CVOL] * 2 + 1 : 0];
+        this->Regs[AY_CVOL] &= 0x1f;
+        this->EnvelopeC = this->Regs[AY_CVOL] & 0x10;
+        this->VolC = this->EnvelopeC ? this->VolE : this->VolTable[this->Regs[AY_CVOL] ? this->Regs[AY_CVOL] * 2 + 1 : 0];
         break;
     case AY_EFINE:
     case AY_ECOARSE:
-        old = PSG.PeriodE;
-        PSG.PeriodE = ((PSG.Regs[AY_EFINE] + 256 * PSG.Regs[AY_ECOARSE])) * STEP3;
-        //if (PSG.PeriodE == 0) PSG.PeriodE = STEP3 / 2;
-        if (PSG.PeriodE == 0) PSG.PeriodE = STEP3;
-        PSG.CountE += PSG.PeriodE - old;
-        if (PSG.CountE <= 0) PSG.CountE = 1;
+        old = this->PeriodE;
+        this->PeriodE = ((this->Regs[AY_EFINE] + 256 * this->Regs[AY_ECOARSE])) * STEP3;
+        //if (this->PeriodE == 0) this->PeriodE = STEP3 / 2;
+        if (this->PeriodE == 0) this->PeriodE = STEP3;
+        this->CountE += this->PeriodE - old;
+        if (this->CountE <= 0) this->CountE = 1;
         break;
     case AY_ESHAPE:
         /* envelope shapes:
@@ -168,26 +178,26 @@ void SoundAY_SetReg(int r, int v)
         has twice the steps, happening twice as fast. Since the end result is
         just a smoother curve, we always use the YM2149 behaviour.
         */
-        PSG.Regs[AY_ESHAPE] &= 0x0f;
-        PSG.Attack = (PSG.Regs[AY_ESHAPE] & 0x04) ? 0x1f : 0x00;
-        if ((PSG.Regs[AY_ESHAPE] & 0x08) == 0)
+        this->Regs[AY_ESHAPE] &= 0x0f;
+        this->Attack = (this->Regs[AY_ESHAPE] & 0x04) ? 0x1f : 0x00;
+        if ((this->Regs[AY_ESHAPE] & 0x08) == 0)
         {
             /* if Continue = 0, map the shape to the equivalent one which has Continue = 1 */
-            PSG.Hold = 1;
-            PSG.Alternate = PSG.Attack;
+            this->Hold = 1;
+            this->Alternate = this->Attack;
         }
         else
         {
-            PSG.Hold = PSG.Regs[AY_ESHAPE] & 0x01;
-            PSG.Alternate = PSG.Regs[AY_ESHAPE] & 0x02;
+            this->Hold = this->Regs[AY_ESHAPE] & 0x01;
+            this->Alternate = this->Regs[AY_ESHAPE] & 0x02;
         }
-        PSG.CountE = PSG.PeriodE;
-        PSG.CountEnv = 0x1f;
-        PSG.Holding = 0;
-        PSG.VolE = PSG.VolTable[PSG.CountEnv ^ PSG.Attack];
-        if (PSG.EnvelopeA) PSG.VolA = PSG.VolE;
-        if (PSG.EnvelopeB) PSG.VolB = PSG.VolE;
-        if (PSG.EnvelopeC) PSG.VolC = PSG.VolE;
+        this->CountE = this->PeriodE;
+        this->CountEnv = 0x1f;
+        this->Holding = 0;
+        this->VolE = this->VolTable[this->CountEnv ^ this->Attack];
+        if (this->EnvelopeA) this->VolA = this->VolE;
+        if (this->EnvelopeB) this->VolB = this->VolE;
+        if (this->EnvelopeC) this->VolC = this->VolE;
         break;
     case AY_PORTA:
         break;
@@ -196,13 +206,13 @@ void SoundAY_SetReg(int r, int v)
     }
 }
 
-void SoundAY_Callback(uint8_t* stream, int length)
+void CSoundAY::Callback(uint8_t* stream, int length)
 {
     int outn;
     uint8_t* buf1 = stream;
 
     /* hack to prevent us from hanging when starting filtered outputs */
-    if (!PSG.ready)
+    if (!this->ready)
     {
         memset(stream, 0, length * sizeof(*stream));
         return;
@@ -223,43 +233,43 @@ void SoundAY_Callback(uint8_t* stream, int length)
     /* Setting the output to 1 is necessary because a disabled channel is locked */
     /* into the ON state (see above); and it has no effect if the volume is 0. */
     /* If the volume is 0, increase the counter, but don't touch the output. */
-    if (PSG.Regs[AY_ENABLE] & 0x01)
+    if (this->Regs[AY_ENABLE] & 0x01)
     {
-        if (PSG.CountA <= STEP2) PSG.CountA += STEP2;
-        PSG.OutputA = 1;
+        if (this->CountA <= STEP2) this->CountA += STEP2;
+        this->OutputA = 1;
     }
-    else if (PSG.Regs[AY_AVOL] == 0)
+    else if (this->Regs[AY_AVOL] == 0)
     {
         /* note that I do count += length, NOT count = length + 1. You might think */
         /* it's the same since the volume is 0, but doing the latter could cause */
         /* interferencies when the program is rapidly modulating the volume. */
-        if (PSG.CountA <= STEP2) PSG.CountA += STEP2;
+        if (this->CountA <= STEP2) this->CountA += STEP2;
     }
-    if (PSG.Regs[AY_ENABLE] & 0x02)
+    if (this->Regs[AY_ENABLE] & 0x02)
     {
-        if (PSG.CountB <= STEP2) PSG.CountB += STEP2;
-        PSG.OutputB = 1;
+        if (this->CountB <= STEP2) this->CountB += STEP2;
+        this->OutputB = 1;
     }
-    else if (PSG.Regs[AY_BVOL] == 0)
+    else if (this->Regs[AY_BVOL] == 0)
     {
-        if (PSG.CountB <= STEP2) PSG.CountB += STEP2;
+        if (this->CountB <= STEP2) this->CountB += STEP2;
     }
-    if (PSG.Regs[AY_ENABLE] & 0x04)
+    if (this->Regs[AY_ENABLE] & 0x04)
     {
-        if (PSG.CountC <= STEP2) PSG.CountC += STEP2;
-        PSG.OutputC = 1;
+        if (this->CountC <= STEP2) this->CountC += STEP2;
+        this->OutputC = 1;
     }
-    else if (PSG.Regs[AY_CVOL] == 0)
+    else if (this->Regs[AY_CVOL] == 0)
     {
-        if (PSG.CountC <= STEP2) PSG.CountC += STEP2;
+        if (this->CountC <= STEP2) this->CountC += STEP2;
     }
 
     /* for the noise channel we must not touch OutputN - it's also not necessary */
     /* since we use outn. */
-    if ((PSG.Regs[AY_ENABLE] & 0x38) == 0x38)	/* all off */
-        if (PSG.CountN <= STEP2) PSG.CountN += STEP2;
+    if ((this->Regs[AY_ENABLE] & 0x38) == 0x38)	/* all off */
+        if (this->CountN <= STEP2) this->CountN += STEP2;
 
-    outn = (PSG.OutputN | PSG.Regs[AY_ENABLE]);
+    outn = (this->OutputN | this->Regs[AY_ENABLE]);
 
     /* buffering loop */
     while (length > 0)
@@ -276,13 +286,13 @@ void SoundAY_Callback(uint8_t* stream, int length)
         {
             int nextevent;
 
-            if (PSG.CountN < left) nextevent = PSG.CountN;
+            if (this->CountN < left) nextevent = this->CountN;
             else nextevent = left;
 
             if (outn & 0x08)
             {
-                if (PSG.OutputA) vola += PSG.CountA;
-                PSG.CountA -= nextevent;
+                if (this->OutputA) vola += this->CountA;
+                this->CountA -= nextevent;
                 /* PeriodA is the half period of the square wave. Here, in each */
                 /* loop I add PeriodA twice, so that at the end of the loop the */
                 /* square wave is in the same status (0 or 1) it was at the start. */
@@ -291,109 +301,109 @@ void SoundAY_Callback(uint8_t* stream, int length)
                 /* If we exit the loop in the middle, OutputA has to be inverted */
                 /* and vola incremented only if the exit status of the square */
                 /* wave is 1. */
-                while (PSG.CountA <= 0)
+                while (this->CountA <= 0)
                 {
-                    PSG.CountA += PSG.PeriodA;
-                    if (PSG.CountA > 0)
+                    this->CountA += this->PeriodA;
+                    if (this->CountA > 0)
                     {
-                        PSG.OutputA ^= 1;
-                        if (PSG.OutputA) vola += PSG.PeriodA;
+                        this->OutputA ^= 1;
+                        if (this->OutputA) vola += this->PeriodA;
                         break;
                     }
-                    PSG.CountA += PSG.PeriodA;
-                    vola += PSG.PeriodA;
+                    this->CountA += this->PeriodA;
+                    vola += this->PeriodA;
                 }
-                if (PSG.OutputA) vola -= PSG.CountA;
+                if (this->OutputA) vola -= this->CountA;
             }
             else
             {
-                PSG.CountA -= nextevent;
-                while (PSG.CountA <= 0)
+                this->CountA -= nextevent;
+                while (this->CountA <= 0)
                 {
-                    PSG.CountA += PSG.PeriodA;
-                    if (PSG.CountA > 0)
+                    this->CountA += this->PeriodA;
+                    if (this->CountA > 0)
                     {
-                        PSG.OutputA ^= 1;
+                        this->OutputA ^= 1;
                         break;
                     }
-                    PSG.CountA += PSG.PeriodA;
+                    this->CountA += this->PeriodA;
                 }
             }
 
             if (outn & 0x10)
             {
-                if (PSG.OutputB) volb += PSG.CountB;
-                PSG.CountB -= nextevent;
-                while (PSG.CountB <= 0)
+                if (this->OutputB) volb += this->CountB;
+                this->CountB -= nextevent;
+                while (this->CountB <= 0)
                 {
-                    PSG.CountB += PSG.PeriodB;
-                    if (PSG.CountB > 0)
+                    this->CountB += this->PeriodB;
+                    if (this->CountB > 0)
                     {
-                        PSG.OutputB ^= 1;
-                        if (PSG.OutputB) volb += PSG.PeriodB;
+                        this->OutputB ^= 1;
+                        if (this->OutputB) volb += this->PeriodB;
                         break;
                     }
-                    PSG.CountB += PSG.PeriodB;
-                    volb += PSG.PeriodB;
+                    this->CountB += this->PeriodB;
+                    volb += this->PeriodB;
                 }
-                if (PSG.OutputB) volb -= PSG.CountB;
+                if (this->OutputB) volb -= this->CountB;
             }
             else
             {
-                PSG.CountB -= nextevent;
-                while (PSG.CountB <= 0)
+                this->CountB -= nextevent;
+                while (this->CountB <= 0)
                 {
-                    PSG.CountB += PSG.PeriodB;
-                    if (PSG.CountB > 0)
+                    this->CountB += this->PeriodB;
+                    if (this->CountB > 0)
                     {
-                        PSG.OutputB ^= 1;
+                        this->OutputB ^= 1;
                         break;
                     }
-                    PSG.CountB += PSG.PeriodB;
+                    this->CountB += this->PeriodB;
                 }
             }
 
             if (outn & 0x20)
             {
-                if (PSG.OutputC) volc += PSG.CountC;
-                PSG.CountC -= nextevent;
-                while (PSG.CountC <= 0)
+                if (this->OutputC) volc += this->CountC;
+                this->CountC -= nextevent;
+                while (this->CountC <= 0)
                 {
-                    PSG.CountC += PSG.PeriodC;
-                    if (PSG.CountC > 0)
+                    this->CountC += this->PeriodC;
+                    if (this->CountC > 0)
                     {
-                        PSG.OutputC ^= 1;
-                        if (PSG.OutputC) volc += PSG.PeriodC;
+                        this->OutputC ^= 1;
+                        if (this->OutputC) volc += this->PeriodC;
                         break;
                     }
-                    PSG.CountC += PSG.PeriodC;
-                    volc += PSG.PeriodC;
+                    this->CountC += this->PeriodC;
+                    volc += this->PeriodC;
                 }
-                if (PSG.OutputC) volc -= PSG.CountC;
+                if (this->OutputC) volc -= this->CountC;
             }
             else
             {
-                PSG.CountC -= nextevent;
-                while (PSG.CountC <= 0)
+                this->CountC -= nextevent;
+                while (this->CountC <= 0)
                 {
-                    PSG.CountC += PSG.PeriodC;
-                    if (PSG.CountC > 0)
+                    this->CountC += this->PeriodC;
+                    if (this->CountC > 0)
                     {
-                        PSG.OutputC ^= 1;
+                        this->OutputC ^= 1;
                         break;
                     }
-                    PSG.CountC += PSG.PeriodC;
+                    this->CountC += this->PeriodC;
                 }
             }
 
-            PSG.CountN -= nextevent;
-            if (PSG.CountN <= 0)
+            this->CountN -= nextevent;
+            if (this->CountN <= 0)
             {
                 /* Is noise output going to change? */
-                if ((PSG.RNG + 1) & 2)	/* (bit0^bit1)? */
+                if ((this->RNG + 1) & 2)	/* (bit0^bit1)? */
                 {
-                    PSG.OutputN = ~PSG.OutputN;
-                    outn = (PSG.OutputN | PSG.Regs[AY_ENABLE]);
+                    this->OutputN = ~this->OutputN;
+                    outn = (this->OutputN | this->Regs[AY_ENABLE]);
                 }
 
                 /* The Random Number Generator of the 8910 is a 17-bit shift */
@@ -405,9 +415,9 @@ void SoundAY_Callback(uint8_t* stream, int length)
                 /* bit0, relying on the fact that after three shifts of the */
                 /* register, what now is bit3 will become bit0, and will */
                 /* invert, if necessary, bit14, which previously was bit17. */
-                if (PSG.RNG & 1) PSG.RNG ^= 0x24000; /* This version is called the "Galois configuration". */
-                PSG.RNG >>= 1;
-                PSG.CountN += PSG.PeriodN;
+                if (this->RNG & 1) this->RNG ^= 0x24000; /* This version is called the "Galois configuration". */
+                this->RNG >>= 1;
+                this->CountN += this->PeriodN;
             }
 
             left -= nextevent;
@@ -415,53 +425,53 @@ void SoundAY_Callback(uint8_t* stream, int length)
         while (left > 0);
 
         /* update envelope */
-        if (PSG.Holding == 0)
+        if (this->Holding == 0)
         {
-            PSG.CountE -= STEP;
-            if (PSG.CountE <= 0)
+            this->CountE -= STEP;
+            if (this->CountE <= 0)
             {
                 do
                 {
-                    PSG.CountEnv--;
-                    PSG.CountE += PSG.PeriodE;
+                    this->CountEnv--;
+                    this->CountE += this->PeriodE;
                 }
-                while (PSG.CountE <= 0);
+                while (this->CountE <= 0);
 
                 /* check envelope current position */
-                if (PSG.CountEnv < 0)
+                if (this->CountEnv < 0)
                 {
-                    if (PSG.Hold)
+                    if (this->Hold)
                     {
-                        if (PSG.Alternate)
-                            PSG.Attack ^= 0x1f;
-                        PSG.Holding = 1;
-                        PSG.CountEnv = 0;
+                        if (this->Alternate)
+                            this->Attack ^= 0x1f;
+                        this->Holding = 1;
+                        this->CountEnv = 0;
                     }
                     else
                     {
                         /* if CountEnv has looped an odd number of times (usually 1), */
                         /* invert the output. */
-                        if (PSG.Alternate && (PSG.CountEnv & 0x20))
-                            PSG.Attack ^= 0x1f;
+                        if (this->Alternate && (this->CountEnv & 0x20))
+                            this->Attack ^= 0x1f;
 
-                        PSG.CountEnv &= 0x1f;
+                        this->CountEnv &= 0x1f;
                     }
                 }
 
-                PSG.VolE = PSG.VolTable[PSG.CountEnv ^ PSG.Attack];
+                this->VolE = this->VolTable[this->CountEnv ^ this->Attack];
                 /* reload volume */
-                if (PSG.EnvelopeA) PSG.VolA = PSG.VolE;
-                if (PSG.EnvelopeB) PSG.VolB = PSG.VolE;
-                if (PSG.EnvelopeC) PSG.VolC = PSG.VolE;
+                if (this->EnvelopeA) this->VolA = this->VolE;
+                if (this->EnvelopeB) this->VolB = this->VolE;
+                if (this->EnvelopeC) this->VolC = this->VolE;
             }
         }
 
-        vol = (vola * PSG.VolA + volb * PSG.VolB + volc * PSG.VolC) / (3 * STEP);
+        vol = (vola * this->VolA + volb * this->VolB + volc * this->VolC) / (3 * STEP);
         if (--length & 1) *(buf1++) = (uint8_t)(vol >> 8);
     }
 }
 
-static void SoundAY_build_mixer_table()
+void CSoundAY::BuildMixerTable()
 {
     /* calculate the volume->voltage conversion table */
     /* The AY-3-8910 has 16 levels, in a logarithmic scale (3dB per STEP) */
@@ -470,18 +480,8 @@ static void SoundAY_build_mixer_table()
     double out = MAX_OUTPUT;
     for (int i = 31; i > 0; i--)
     {
-        PSG.VolTable[i] = (unsigned)(out + 0.5);	/* round to nearest */
+        VolTable[i] = (unsigned)(out + 0.5);	/* round to nearest */
         out /= 1.188502227;	/* = 10 ^ (1.5/20) = 1.5dB */
     }
-    PSG.VolTable[0] = 0;
-}
-
-void SoundAY_Init()
-{
-    memset(&PSG, 0, sizeof(AY8910));
-    PSG.RNG = 1;
-    PSG.PeriodA = PSG.PeriodB = PSG.PeriodC = PSG.PeriodN = PSG.PeriodE = STEP3;
-    PSG.OutputN = 0xff;
-    SoundAY_build_mixer_table();
-    PSG.ready = 1;
+    VolTable[0] = 0;
 }

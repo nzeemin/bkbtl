@@ -123,6 +123,7 @@ typedef void (CALLBACK* SOUNDGENCALLBACK)(unsigned short L, unsigned short R);
 typedef void (CALLBACK* TELETYPECALLBACK)(unsigned char value);
 
 class CFloppyController;
+class CSoundAY;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -131,6 +132,7 @@ class CMotherboard  // BK computer
 private:  // Devices
     CProcessor* m_pCPU;  // CPU device
     CFloppyController*  m_pFloppyCtl;  // FDD control
+    CSoundAY*   m_pSoundAY;
 private:  // Memory
     uint16_t    m_Configuration;  // See BK_COPT_Xxx flag constants
     uint8_t     m_MemoryMap;      // Memory map, every bit defines how 8KB mapped: 0 - RAM, 1 - ROM
@@ -181,6 +183,7 @@ public:  // Floppy
     void        DetachFloppyImage(int slot);
     bool        IsFloppyImageAttached(int slot);
     bool        IsFloppyReadOnly(int slot);
+    bool        IsFloppyEngineOn() const;    // Check if the floppy drive engine rotates the disks
 public:  // Callbacks
     void		SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate);
     void        SetTapeWriteCallback(TAPEWRITECALLBACK callback, int sampleRate);
