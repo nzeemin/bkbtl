@@ -72,38 +72,10 @@ void CProcessor::Init()
     RegisterMethodRef( 0000200, 0000207, &CProcessor::ExecuteRTS );  // RTS / RETURN
 
     RegisterMethodRef( 0000240, 0000240, &CProcessor::ExecuteNOP );
-    RegisterMethodRef( 0000241, 0000241, &CProcessor::ExecuteCLC );
-    RegisterMethodRef( 0000242, 0000242, &CProcessor::ExecuteCLV );
-    RegisterMethodRef( 0000243, 0000243, &CProcessor::ExecuteCLVC );
-    RegisterMethodRef( 0000244, 0000244, &CProcessor::ExecuteCLZ );
-    RegisterMethodRef( 0000245, 0000245, &CProcessor::ExecuteCLZC );
-    RegisterMethodRef( 0000246, 0000246, &CProcessor::ExecuteCLZV );
-    RegisterMethodRef( 0000247, 0000247, &CProcessor::ExecuteCLZVC );
-    RegisterMethodRef( 0000250, 0000250, &CProcessor::ExecuteCLN );
-    RegisterMethodRef( 0000251, 0000251, &CProcessor::ExecuteCLNC );
-    RegisterMethodRef( 0000252, 0000252, &CProcessor::ExecuteCLNV );
-    RegisterMethodRef( 0000253, 0000253, &CProcessor::ExecuteCLNVC );
-    RegisterMethodRef( 0000254, 0000254, &CProcessor::ExecuteCLNZ );
-    RegisterMethodRef( 0000255, 0000255, &CProcessor::ExecuteCLNZC );
-    RegisterMethodRef( 0000256, 0000256, &CProcessor::ExecuteCLNZV );
-    RegisterMethodRef( 0000257, 0000257, &CProcessor::ExecuteCCC );
+    RegisterMethodRef( 0000241, 0000257, &CProcessor::ExecuteCCC );
 
     RegisterMethodRef( 0000260, 0000260, &CProcessor::ExecuteNOP );
-    RegisterMethodRef( 0000261, 0000261, &CProcessor::ExecuteSEC );
-    RegisterMethodRef( 0000262, 0000262, &CProcessor::ExecuteSEV );
-    RegisterMethodRef( 0000263, 0000263, &CProcessor::ExecuteSEVC );
-    RegisterMethodRef( 0000264, 0000264, &CProcessor::ExecuteSEZ );
-    RegisterMethodRef( 0000265, 0000265, &CProcessor::ExecuteSEZC );
-    RegisterMethodRef( 0000266, 0000266, &CProcessor::ExecuteSEZV );
-    RegisterMethodRef( 0000267, 0000267, &CProcessor::ExecuteSEZVC );
-    RegisterMethodRef( 0000270, 0000270, &CProcessor::ExecuteSEN );
-    RegisterMethodRef( 0000271, 0000271, &CProcessor::ExecuteSENC );
-    RegisterMethodRef( 0000272, 0000272, &CProcessor::ExecuteSENV );
-    RegisterMethodRef( 0000273, 0000273, &CProcessor::ExecuteSENVC );
-    RegisterMethodRef( 0000274, 0000274, &CProcessor::ExecuteSENZ );
-    RegisterMethodRef( 0000275, 0000275, &CProcessor::ExecuteSENZC );
-    RegisterMethodRef( 0000276, 0000276, &CProcessor::ExecuteSENZV );
-    RegisterMethodRef( 0000277, 0000277, &CProcessor::ExecuteSCC );
+    RegisterMethodRef( 0000261, 0000277, &CProcessor::ExecuteSCC );
 
     RegisterMethodRef( 0000300, 0000377, &CProcessor::ExecuteSWAB );
 
@@ -828,188 +800,14 @@ void CProcessor::ExecuteNOP ()  // NOP - Нет операции
     m_internalTick = TIMING_NOP;
 }
 
-void CProcessor::ExecuteCLC ()  // CLC - Очистка C
-{
-    SetC(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLV ()
-{
-    SetV(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLVC ()
-{
-    SetV(false);
-    SetC(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLZ ()
-{
-    SetZ(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLZC ()
-{
-    SetZ(false);
-    SetC(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLZV ()
-{
-    SetZ(false);
-    SetV(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLZVC ()
-{
-    SetZ(false);
-    SetV(false);
-    SetC(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLN ()
-{
-    SetN(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLNC ()
-{
-    SetN(false);
-    SetC(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLNV ()
-{
-    SetN(false);
-    SetV(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLNVC ()
-{
-    SetN(false);
-    SetV(false);
-    SetZ(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLNZ ()
-{
-    SetN(false);
-    SetZ(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLNZC ()
-{
-    SetN(false);
-    SetZ(false);
-    SetC(false);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteCLNZV ()
-{
-    SetN(false);
-    SetZ(false);
-    SetV(false);
-    m_internalTick = TIMING_NOP;
-}
 void CProcessor::ExecuteCCC ()
 {
-    SetC(false);
-    SetV(false);
-    SetZ(false);
-    SetN(false);
+    SetPSW(GetPSW() &  ~((uint16_t)(m_instruction & 0xff) & 017));
     m_internalTick = TIMING_REGREG;
-}
-void CProcessor::ExecuteSEC ()
-{
-    SetC(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSEV ()
-{
-    SetV(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSEVC ()
-{
-    SetV(true);
-    SetC(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSEZ ()
-{
-    SetZ(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSEZC ()
-{
-    SetZ(true);
-    SetC(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSEZV ()
-{
-    SetZ(true);
-    SetV(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSEZVC ()
-{
-    SetZ(true);
-    SetV(true);
-    SetC(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSEN ()
-{
-    SetN(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSENC ()
-{
-    SetN(true);
-    SetC(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSENV ()
-{
-    SetN(true);
-    SetV(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSENVC ()
-{
-    SetN(true);
-    SetV(true);
-    SetC(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSENZ ()
-{
-    SetN(true);
-    SetZ(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSENZC ()
-{
-    SetN(true);
-    SetZ(true);
-    SetC(true);
-    m_internalTick = TIMING_NOP;
-}
-void CProcessor::ExecuteSENZV ()
-{
-    SetN(true);
-    SetZ(true);
-    SetV(true);
-    m_internalTick = TIMING_NOP;
 }
 void CProcessor::ExecuteSCC ()
 {
-    SetC(true);
-    SetV(true);
-    SetZ(true);
-    SetN(true);
+    SetPSW(GetPSW() | ((uint16_t)(m_instruction & 0xff) & 017));
     m_internalTick = TIMING_REGREG;
 }
 

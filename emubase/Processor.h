@@ -176,35 +176,7 @@ protected:  // Implementation - instruction execution
     void        ExecuteRUN ();
     void        ExecuteRTT ();
     void        ExecuteNOP ();
-    void        ExecuteCLC ();
-    void        ExecuteCLV ();
-    void        ExecuteCLVC ();
-    void        ExecuteCLZ ();
-    void        ExecuteCLZC ();
-    void        ExecuteCLZV ();
-    void        ExecuteCLZVC ();
-    void        ExecuteCLN ();
-    void        ExecuteCLNC ();
-    void        ExecuteCLNV ();
-    void        ExecuteCLNVC ();
-    void        ExecuteCLNZ ();
-    void        ExecuteCLNZC ();
-    void        ExecuteCLNZV ();
     void        ExecuteCCC ();
-    void        ExecuteSEC ();
-    void        ExecuteSEV ();
-    void        ExecuteSEVC ();
-    void        ExecuteSEZ ();
-    void        ExecuteSEZC ();
-    void        ExecuteSEZV ();
-    void        ExecuteSEZVC ();
-    void        ExecuteSEN ();
-    void        ExecuteSENC ();
-    void        ExecuteSENV ();
-    void        ExecuteSENVC ();
-    void        ExecuteSENZ ();
-    void        ExecuteSENZC ();
-    void        ExecuteSENZV ();
     void        ExecuteSCC ();
 
     // One fiels
