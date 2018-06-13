@@ -128,9 +128,9 @@ void DebugView_Create(HWND hwndParent, int x, int y, int width, int height)
         buttons[i].iString = -1;
     }
     buttons[0].idCommand = ID_DEBUG_STEPINTO;
-    buttons[0].iBitmap = 15;
+    buttons[0].iBitmap = ToolbarImageStepInto;
     buttons[1].idCommand = ID_DEBUG_STEPOVER;
-    buttons[1].iBitmap = 16;
+    buttons[1].iBitmap = ToolbarImageStepOver;
 
     SendMessage(m_hwndDebugToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons);
 }

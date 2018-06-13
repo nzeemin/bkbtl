@@ -64,9 +64,8 @@ void CProcessor::Init()
     RegisterMethodRef( 0000005, 0000005, &CProcessor::ExecuteRESET );
     RegisterMethodRef( 0000006, 0000006, &CProcessor::ExecuteRTT );
 
-    RegisterMethodRef( 0000010, 0000013, &CProcessor::ExecuteRUN );
+    RegisterMethodRef( 0000010, 0000013, &CProcessor::ExecuteRUN );  // START
     RegisterMethodRef( 0000014, 0000017, &CProcessor::ExecuteSTEP );
-    //RegisterMethodRef( 0000030, 0000030, &CProcessor::Execute000030 );
 
     RegisterMethodRef( 0000100, 0000177, &CProcessor::ExecuteJMP );
     RegisterMethodRef( 0000200, 0000207, &CProcessor::ExecuteRTS );  // RTS / RETURN
@@ -113,6 +112,7 @@ void CProcessor::Init()
     RegisterMethodRef( 0060000, 0067777, &CProcessor::ExecuteADD );
 
     RegisterMethodRef( 0074000, 0074777, &CProcessor::ExecuteXOR );
+
     RegisterMethodRef( 0077000, 0077777, &CProcessor::ExecuteSOB );
 
     RegisterMethodRef( 0100000, 0100377, &CProcessor::ExecuteBPL );
@@ -121,8 +121,8 @@ void CProcessor::Init()
     RegisterMethodRef( 0101400, 0101777, &CProcessor::ExecuteBLOS );
     RegisterMethodRef( 0102000, 0102377, &CProcessor::ExecuteBVC );
     RegisterMethodRef( 0102400, 0102777, &CProcessor::ExecuteBVS );
-    RegisterMethodRef( 0103000, 0103377, &CProcessor::ExecuteBHIS );  // BCC
-    RegisterMethodRef( 0103400, 0103777, &CProcessor::ExecuteBLO );   // BCS
+    RegisterMethodRef( 0103000, 0103377, &CProcessor::ExecuteBHIS );  // BCC, BHIS
+    RegisterMethodRef( 0103400, 0103777, &CProcessor::ExecuteBLO );   // BCS, BLO
 
     RegisterMethodRef( 0104000, 0104377, &CProcessor::ExecuteEMT );
     RegisterMethodRef( 0104400, 0104777, &CProcessor::ExecuteTRAP );
@@ -141,6 +141,7 @@ void CProcessor::Init()
     RegisterMethodRef( 0106300, 0106377, &CProcessor::ExecuteASL );  // ASLB
 
     RegisterMethodRef( 0106400, 0106477, &CProcessor::ExecuteMTPS );
+
     RegisterMethodRef( 0106700, 0106777, &CProcessor::ExecuteMFPS );
 
     RegisterMethodRef( 0110000, 0117777, &CProcessor::ExecuteMOVB );  // MOVB

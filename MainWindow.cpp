@@ -220,7 +220,7 @@ BOOL MainWindow_InitToolbar()
     buttons[8].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
     buttons[8].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Color"));
     buttons[9].idCommand = ID_EMULATOR_SOUND;
-    buttons[9].iBitmap = 8;
+    buttons[9].iBitmap = ToolbarImageSoundOff;
     buttons[9].fsStyle = BTNS_BUTTON | BTNS_SHOWTEXT;
     buttons[9].iString = (int)SendMessage(m_hwndToolbar, TB_ADDSTRING, (WPARAM)0, (LPARAM)_T("Sound"));
     buttons[10].idCommand = ID_FILE_SCREENSHOT;
@@ -246,12 +246,13 @@ BOOL MainWindow_InitStatusbar()
     if (! m_hwndStatusbar)
         return FALSE;
 
-    int statusbarParts[4];
+    int statusbarParts[5];
     statusbarParts[0] = 300;
-    statusbarParts[1] = 45;
-    statusbarParts[2] = 350;
-    statusbarParts[3] = -1;
-    SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts) / sizeof(int), (LPARAM) statusbarParts);
+    statusbarParts[1] = statusbarParts[0] + 50;  // Motor
+    statusbarParts[2] = statusbarParts[1] + 50;  // FPS
+    statusbarParts[3] = statusbarParts[2] + 105; // Uptime
+    statusbarParts[4] = -1;
+    SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts) / sizeof(int), (LPARAM)statusbarParts);
 
     return TRUE;
 }
@@ -812,7 +813,7 @@ void MainWindow_UpdateMenu()
     case 1:      speedcmd = ID_EMULATOR_REALSPEED; break;
     case 2:      speedcmd = ID_EMULATOR_SPEED200;  break;
     }
-    CheckMenuRadioItem(hMenu, ID_EMULATOR_SPEED50, ID_EMULATOR_SPEED200, speedcmd, MF_BYCOMMAND);
+    CheckMenuRadioItem(hMenu, ID_EMULATOR_SPEED25, ID_EMULATOR_SPEED200, speedcmd, MF_BYCOMMAND);
 
     UINT joystickcmd = 0;
     switch (Settings_GetJoystick())

@@ -72,13 +72,17 @@ enum ToolbarButtonImages
     ToolbarImageColorScreen = 10,
     ToolbarImageBWScreen = 11,
     ToolbarImageScreenshot = 12,
+    ToolbarImageStepInto = 15,
+    ToolbarImageStepOver = 16,
+    ToolbarImageWordByte = 18,
+    ToolbarImageGotoAddress = 19,
 };
 
 enum StatusbarParts
 {
     StatusbarPartMessage = 0,
-    StatusbarPartFPS = 1,
-    StatusbarPartFloppyEngine = 2,
+    StatusbarPartFloppyEngine = 1,
+    StatusbarPartFPS = 2,
     StatusbarPartUptime = 3,
 };
 

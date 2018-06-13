@@ -119,6 +119,7 @@ BEGIN
         MENUITEM "Covox",                       ID_EMULATOR_COVOX
         MENUITEM "AY",                          ID_EMULATOR_SOUNDAY
         MENUITEM SEPARATOR
+        MENUITEM "Speed 25%",                   ID_EMULATOR_SPEED25
         MENUITEM "Speed 50%",                   ID_EMULATOR_SPEED50
         MENUITEM "Speed 100%",                  ID_EMULATOR_REALSPEED
         MENUITEM "Speed 200%",                  ID_EMULATOR_SPEED200
