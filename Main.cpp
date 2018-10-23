@@ -17,6 +17,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include <mmintrin.h>
 #include <vfw.h>
 #include <commctrl.h>
+#include <shellapi.h>
 
 #include "Main.h"
 #include "Emulator.h"
@@ -211,7 +212,45 @@ void DoneInstance()
 
 void ParseCommandLine()
 {
-    //TODO
+    LPTSTR commandline = ::GetCommandLine();
+
+    int argnum = 0;
+    LPTSTR* args = CommandLineToArgvW(commandline, &argnum);
+
+    if (argnum <= 1)
+        return;
+
+    for (int curargn = 1; curargn < argnum; curargn++)
+    {
+        LPTSTR arg = args[curargn];
+
+        if (_tcscmp(arg, _T("/autostart")) == 0 || _tcscmp(arg, _T("/autostarton")) == 0)
+        {
+            Settings_SetAutostart(TRUE);
+        }
+        else if (_tcscmp(arg, _T("/autostartoff")) == 0)
+        {
+            Settings_SetAutostart(FALSE);
+        }
+        else if (_tcscmp(arg, _T("/debug")) == 0 || _tcscmp(arg, _T("/debugon")) == 0 || _tcscmp(arg, _T("/debugger")) == 0)
+        {
+            Settings_SetDebug(TRUE);
+        }
+        else if (_tcscmp(arg, _T("/debugoff")) == 0)
+        {
+            Settings_SetDebug(FALSE);
+        }
+        else if (_tcscmp(arg, _T("/sound")) == 0 || _tcscmp(arg, _T("/soundon")) == 0)
+        {
+            Settings_SetSound(TRUE);
+        }
+        else if (_tcscmp(arg, _T("/soundoff")) == 0)
+        {
+            Settings_SetSound(FALSE);
+        }
+    }
+
+    ::LocalFree(args);
 }
 
 
