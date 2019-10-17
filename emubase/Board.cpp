@@ -168,7 +168,7 @@ bool CMotherboard::IsFloppyReadOnly(int slot)
 
 bool CMotherboard::IsFloppyEngineOn() const
 {
-    return m_pFloppyCtl->IsEngineOn();
+    return (m_pFloppyCtl != NULL && m_pFloppyCtl->IsEngineOn());
 }
 
 bool CMotherboard::AttachFloppyImage(int slot, LPCTSTR sFileName)

@@ -228,7 +228,7 @@ void ParseCommandLine()
         {
             Settings_SetAutostart(TRUE);
         }
-        else if (_tcscmp(arg, _T("/autostartoff")) == 0)
+        else if (_tcscmp(arg, _T("/autostartoff")) == 0 || _tcscmp(arg, _T("/noautostart")) == 0)
         {
             Settings_SetAutostart(FALSE);
         }
@@ -236,7 +236,7 @@ void ParseCommandLine()
         {
             Settings_SetDebug(TRUE);
         }
-        else if (_tcscmp(arg, _T("/debugoff")) == 0)
+        else if (_tcscmp(arg, _T("/debugoff")) == 0 || _tcscmp(arg, _T("/nodebug")) == 0)
         {
             Settings_SetDebug(FALSE);
         }
@@ -244,7 +244,7 @@ void ParseCommandLine()
         {
             Settings_SetSound(TRUE);
         }
-        else if (_tcscmp(arg, _T("/soundoff")) == 0)
+        else if (_tcscmp(arg, _T("/soundoff")) == 0 || _tcscmp(arg, _T("/nosound")) == 0)
         {
             Settings_SetSound(FALSE);
         }
