@@ -1,6 +1,7 @@
 # bkbtl - BKBTL emulator, Win32 version
 
 [![Build status](https://ci.appveyor.com/api/projects/status/a1p2sovj2ew7iime?svg=true)](https://ci.appveyor.com/project/nzeemin/bkbtl)
+[![CodeFactor](https://www.codefactor.io/repository/github/nzeemin/bkbtl/badge)](https://www.codefactor.io/repository/github/nzeemin/bkbtl)
 
 **BKBTL** — **BK Back to Life!** — is [BK0010/BK0011](http://en.wikipedia.org/wiki/Elektronika_BK) emulator.
 The emulation project started on Nov. 14, 2009 and based on [UKNCBTL](https://github.com/nzeemin/ukncbtl) code.
