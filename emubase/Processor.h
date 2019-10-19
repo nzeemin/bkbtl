@@ -22,7 +22,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 class CProcessor  // KM1801VM1 processor
 {
-
 public:  // Constructor / initialization
     CProcessor(CMotherboard* pBoard);
     void        AssertHALT();
@@ -130,18 +129,18 @@ protected:  // Implementation
     void        FetchInstruction();      // Read next instruction
     void        TranslateInstruction();  // Execute the instruction
 protected:  // Implementation - instruction processing
-    uint16_t        CalculateOperAddr (int meth, int reg);
-    uint16_t        CalculateOperAddrSrc (int meth, int reg);
+    uint16_t    CalculateOperAddr (int meth, int reg);
+    uint16_t    CalculateOperAddrSrc (int meth, int reg);
     uint8_t     GetByteSrc();
     uint8_t     GetByteDest();
     void        SetByteDest(uint8_t);
-    uint16_t        GetWordSrc();
-    uint16_t        GetWordDest();
+    uint16_t    GetWordSrc();
+    uint16_t    GetWordDest();
     void        SetWordDest(uint16_t);
-    uint16_t        GetDstWordArgAsBranch();
+    uint16_t    GetDstWordArgAsBranch();
 protected:  // Implementation - memory access
-    uint16_t        GetWordExec(uint16_t address) { return m_pBoard->GetWordExec(address, IsHaltMode()); }
-    uint16_t        GetWord(uint16_t address) { return m_pBoard->GetWord(address, IsHaltMode()); }
+    uint16_t    GetWordExec(uint16_t address) { return m_pBoard->GetWordExec(address, IsHaltMode()); }
+    uint16_t    GetWord(uint16_t address) { return m_pBoard->GetWord(address, IsHaltMode()); }
     void        SetWord(uint16_t address, uint16_t word) { m_pBoard->SetWord(address, IsHaltMode(), word); }
     uint8_t     GetByte(uint16_t address) { return m_pBoard->GetByte(address, IsHaltMode()); }
     void        SetByte(uint16_t address, uint8_t byte) { m_pBoard->SetByte(address, IsHaltMode(), byte); }
@@ -227,10 +226,6 @@ protected:  // Implementation - instruction execution
     void        ExecuteJSR ();
     void        ExecuteXOR ();
     void        ExecuteSOB ();
-    //void		ExecuteMUL ();
-    //void		ExecuteDIV ();
-    //void		ExecuteASH ();
-    //void		ExecuteASHC ();
 
     // Four fields
     void        ExecuteMOV ();
@@ -243,7 +238,6 @@ protected:  // Implementation - instruction execution
 
     void        ExecuteADD ();
     void        ExecuteSUB ();
-
 };
 
 // PSW bits control - implementation

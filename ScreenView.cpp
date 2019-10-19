@@ -252,6 +252,9 @@ void ScreenView_PrepareScreen()
 
 void ScreenView_PutKeyEventToQueue(WORD keyevent)
 {
+//#if !defined(PRODUCT)
+//    DebugPrintFormat(_T("Scan: 0x%0x\r\n"), keyevent & 127);
+//#endif
     if (m_ScreenKeyQueueCount == KEYEVENT_QUEUE_SIZE) return;  // Full queue
 
     m_ScreenKeyQueue[m_ScreenKeyQueueTop] = keyevent;

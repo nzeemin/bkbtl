@@ -407,10 +407,8 @@ void CFloppyController::Periodic()
                     m_status |= FLOPPY_STATUS_CHECKSUMOK;
                 }
             }
-
         }
     }
-
 }
 
 // Read track data from file and fill m_data
