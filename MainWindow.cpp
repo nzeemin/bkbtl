@@ -275,6 +275,7 @@ void MainWindow_RestoreSettings()
 
     // Restore ScreenViewMode
     int scrmode = Settings_GetScreenViewMode();
+    if (scrmode <= 0 || scrmode > 7) scrmode = 0;
     ScreenView_SetScreenMode(scrmode);
 }
 
@@ -332,7 +333,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
         break;
     case WM_COMMAND:
         {
-            int wmId    = LOWORD(wParam);
+            int wmId = LOWORD(wParam);
             //int wmEvent = HIWORD(wParam);
             bool okProcessed = MainWindow_DoCommand(wmId);
             if (!okProcessed)

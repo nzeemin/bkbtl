@@ -119,7 +119,7 @@ void DebugView_Create(HWND hwndParent, int x, int y, int width, int height)
     SendMessage(m_hwndDebugToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0);
     SendMessage(m_hwndDebugToolbar, TB_SETBUTTONSIZE, 0, (LPARAM) MAKELONG (26, 26));
 
-    TBBUTTON buttons[2];
+    TBBUTTON buttons[4];
     ZeroMemory(buttons, sizeof(buttons));
     for (int i = 0; i < sizeof(buttons) / sizeof(TBBUTTON); i++)
     {
@@ -127,10 +127,13 @@ void DebugView_Create(HWND hwndParent, int x, int y, int width, int height)
         buttons[i].fsStyle = BTNS_BUTTON;
         buttons[i].iString = -1;
     }
-    buttons[0].idCommand = ID_DEBUG_STEPINTO;
-    buttons[0].iBitmap = ToolbarImageStepInto;
-    buttons[1].idCommand = ID_DEBUG_STEPOVER;
-    buttons[1].iBitmap = ToolbarImageStepOver;
+    buttons[0].idCommand = ID_DEBUG_SPRITES;
+    buttons[0].iBitmap = ToolbarImageSpriteViewer;
+    buttons[1].fsStyle = BTNS_SEP;
+    buttons[2].idCommand = ID_DEBUG_STEPINTO;
+    buttons[2].iBitmap = ToolbarImageStepInto;
+    buttons[3].idCommand = ID_DEBUG_STEPOVER;
+    buttons[3].iBitmap = ToolbarImageStepOver;
 
     SendMessage(m_hwndDebugToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons);
 }
@@ -354,7 +357,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     WORD previous = oldValue;
     BOOL okExec = (reg == 7);
 
-    // Читаем из памяти процессора в буфер
+    // Reading from CPU memory into the buffer
     WORD memory[16];
     int addrtype[16];
     for (int idx = 0; idx < 16; idx++)
@@ -364,19 +367,19 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     }
 
     WORD address = current - 14;
-    for (int index = 0; index < 14; index++)    // Рисуем строки
+    for (int index = 0; index < 14; index++)    // Draw strings
     {
-        // Адрес
+        // Address
         SetTextColor(hdc, colorText);
         DrawOctalValue(hdc, x + 4 * cxChar, y, address);
 
-        // Значение по адресу
+        // Value at the address
         WORD value = memory[index];
         WORD wChanged = Emulator_GetChangeRamStatus(address);
         SetTextColor(hdc, (wChanged != 0) ? COLOR_RED : colorText);
         DrawOctalValue(hdc, x + 12 * cxChar, y, value);
 
-        // Текущая позиция
+        // Current position
         if (address == current)
         {
             SetTextColor(hdc, colorText);

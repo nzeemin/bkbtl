@@ -76,6 +76,7 @@ enum ToolbarButtonImages
     ToolbarImageStepOver = 16,
     ToolbarImageWordByte = 18,
     ToolbarImageGotoAddress = 19,
+    ToolbarImageSpriteViewer = 20,
 };
 
 enum StatusbarParts

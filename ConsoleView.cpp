@@ -290,9 +290,9 @@ BOOL SaveMemoryDump(CProcessor* /*pProc*/)
     ::WriteFile(file, buf, 65536, &dwBytesWritten, NULL);
     ::CloseHandle(file);
     if (dwBytesWritten != 65536)
-        return false;
+        return FALSE;
 
-    return true;
+    return TRUE;
 }
 
 // Print memory dump
@@ -614,7 +614,7 @@ void DoConsoleCommand()
             WORD address = pProc->GetReg(r);
             PrintMemoryDump(pProc, address, 8);
         }
-        else if (command[1] == _T('o'))
+        else if (command[1] == _T('o'))  // "mo" - go to Monitor
         {
             ConsoleView_GotoMonitor();
         }
