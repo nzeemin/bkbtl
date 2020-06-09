@@ -709,7 +709,7 @@ void DisasmView_RegisterHint(const CProcessor * pProc,
 
 void DisasmView_RegisterHintPC(const CProcessor * pProc,
         LPTSTR hint1, LPTSTR /*hint2*/,
-        int regmod, bool /*byteword*/, WORD value, WORD /*indexval*/)
+        int regmod, bool byteword, WORD curaddr, WORD value)
 {
     int addrtype = 0;
     WORD srcval2 = 0;
@@ -721,7 +721,20 @@ void DisasmView_RegisterHintPC(const CProcessor * pProc,
         srcval2 = g_pBoard->GetWordView(value, pProc->IsHaltMode(), false, &addrtype);
         _sntprintf(hint1, 20, _T("(%06o)=%06o"), value, srcval2);  // "(NNNNNN)=XXXXXX"
     }
-    //TODO: else if (regmod == 6)
+    else if (regmod == 6)
+    {
+        WORD addr2 = curaddr + value;
+        srcval2 = g_pBoard->GetWordView(addr2, pProc->IsHaltMode(), false, &addrtype);
+        if (byteword)
+        {
+            srcval2 = (addr2 & 1) ? (srcval2 >> 8) : (srcval2 & 0xff);
+            _sntprintf(hint1, 20, _T("(%06o)=%03o"), addr2, srcval2);  // "(NNNNNN)=XXX"
+        }
+        else
+        {
+            _sntprintf(hint1, 20, _T("(%06o)=%06o"), addr2, srcval2);  // "(NNNNNN)=XXXXXX"
+        }
+    }
     //TODO: else if (regmod == 7)
 }
 
@@ -733,21 +746,19 @@ void DisasmView_InstructionHint(const WORD* memory, const CProcessor * pProc,
     TCHAR srchint2[20] = { 0 }, dsthint2[20] = { 0 };
     bool byteword = ((*memory) & 0100000) != 0;  // Byte mode (true) or Word mode (false)
     const WORD* curmemory = memory + 1;
+    WORD curaddr = pProc->GetPC() + 2;
     WORD indexval = 0;
 
     if (srcreg >= 0)
     {
         if (srcreg == 7)
         {
-            WORD value = *(curmemory++);
-            if (srcmod == 6 || srcmod == 7)
-                indexval = *(curmemory++);
-            DisasmView_RegisterHintPC(pProc, srchint1, srchint2, srcmod, byteword, value, indexval);
+            WORD value = *(curmemory++);  curaddr += 2;
+            DisasmView_RegisterHintPC(pProc, srchint1, srchint2, srcmod, byteword, curaddr, value);
         }
         else
         {
-            if (srcmod == 6 || srcmod == 7)
-                indexval = *(curmemory++);
+            if (srcmod == 6 || srcmod == 7) { indexval = *(curmemory++);  curaddr += 2; }
             DisasmView_RegisterHint(pProc, srchint1, srchint2, srcreg, srcmod, byteword, indexval);
         }
     }
@@ -755,15 +766,12 @@ void DisasmView_InstructionHint(const WORD* memory, const CProcessor * pProc,
     {
         if (dstreg == 7)
         {
-            WORD value = *(curmemory++);
-            if (dstmod == 6 || dstmod == 7)
-                indexval = *(curmemory++);
-            DisasmView_RegisterHintPC(pProc, dsthint1, dsthint2, dstmod, byteword, value, indexval);
+            WORD value = *(curmemory++);  curaddr += 2;
+            DisasmView_RegisterHintPC(pProc, dsthint1, dsthint2, dstmod, byteword, curaddr, value);
         }
         else
         {
-            if (dstmod == 6 || dstmod == 7)
-                indexval = *(curmemory++);
+            if (dstmod == 6 || dstmod == 7) { indexval = *(curmemory++);  curaddr += 2; }
             DisasmView_RegisterHint(pProc, dsthint1, dsthint2, dstreg, dstmod, byteword, indexval);
         }
     }
@@ -783,7 +791,7 @@ void DisasmView_InstructionHint(const WORD* memory, const CProcessor * pProc,
     if (*srchint2 != 0 && *dsthint2 != 0)
     {
         if (_tcscmp(srchint2, dsthint2) == 0)
-            _tcscpy_s(buffer, 42, srchint2);
+            _tcscpy_s(buffer2, 42, srchint2);
         else
             _sntprintf(buffer2, 42, _T("%s, %s"), srchint2, dsthint2);
     }
@@ -860,6 +868,8 @@ int DisasmView_GetInstructionHint(const WORD* memory, const CProcessor * pProc,
         _sntprintf(buffer, 32, _T("C=%c, V=%c, Z=%c, N=%c"),
                 (psw & PSW_C) ? '1' : '0', (psw & PSW_V) ? '1' : '0', (psw & PSW_Z) ? '1' : '0', (psw & PSW_N) ? '1' : '0');
     }
+
+    //TODO: MARK
 
     int result = 0;
     if (*buffer != 0)
