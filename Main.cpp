@@ -217,9 +217,6 @@ void ParseCommandLine()
     int argnum = 0;
     LPTSTR* args = CommandLineToArgvW(commandline, &argnum);
 
-    if (argnum <= 1)
-        return;
-
     for (int curargn = 1; curargn < argnum; curargn++)
     {
         LPTSTR arg = args[curargn];
@@ -248,6 +245,7 @@ void ParseCommandLine()
         {
             Settings_SetSound(FALSE);
         }
+        //TODO: "/loadstate:filepath"
     }
 
     ::LocalFree(args);

@@ -205,11 +205,11 @@ void DisasmView_UpdateWindowText()
 
 void DisasmView_ResizeSubtitleArray(int newSize)
 {
-    DisasmSubtitleItem* pNewMemory = (DisasmSubtitleItem*) ::LocalAlloc(LPTR, sizeof(DisasmSubtitleItem) * newSize);
+    DisasmSubtitleItem* pNewMemory = (DisasmSubtitleItem*) ::calloc(newSize, sizeof(DisasmSubtitleItem));
     if (m_pDisasmSubtitleItems != NULL)
     {
         ::memcpy(pNewMemory, m_pDisasmSubtitleItems, sizeof(DisasmSubtitleItem) * m_nDisasmSubtitleMax);
-        ::LocalFree(m_pDisasmSubtitleItems);
+        ::free(m_pDisasmSubtitleItems);
     }
 
     m_pDisasmSubtitleItems = pNewMemory;
@@ -234,8 +234,8 @@ void DisasmView_DoSubtitles()
 {
     if (m_okDisasmSubtitles)  // Reset subtitles
     {
-        ::LocalFree(m_strDisasmSubtitles);  m_strDisasmSubtitles = NULL;
-        ::LocalFree(m_pDisasmSubtitleItems);  m_pDisasmSubtitleItems = NULL;
+        ::free(m_strDisasmSubtitles);  m_strDisasmSubtitles = NULL;
+        ::free(m_pDisasmSubtitleItems);  m_pDisasmSubtitleItems = NULL;
         m_nDisasmSubtitleMax = m_nDisasmSubtitleCount = 0;
         m_okDisasmSubtitles = FALSE;
         DisasmView_UpdateWindowText();
@@ -266,7 +266,7 @@ void DisasmView_DoSubtitles()
         return;
     }
 
-    m_strDisasmSubtitles = (TCHAR*) ::LocalAlloc(LPTR, dwSubFileSize + 2);
+    m_strDisasmSubtitles = (TCHAR*) ::calloc(dwSubFileSize + 2, 1);
     DWORD dwBytesRead;
     ::ReadFile(hSubFile, m_strDisasmSubtitles, dwSubFileSize, &dwBytesRead, NULL);
     ASSERT(dwBytesRead == dwSubFileSize);
@@ -281,8 +281,8 @@ void DisasmView_DoSubtitles()
     // Parse subtitles
     if (!DisasmView_ParseSubtitles())
     {
-        ::LocalFree(m_strDisasmSubtitles);  m_strDisasmSubtitles = NULL;
-        ::LocalFree(m_pDisasmSubtitleItems);  m_pDisasmSubtitleItems = NULL;
+        ::free(m_strDisasmSubtitles);  m_strDisasmSubtitles = NULL;
+        ::free(m_pDisasmSubtitleItems);  m_pDisasmSubtitleItems = NULL;
         AlertWarning(_T("Failed to parse subtitles file."));
         return;
     }
@@ -379,7 +379,6 @@ BOOL DisasmView_ParseSubtitles()
             {
                 *pText = 0;  // Обозначаем конец комментария - для комментария к блоку
                 pText++;
-                continue;
             }
         }
     }
@@ -717,9 +716,16 @@ void DisasmView_RegisterHintPC(const CProcessor * pProc,
     //TODO: else if (regmod == 2)
     if (regmod == 3)
     {
-        //TODO: if (byteword)
         srcval2 = g_pBoard->GetWordView(value, pProc->IsHaltMode(), false, &addrtype);
-        _sntprintf(hint1, 20, _T("(%06o)=%06o"), value, srcval2);  // "(NNNNNN)=XXXXXX"
+        if (byteword)
+        {
+            srcval2 = (value & 1) ? (srcval2 >> 8) : (srcval2 & 0xff);
+            _sntprintf(hint1, 20, _T("(%06o)=%03o"), value, srcval2);  // "(NNNNNN)=XXX"
+        }
+        else
+        {
+            _sntprintf(hint1, 20, _T("(%06o)=%06o"), value, srcval2);  // "(NNNNNN)=XXXXXX"
+        }
     }
     else if (regmod == 6)
     {
@@ -837,7 +843,6 @@ int DisasmView_GetInstructionHint(const WORD* memory, const CProcessor * pProc,
         (instr & ~(uint16_t)0100077) == PI_INC || (instr & ~(uint16_t)0100077) == PI_DEC || (instr & ~(uint16_t)0100077) == PI_NEG ||
         (instr & ~(uint16_t)0100077) == PI_TST ||
         (instr & ~(uint16_t)0100077) == PI_ASR || (instr & ~(uint16_t)0100077) == PI_ASL ||
-        (instr & ~(uint16_t)077) == PI_JMP ||
         (instr & ~(uint16_t)077) == PI_SWAB || (instr & ~(uint16_t)077) == PI_SXT ||
         (instr & ~(uint16_t)077) == PI_MTPS || (instr & ~(uint16_t)077) == PI_MFPS)
     {
@@ -867,6 +872,15 @@ int DisasmView_GetInstructionHint(const WORD* memory, const CProcessor * pProc,
         WORD psw = pProc->GetPSW();
         _sntprintf(buffer, 32, _T("C=%c, V=%c, Z=%c, N=%c"),
                 (psw & PSW_C) ? '1' : '0', (psw & PSW_V) ? '1' : '0', (psw & PSW_Z) ? '1' : '0', (psw & PSW_N) ? '1' : '0');
+    }
+
+    // JSR, JMP -- show non-trivial cases only
+    if ((instr & ~(uint16_t)0777) == PI_JSR && (instr & 077) != 067 && (instr & 077) != 037 ||
+        (instr & ~(uint16_t)077) == PI_JMP && (instr & 077) != 067 && (instr & 077) != 037)
+    {
+        int dstreg = instr & 7;
+        int dstmod = (instr >> 3) & 7;
+        DisasmView_InstructionHint(memory, pProc, buffer, buffer2, -1, -1, dstreg, dstmod);
     }
 
     //TODO: MARK

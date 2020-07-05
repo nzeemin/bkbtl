@@ -55,7 +55,7 @@ void AlertWarningFormat(LPCTSTR sFormat, ...)
     _vsntprintf_s(buffer, 512, 512 - 1, sFormat, ptr);
     va_end(ptr);
 
-    ::MessageBox(NULL, buffer, g_szTitle, MB_OK | MB_ICONEXCLAMATION);
+    ::MessageBox(NULL, buffer, g_szTitle, MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
 }
 BOOL AlertOkCancel(LPCTSTR sMessage)
 {

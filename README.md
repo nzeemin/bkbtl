@@ -1,5 +1,6 @@
 # bkbtl - BKBTL emulator, Win32 version
 
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![Build status](https://ci.appveyor.com/api/projects/status/a1p2sovj2ew7iime?svg=true)](https://ci.appveyor.com/project/nzeemin/bkbtl)
 [![CodeFactor](https://www.codefactor.io/repository/github/nzeemin/bkbtl/badge)](https://www.codefactor.io/repository/github/nzeemin/bkbtl)
 

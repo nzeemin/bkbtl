@@ -55,8 +55,16 @@ enum ToolbarButtons
     ToolbarButtonRun = 0,
     ToolbarButtonReset = 1,
     // Separator
-    ToolbarButtonColor = 3,
+    ToolbarButtonDiskA = 3,
+    ToolbarButtonDiskB = 4,
+    ToolbarButtonDiskC = 5,
+    ToolbarButtonDiskD = 6,
+    // Separator
+    ToolbarButtonColor = 8,
+    ToolbarButtonSound = 9,
+    ToolbarButtonScreenshot = 10,
 };
+
 enum ToolbarButtonImages
 {
     ToolbarImageRun = 0,
@@ -72,6 +80,7 @@ enum ToolbarButtonImages
     ToolbarImageColorScreen = 10,
     ToolbarImageBWScreen = 11,
     ToolbarImageScreenshot = 12,
+    ToolbarImageDebugger = 14,
     ToolbarImageStepInto = 15,
     ToolbarImageStepOver = 16,
     ToolbarImageWordByte = 18,
