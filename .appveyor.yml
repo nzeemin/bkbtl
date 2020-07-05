@@ -22,5 +22,5 @@ environment:
     - toolchain: msvc13
 
 build:
-  project: BKBTL-VS2013.sln
+  project: emulator\BKBTL-VS2013.sln
 
