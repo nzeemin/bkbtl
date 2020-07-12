@@ -91,9 +91,10 @@ enum ToolbarButtonImages
 enum StatusbarParts
 {
     StatusbarPartMessage = 0,
-    StatusbarPartFloppyEngine = 1,
-    StatusbarPartFPS = 2,
-    StatusbarPartUptime = 3,
+    StatusbarPartSound = 1,
+    StatusbarPartFloppyEngine = 2,
+    StatusbarPartFPS = 3,
+    StatusbarPartUptime = 4,
 };
 
 

@@ -81,7 +81,7 @@ class CFloppyController
 protected:
     CFloppyDrive m_drivedata[4];
     int m_drive;            // Drive number: from 0 to 3; -1 if not selected
-    CFloppyDrive* m_pDrive; // Current drive; NULL if not selected
+    CFloppyDrive* m_pDrive; // Current drive; nullptr if not selected
     uint16_t m_track;       // Track number: from 0 to 79
     uint16_t m_side;        // Disk side: 0 or 1
     uint16_t m_status;      // See FLOPPY_STATUS_XXX defines
@@ -107,8 +107,8 @@ public:
 public:
     bool AttachImage(int drive, LPCTSTR sFileName);
     void DetachImage(int drive);
-    bool IsAttached(int drive) { return (m_drivedata[drive].fpFile != NULL); }
-    bool IsReadOnly(int drive) { return m_drivedata[drive].okReadOnly; } // return (m_status & FLOPPY_STATUS_WRITEPROTECT) != 0; }
+    bool IsAttached(int drive) const { return (m_drivedata[drive].fpFile != nullptr); }
+    bool IsReadOnly(int drive) const { return m_drivedata[drive].okReadOnly; } // return (m_status & FLOPPY_STATUS_WRITEPROTECT) != 0; }
     bool IsEngineOn() { return (m_flags & FLOPPY_CMD_ENGINESTART) != 0; }
     uint16_t GetData(void);         // Reading port 177132 - data
     uint16_t GetState(void);        // Reading port 177130 - device status

@@ -99,9 +99,9 @@ enum BKConfiguration
 #define BK_KEY_JOYSTICK_UP      0267
 
 // Состояния клавиатуры БК - возвращаются из метода GetKeyboardRegister
-#define KEYB_RUS		0x01
-#define KEYB_LAT		0x02
-#define KEYB_LOWERREG	0x10
+#define KEYB_RUS                0x01
+#define KEYB_LAT                0x02
+#define KEYB_LOWERREG           0x10
 
 
 // Tape emulator callback used to read a tape recorded data.
@@ -167,7 +167,7 @@ public:  // System control
     void        LoadROM(int bank, const uint8_t* pBuffer);  // Load 8 KB ROM image from the biffer
     void        LoadRAM(int startbank, const uint8_t* pBuffer, int length);  // Load data into the RAM
     void        Tick50();           // Tick 50 Hz - goes to CPU EVNT line
-    void		TimerTick();		// Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
+    void        TimerTick();        // Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
     void        ResetDevices();     // INIT signal
     void        SetSoundAY(bool onoff);
 public:
@@ -178,17 +178,18 @@ public:
     uint16_t    GetPrinterOutPort() const { return m_Port177714out; }
     void        SetPrinterInPort(uint8_t data);
     bool        IsTapeMotorOn() const { return (m_Port177716tap & 0200) == 0; }
+    int         GetSoundChanges() const { return m_SoundChanges; }  ///< Sound signal 0 to 1 changes since the beginning of the frame
 public:  // Floppy
     bool        AttachFloppyImage(int slot, LPCTSTR sFileName);
     void        DetachFloppyImage(int slot);
-    bool        IsFloppyImageAttached(int slot);
-    bool        IsFloppyReadOnly(int slot);
+    bool        IsFloppyImageAttached(int slot) const;
+    bool        IsFloppyReadOnly(int slot) const;
     bool        IsFloppyEngineOn() const;    // Check if the floppy drive engine rotates the disks
 public:  // Callbacks
-    void		SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate);
+    void        SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate);
     void        SetTapeWriteCallback(TAPEWRITECALLBACK callback, int sampleRate);
-    void		SetSoundGenCallback(SOUNDGENCALLBACK callback);
-    void		SetTeletypeCallback(TELETYPECALLBACK callback);
+    void        SetSoundGenCallback(SOUNDGENCALLBACK callback);
+    void        SetTeletypeCallback(TELETYPECALLBACK callback);
 public:  // Memory
     // Read command for execution
     uint16_t GetWordExec(uint16_t address, bool okHaltMode) { return GetWord(address, okHaltMode, true); }
@@ -245,23 +246,25 @@ private:  // Ports: implementation
     bool        m_okSoundAY;
     uint8_t     m_nSoundAYReg;      // AY current register
 private:  // Timer implementation
-    uint16_t	m_timer;
-    uint16_t	m_timerreload;
-    uint16_t	m_timerflags;
-    uint16_t	m_timerdivider;
-    void		SetTimerReload(uint16_t val);	//sets timer reload value
-    void		SetTimerState(uint16_t val);	//sets timer state
+    uint16_t    m_timer;
+    uint16_t    m_timerreload;
+    uint16_t    m_timerflags;
+    uint16_t    m_timerdivider;
+    void        SetTimerReload(uint16_t val);   //sets timer reload value
+    void        SetTimerState(uint16_t val);    //sets timer state
 private:
     uint16_t    m_CPUbp;  // CPU breakpoint address
     uint32_t    m_dwTrace;  // Trace flags
+    int         m_SoundPrevValue;  // Previous value of the sound signal
+    int         m_SoundChanges;  // Sound signal 0 to 1 changes since the beginning of the frame
 private:
     TAPEREADCALLBACK m_TapeReadCallback;
     TAPEWRITECALLBACK m_TapeWriteCallback;
-    int			m_nTapeSampleRate;
+    int              m_nTapeSampleRate;
     SOUNDGENCALLBACK m_SoundGenCallback;
     TELETYPECALLBACK m_TeletypeCallback;
 private:
-    void        DoSound(void);
+    void        DoSound();
 };
 
 

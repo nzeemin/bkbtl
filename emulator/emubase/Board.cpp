@@ -24,15 +24,16 @@ CMotherboard::CMotherboard ()
 {
     // Create devices
     m_pCPU = new CProcessor(this);
-    m_pFloppyCtl = NULL;
+    m_pFloppyCtl = nullptr;
     m_pSoundAY = new CSoundAY();
 
     m_dwTrace = TRACE_NONE;
-    m_TapeReadCallback = NULL;
-    m_TapeWriteCallback = NULL;
+    m_TapeReadCallback = nullptr;
+    m_TapeWriteCallback = nullptr;
     m_nTapeSampleRate = 0;
-    m_SoundGenCallback = NULL;
-    m_TeletypeCallback = NULL;
+    m_SoundGenCallback = nullptr;
+    m_SoundPrevValue = 0;
+    m_TeletypeCallback = nullptr;
 
     // Allocate memory for RAM and ROM
     m_pRAM = (uint8_t*) ::malloc(128 * 1024);  //::memset(m_pRAM, 0, 128 * 1024);
@@ -47,7 +48,7 @@ CMotherboard::~CMotherboard ()
 {
     // Delete devices
     delete m_pCPU;
-    if (m_pFloppyCtl != NULL)
+    if (m_pFloppyCtl != nullptr)
         delete m_pFloppyCtl;
     delete m_pSoundAY;
 
@@ -85,21 +86,21 @@ void CMotherboard::SetConfiguration(uint16_t conf)
     //        val = ~val;
     //}
 
-    if (m_pFloppyCtl == NULL && (conf & BK_COPT_FDD) != 0)
+    if (m_pFloppyCtl == nullptr && (conf & BK_COPT_FDD) != 0)
     {
         m_pFloppyCtl = new CFloppyController();
         m_pFloppyCtl->SetTrace(m_dwTrace & TRACE_FLOPPY);
     }
-    if (m_pFloppyCtl != NULL && (conf & BK_COPT_FDD) == 0)
+    if (m_pFloppyCtl != nullptr && (conf & BK_COPT_FDD) == 0)
     {
-        delete m_pFloppyCtl;  m_pFloppyCtl = NULL;
+        delete m_pFloppyCtl;  m_pFloppyCtl = nullptr;
     }
 }
 
 void CMotherboard::SetTrace(uint32_t dwTrace)
 {
     m_dwTrace = dwTrace;
-    if (m_pFloppyCtl != NULL)
+    if (m_pFloppyCtl != nullptr)
         m_pFloppyCtl->SetTrace(dwTrace & TRACE_FLOPPY);
 }
 
@@ -140,7 +141,7 @@ void CMotherboard::LoadROM(int bank, const uint8_t* pBuffer)
 
 void CMotherboard::LoadRAM(int startbank, const uint8_t* pBuffer, int length)
 {
-    ASSERT(pBuffer != NULL);
+    ASSERT(pBuffer != nullptr);
     ASSERT(startbank >= 0 && startbank < 15);
     int address = 8192 * startbank;
     ASSERT(address + length <= 128 * 1024);
@@ -150,31 +151,31 @@ void CMotherboard::LoadRAM(int startbank, const uint8_t* pBuffer, int length)
 
 // Floppy ////////////////////////////////////////////////////////////
 
-bool CMotherboard::IsFloppyImageAttached(int slot)
+bool CMotherboard::IsFloppyImageAttached(int slot) const
 {
     ASSERT(slot >= 0 && slot < 4);
-    if (m_pFloppyCtl == NULL)
+    if (m_pFloppyCtl == nullptr)
         return false;
     return m_pFloppyCtl->IsAttached(slot);
 }
 
-bool CMotherboard::IsFloppyReadOnly(int slot)
+bool CMotherboard::IsFloppyReadOnly(int slot) const
 {
     ASSERT(slot >= 0 && slot < 4);
-    if (m_pFloppyCtl == NULL)
+    if (m_pFloppyCtl == nullptr)
         return false;
     return m_pFloppyCtl->IsReadOnly(slot);
 }
 
 bool CMotherboard::IsFloppyEngineOn() const
 {
-    return (m_pFloppyCtl != NULL && m_pFloppyCtl->IsEngineOn());
+    return (m_pFloppyCtl != nullptr && m_pFloppyCtl->IsEngineOn());
 }
 
 bool CMotherboard::AttachFloppyImage(int slot, LPCTSTR sFileName)
 {
     ASSERT(slot >= 0 && slot < 4);
-    if (m_pFloppyCtl == NULL)
+    if (m_pFloppyCtl == nullptr)
         return false;
     return m_pFloppyCtl->AttachImage(slot, sFileName);
 }
@@ -182,7 +183,7 @@ bool CMotherboard::AttachFloppyImage(int slot, LPCTSTR sFileName)
 void CMotherboard::DetachFloppyImage(int slot)
 {
     ASSERT(slot >= 0 && slot < 4);
-    if (m_pFloppyCtl == NULL)
+    if (m_pFloppyCtl == nullptr)
         return;
     m_pFloppyCtl->DetachImage(slot);
 }
@@ -244,7 +245,7 @@ uint8_t CMotherboard::GetROMByte(uint16_t offset) const
 
 void CMotherboard::ResetDevices()
 {
-    if (m_pFloppyCtl != NULL)
+    if (m_pFloppyCtl != nullptr)
         m_pFloppyCtl->Reset();
     m_pSoundAY->Reset();
 
@@ -337,7 +338,7 @@ void CMotherboard::DebugTicks()
 {
     m_pCPU->SetInternalTick(0);
     m_pCPU->Execute();
-    if (m_pFloppyCtl != NULL)
+    if (m_pFloppyCtl != nullptr)
         m_pFloppyCtl->Periodic();
 }
 
@@ -362,12 +363,13 @@ bool CMotherboard::SystemFrame()
 {
     int frameProcTicks = (m_Configuration & BK_COPT_BK0011) ? 8 : 6;
     const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
+    m_SoundChanges = 0;
     const int teletypeTicks = 20000 / (9600 / 25);
     int floppyTicks = (m_Configuration & BK_COPT_BK0011) ? 38 : 44;
     int teletypeTxCount = 0;
 
     int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
-    if (m_TapeReadCallback != NULL || m_TapeWriteCallback != NULL)
+    if (m_TapeReadCallback != nullptr || m_TapeWriteCallback != nullptr)
     {
         tapeSamplesPerFrame = m_nTapeSampleRate / 25;
         frameTapeTicks = 20000 / tapeSamplesPerFrame;
@@ -402,14 +404,14 @@ bool CMotherboard::SystemFrame()
 
         if ((m_Configuration & BK_COPT_FDD) && (frameticks % floppyTicks == 0))  // FDD tick
         {
-            if (m_pFloppyCtl != NULL)
+            if (m_pFloppyCtl != nullptr)
                 m_pFloppyCtl->Periodic();
         }
 
         if (frameticks % audioticks == 0)  // AUDIO tick
             DoSound();
 
-        if ((m_TapeReadCallback != NULL || m_TapeWriteCallback != NULL) && frameticks % frameTapeTicks == 0)
+        if ((m_TapeReadCallback != nullptr || m_TapeWriteCallback != nullptr) && frameticks % frameTapeTicks == 0)
         {
             int tapeSamples = 0;
             const int readsTotal = 20000 / frameTapeTicks;
@@ -425,12 +427,12 @@ bool CMotherboard::SystemFrame()
             }
 
             // Reading the tape
-            if (m_TapeReadCallback != NULL)
+            if (m_TapeReadCallback != nullptr)
             {
                 bool tapeBit = (*m_TapeReadCallback)(tapeSamples);
                 TapeInput(tapeBit);
             }
-            else if (m_TapeWriteCallback != NULL)
+            else if (m_TapeWriteCallback != nullptr)
             {
                 unsigned int value = 0;
                 switch (m_Port177716tap & 0140)
@@ -451,7 +453,7 @@ bool CMotherboard::SystemFrame()
                 teletypeTxCount--;
                 if (teletypeTxCount == 0)  // Translation countdown finished - the byte translated
                 {
-                    if (m_TeletypeCallback != NULL)
+                    if (m_TeletypeCallback != nullptr)
                         (*m_TeletypeCallback)(m_Port177566 & 0xff);
                     m_Port177564 |= 0200;
                     if (m_Port177564 & 0100)
@@ -826,7 +828,7 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
             m_pCPU->MemoryError();
             return 0;
         }
-        if (m_pFloppyCtl != NULL)
+        if (m_pFloppyCtl != nullptr)
         {
             uint16_t state = m_pFloppyCtl->GetState();
 //#if !defined(PRODUCT)
@@ -842,7 +844,7 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
             m_pCPU->MemoryError();
             return 0;
         }
-        if (m_pFloppyCtl != NULL)
+        if (m_pFloppyCtl != nullptr)
         {
             uint16_t word = m_pFloppyCtl->GetData();
 //#if !defined(PRODUCT)
@@ -896,11 +898,11 @@ uint16_t CMotherboard::GetPortView(uint16_t address) const
         return m_Port177716;
 
     case 0177130:  // Floppy state
-        if (m_pFloppyCtl != NULL)
+        if (m_pFloppyCtl != nullptr)
             return m_pFloppyCtl->GetStateView();
         return 0;
     case 0177132:  // Floppy data
-        if (m_pFloppyCtl != NULL)
+        if (m_pFloppyCtl != nullptr)
             return m_pFloppyCtl->GetDataView();
         return 0;
 
@@ -1007,7 +1009,7 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         break;
 
     case 0177130:  // Регистр управления КНГМД
-        if (m_pFloppyCtl != NULL)
+        if (m_pFloppyCtl != nullptr)
         {
             if ((m_Configuration & BK_COPT_BK0011) == 0)
             {
@@ -1036,7 +1038,7 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         }
         break;
     case 0177132:  // Регистр данных КНГМД
-        if (m_pFloppyCtl != NULL)
+        if (m_pFloppyCtl != nullptr)
             m_pFloppyCtl->WriteData(word);
         break;
 
@@ -1220,57 +1222,61 @@ uint16_t CMotherboard::GetKeyboardRegister(void)
 
 void CMotherboard::DoSound(void)
 {
-    if (m_SoundGenCallback == NULL)
-        return;
-
-    uint8_t value = (m_Port177716tap & 0100) != 0 ? 0xff : 0;
+    uint8_t soundValue = (m_Port177716tap & 0100) != 0 ? 0xff : 0;
     if (m_okSoundAY)
     {
         uint8_t bufferay[2];
         m_pSoundAY->Callback(bufferay, sizeof(bufferay));
         uint8_t valueay = bufferay[sizeof(bufferay) - 1];
-        value = value | valueay;
+        soundValue = soundValue | valueay;
     }
 
-    uint16_t value16 = value << 5;
+    if (m_SoundPrevValue == 0 && soundValue != 0)
+        m_SoundChanges++;
+    m_SoundPrevValue = soundValue;
+
+    if (m_SoundGenCallback == nullptr)
+        return;
+
+    uint16_t value16 = soundValue << 5;
     (*m_SoundGenCallback)(value16, value16);
 }
 
 void CMotherboard::SetTapeReadCallback(TAPEREADCALLBACK callback, int sampleRate)
 {
-    if (callback == NULL)  // Reset callback
+    if (callback == nullptr)  // Reset callback
     {
-        m_TapeReadCallback = NULL;
+        m_TapeReadCallback = nullptr;
         m_nTapeSampleRate = 0;
     }
     else
     {
         m_TapeReadCallback = callback;
         m_nTapeSampleRate = sampleRate;
-        m_TapeWriteCallback = NULL;
+        m_TapeWriteCallback = nullptr;
     }
 }
 
 void CMotherboard::SetTapeWriteCallback(TAPEWRITECALLBACK callback, int sampleRate)
 {
-    if (callback == NULL)  // Reset callback
+    if (callback == nullptr)  // Reset callback
     {
-        m_TapeWriteCallback = NULL;
+        m_TapeWriteCallback = nullptr;
         m_nTapeSampleRate = 0;
     }
     else
     {
         m_TapeWriteCallback = callback;
         m_nTapeSampleRate = sampleRate;
-        m_TapeReadCallback = NULL;
+        m_TapeReadCallback = nullptr;
     }
 }
 
 void CMotherboard::SetSoundGenCallback(SOUNDGENCALLBACK callback)
 {
-    if (callback == NULL)  // Reset callback
+    if (callback == nullptr)  // Reset callback
     {
-        m_SoundGenCallback = NULL;
+        m_SoundGenCallback = nullptr;
     }
     else
     {
@@ -1280,9 +1286,9 @@ void CMotherboard::SetSoundGenCallback(SOUNDGENCALLBACK callback)
 
 void CMotherboard::SetTeletypeCallback(TELETYPECALLBACK callback)
 {
-    if (callback == NULL)  // Reset callback
+    if (callback == nullptr)  // Reset callback
     {
-        m_TeletypeCallback = NULL;
+        m_TeletypeCallback = nullptr;
     }
     else
     {

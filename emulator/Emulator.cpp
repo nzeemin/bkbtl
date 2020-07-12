@@ -35,6 +35,7 @@ bool m_okEmulatorSound = false;
 uint16_t m_wEmulatorSoundSpeed = 100;
 bool m_okEmulatorCovox = false;
 bool m_okEmulatorSoundAY = false;
+int m_nEmulatorSoundChanges = 0;
 
 long m_nFrameCount = 0;
 uint32_t m_dwTickCount = 0;
@@ -524,6 +525,15 @@ int Emulator_SystemFrame()
         TCHAR buffer[20];
         swprintf_s(buffer, 20, _T("Uptime: %02d:%02d:%02d"), hours, minutes, seconds);
         MainWindow_SetStatusbarText(StatusbarPartUptime, buffer);
+    }
+
+    // Update "Sound" indicator every 5 frames
+    m_nEmulatorSoundChanges += g_pBoard->GetSoundChanges();
+    if (m_nUptimeFrameCount % 5 == 0)
+    {
+        bool soundOn = m_nEmulatorSoundChanges > 0;
+        MainWindow_SetStatusbarText(StatusbarPartSound, soundOn ? _T("Sound") : nullptr);
+        m_nEmulatorSoundChanges = 0;
     }
 
     bool okTapeMotor = g_pBoard->IsTapeMotorOn();
