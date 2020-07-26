@@ -98,6 +98,28 @@ enum StatusbarParts
 };
 
 
+enum ColorIndices
+{
+    ColorDebugText          = 0,
+    ColorDebugBackCurrent   = 1,
+    ColorDebugValueChanged  = 2,
+    ColorDebugPrevious      = 3,
+    ColorDebugMemoryRom     = 4,
+    ColorDebugMemoryIO      = 5,
+    ColorDebugMemoryNA      = 6,
+    ColorDebugValue         = 7,
+    ColorDebugValueRom      = 8,
+    ColorDebugSubtitles     = 9,
+    ColorDebugJump          = 10,
+    ColorDebugJumpYes       = 11,
+    ColorDebugJumpNo        = 12,
+    ColorDebugJumpHint      = 13,
+    ColorDebugHint          = 14,
+
+    ColorIndicesCount       = 15,
+};
+
+
 //////////////////////////////////////////////////////////////////////
 // Settings
 
@@ -121,7 +143,7 @@ void Settings_SetDebug(BOOL flag);
 BOOL Settings_GetDebug();
 void Settings_GetDebugFontName(LPTSTR buffer);
 void Settings_SetDebugFontName(LPCTSTR sFontName);
-void Settings_SetDebugMemoryAddress(WORD speed);
+void Settings_SetDebugMemoryAddress(WORD address);
 WORD Settings_GetDebugMemoryAddress();
 BOOL Settings_GetDebugMemoryByte();
 void Settings_SetDebugMemoryByte(BOOL flag);
@@ -151,6 +173,11 @@ WORD Settings_GetSpriteAddress();
 void Settings_SetSpriteAddress(WORD value);
 WORD Settings_GetSpriteWidth();
 void Settings_SetSpriteWidth(WORD value);
+
+LPCTSTR Settings_GetColorFriendlyName(ColorIndices colorIndex);
+COLORREF Settings_GetColor(ColorIndices colorIndex);
+COLORREF Settings_GetDefaultColor(ColorIndices colorIndex);
+void Settings_SetColor(ColorIndices colorIndex, COLORREF color);
 
 
 //////////////////////////////////////////////////////////////////////
