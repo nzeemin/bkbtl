@@ -25,6 +25,7 @@
 #define IDC_BUILDDATE                   1001
 #define IDC_EDITADDR                    1001
 #define IDC_TRACKS40                    1002
+#define IDC_EDIT2                       1002
 #define IDC_EDITSIZE                    1002
 #define IDC_RADIO2                      1003
 #define IDC_TRACKS80                    1003

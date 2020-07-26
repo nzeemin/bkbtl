@@ -29,7 +29,6 @@ BOOL InputBoxValidate(HWND hDlg);
 INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 LPCTSTR m_strInputBoxTitle = NULL;
-LPCTSTR m_strInputBoxPrompt = NULL;
 WORD* m_pInputBoxValueOctal = NULL;
 
 
@@ -68,10 +67,9 @@ INT_PTR CALLBACK AboutBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 //////////////////////////////////////////////////////////////////////
 
 
-BOOL InputBoxOctal(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strPrompt, WORD* pValue)
+BOOL InputBoxOctal(HWND hwndOwner, LPCTSTR strTitle, WORD* pValue)
 {
     m_strInputBoxTitle = strTitle;
-    m_strInputBoxPrompt = strPrompt;
     m_pInputBoxValueOctal = pValue;
     INT_PTR result = DialogBox(g_hInst, MAKEINTRESOURCE(IDD_INPUTBOX), hwndOwner, InputBoxProc);
     if (result != IDOK)
@@ -81,19 +79,18 @@ BOOL InputBoxOctal(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strPrompt, WORD* pV
 }
 
 
-INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
+INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    UNREFERENCED_PARAMETER(lParam);
     switch (message)
     {
     case WM_INITDIALOG:
         {
             SetWindowText(hDlg, m_strInputBoxTitle);
-            HWND hStatic = GetDlgItem(hDlg, IDC_STATIC);
-            SetWindowText(hStatic, m_strInputBoxPrompt);
             HWND hEdit = GetDlgItem(hDlg, IDC_EDIT1);
 
             TCHAR buffer[8];
-            _sntprintf_s(buffer, 8, _T("%06o"), *m_pInputBoxValueOctal);
+            _sntprintf_s(buffer, 8, _T("%06ho"), *m_pInputBoxValueOctal);
             SetWindowText(hEdit, buffer);
             SendMessage(hEdit, EM_SETSEL, 0, -1);
 
@@ -103,20 +100,52 @@ INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*l
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
+        case IDC_EDIT1:
+            {
+                TCHAR buffer[8];
+                GetDlgItemText(hDlg, IDC_EDIT1, buffer, 8);
+                if (_sntscanf_s(buffer, 8, _T("%ho"), m_pInputBoxValueOctal) > 0)
+                {
+                    GetDlgItemText(hDlg, IDC_EDIT2, buffer, 8);
+                    WORD otherValue;
+                    if (_sntscanf_s(buffer, 8, _T("%hx"), &otherValue) <= 0 || *m_pInputBoxValueOctal != otherValue)
+                    {
+                        _sntprintf_s(buffer, 8, _T("%04hx"), *m_pInputBoxValueOctal);
+                        SetDlgItemText(hDlg, IDC_EDIT2, buffer);
+                    }
+                }
+            }
+            return (INT_PTR)TRUE;
+        case IDC_EDIT2:
+            {
+                TCHAR buffer[8];
+                GetDlgItemText(hDlg, IDC_EDIT2, buffer, 8);
+                if (_sntscanf_s(buffer, 8, _T("%hx"), m_pInputBoxValueOctal) > 0)
+                {
+                    GetDlgItemText(hDlg, IDC_EDIT1, buffer, 8);
+                    WORD otherValue;
+                    if (_sntscanf_s(buffer, 8, _T("%ho"), &otherValue) <= 0 || *m_pInputBoxValueOctal != otherValue)
+                    {
+                        _sntprintf_s(buffer, 8, _T("%06ho"), *m_pInputBoxValueOctal);
+                        SetDlgItemText(hDlg, IDC_EDIT1, buffer);
+                    }
+                }
+            }
+            return (INT_PTR)TRUE;
         case IDOK:
             if (! InputBoxValidate(hDlg))
-                return (INT_PTR) FALSE;
+                return (INT_PTR)FALSE;
             EndDialog(hDlg, LOWORD(wParam));
             return (INT_PTR)TRUE;
         case IDCANCEL:
             EndDialog(hDlg, LOWORD(wParam));
             return (INT_PTR)TRUE;
         default:
-            return (INT_PTR) FALSE;
+            return (INT_PTR)FALSE;
         }
         break;
     }
-    return (INT_PTR) FALSE;
+    return (INT_PTR)FALSE;
 }
 
 BOOL InputBoxValidate(HWND hDlg)
