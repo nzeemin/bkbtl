@@ -14,6 +14,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #pragma once
 
 //////////////////////////////////////////////////////////////////////
+// Window class names
 
 
 const LPCTSTR CLASSNAME_SCREENVIEW      = _T("BKBTLSCREEN");
@@ -81,7 +82,10 @@ BOOL DebugView_IsRegisterChanged(int regno);
 extern HWND g_hwndDisasm;  // Disasm View window handle
 
 void DisasmView_RegisterClass();
+void DisasmView_Init();
+void DisasmView_Done();
 void DisasmView_Create(HWND hwndParent, int x, int y, int width, int height);
+void DisasmView_Redraw();
 LRESULT CALLBACK DisasmViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK DisasmViewViewerWndProc(HWND, UINT, WPARAM, LPARAM);
 void DisasmView_OnUpdate();
@@ -122,6 +126,7 @@ void SpriteView_RegisterClass();
 void SpriteView_Create(int x, int y);
 LRESULT CALLBACK SpriteViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK SpriteViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 
 //////////////////////////////////////////////////////////////////////
 // TeletypeView

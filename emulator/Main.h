@@ -115,8 +115,9 @@ enum ColorIndices
     ColorDebugJumpNo        = 12,
     ColorDebugJumpHint      = 13,
     ColorDebugHint          = 14,
+    ColorDebugBreakpoint    = 15,
 
-    ColorIndicesCount       = 15,
+    ColorIndicesCount       = 16,
 };
 
 

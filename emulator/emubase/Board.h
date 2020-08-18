@@ -157,7 +157,7 @@ public:  // Memory access  //TODO: Make it private
     uint8_t     GetROMByte(uint16_t offset) const;
 public:  // Debug
     void        DebugTicks();  // One Debug CPU tick -- use for debug step or debug breakpoint
-    void        SetCPUBreakpoint(uint16_t bp) { m_CPUbp = bp; } // Set CPU breakpoint
+    void        SetCPUBreakpoints(const uint16_t* bps) { m_CPUbps = bps; } // Set CPU breakpoint list
     uint32_t    GetTrace() const { return m_dwTrace; }
     void        SetTrace(uint32_t dwTrace);
 public:  // System control
@@ -253,7 +253,7 @@ private:  // Timer implementation
     void        SetTimerReload(uint16_t val);   //sets timer reload value
     void        SetTimerState(uint16_t val);    //sets timer state
 private:
-    uint16_t    m_CPUbp;  // CPU breakpoint address
+    const uint16_t* m_CPUbps;  // CPU breakpoint list, ends with 177777 value
     uint32_t    m_dwTrace;  // Trace flags
     int         m_SoundPrevValue;  // Previous value of the sound signal
     int         m_SoundChanges;  // Sound signal 0 to 1 changes since the beginning of the frame

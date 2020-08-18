@@ -138,6 +138,7 @@ BOOL CreateMainWindow()
         return FALSE;
 
     DebugView_Init();
+    DisasmView_Init();
     ScreenView_Init();
 
     // Create screen window as a child of the main window

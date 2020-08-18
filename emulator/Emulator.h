@@ -18,6 +18,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 //////////////////////////////////////////////////////////////////////
 
+const int MAX_BREAKPOINTCOUNT = 16;
 
 extern CMotherboard* g_pBoard;
 extern BKConfiguration g_nEmulatorConfiguration;  // Current configuration
@@ -36,15 +37,22 @@ bool Emulator_Init();
 bool Emulator_InitConfiguration(BKConfiguration configuration);
 BKConfiguration Emulator_GetConfiguration();
 void Emulator_Done();
-void Emulator_SetCPUBreakpoint(uint16_t address);
+
+bool Emulator_AddCPUBreakpoint(uint16_t address);
+bool Emulator_RemoveCPUBreakpoint(uint16_t address);
+void Emulator_SetTempCPUBreakpoint(uint16_t address);
+const uint16_t* Emulator_GetCPUBreakpointList();
 bool Emulator_IsBreakpoint();
+bool Emulator_IsBreakpoint(uint16_t address);
+void Emulator_RemoveAllBreakpoints();
+
 void Emulator_SetSound(bool soundOnOff);
 void Emulator_SetCovox(bool covoxOnOff);
 void Emulator_SetSoundAY(bool onoff);
 void Emulator_Start();
 void Emulator_Stop();
 void Emulator_Reset();
-int  Emulator_SystemFrame();
+bool Emulator_SystemFrame();
 void Emulator_ProcessJoystick();
 uint32_t Emulator_GetUptime();  // BK uptime, in seconds
 void Emulator_SetSpeed(uint16_t realspeed);

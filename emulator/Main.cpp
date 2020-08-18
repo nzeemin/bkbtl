@@ -86,17 +86,16 @@ int APIENTRY _tWinMain(
         ::QueryPerformanceCounter(&nFrameStartTime);
 
         if (!g_okEmulatorRunning)
-            ::Sleep(20);
+            ::Sleep(1);
         else
         {
-            if (Emulator_IsBreakpoint())
-                Emulator_Stop();
-            else
+            if (!Emulator_SystemFrame())
             {
-                Emulator_SystemFrame();
-
-                ScreenView_RedrawScreen();
+                // Breakpoint hit
+                Emulator_Stop();
             }
+
+            ScreenView_RedrawScreen();
         }
 
         // Process all queue
@@ -203,6 +202,7 @@ BOOL InitInstance(HINSTANCE /*hInstance*/, int /*nCmdShow*/)
 void DoneInstance()
 {
     ScreenView_Done();
+    DisasmView_Done();
 
     Emulator_Done();
 
