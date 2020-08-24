@@ -391,7 +391,7 @@ void Emulator_Start()
     g_okEmulatorRunning = true;
 
     // Set title bar text
-    MainWindow_UpdateWindowTitle(_T("run"));
+    MainWindow_UpdateWindowTitle();
     MainWindow_UpdateMenu();
 
     m_nFrameCount = 0;
@@ -404,7 +404,7 @@ void Emulator_Stop()
     Emulator_SetTempCPUBreakpoint(0177777);
 
     // Reset title bar message
-    MainWindow_UpdateWindowTitle(_T("stop"));
+    MainWindow_UpdateWindowTitle();
     MainWindow_UpdateMenu();
     // Reset FPS indicator
     MainWindow_SetStatusbarText(StatusbarPartFPS, nullptr);

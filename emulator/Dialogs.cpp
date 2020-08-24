@@ -27,9 +27,13 @@ void Dialogs_DoLoadBinPrepare(HWND hDlg, LPCTSTR strFileName);
 void Dialogs_DoLoadBinLoad(LPCTSTR strFileName);
 BOOL InputBoxValidate(HWND hDlg);
 INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK SettingsColorsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 LPCTSTR m_strInputBoxTitle = NULL;
 WORD* m_pInputBoxValueOctal = NULL;
+
+COLORREF m_DialogSettings_acrCustClr[16];  // array of custom colors to use in ChooseColor()
+COLORREF m_DialogSettings_OsdLineColor = RGB(120, 0, 0);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -383,6 +387,52 @@ void ShowSettingsDialog()
     DialogBox(g_hInst, MAKEINTRESOURCE(IDD_SETTINGS), g_hwnd, SettingsProc);
 }
 
+INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
+{
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        {
+            HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
+            SendMessage(hVolume, TBM_SETRANGEMIN, 0, (LPARAM)0);
+            SendMessage(hVolume, TBM_SETRANGEMAX, 0, (LPARAM)0xffff);
+            SendMessage(hVolume, TBM_SETTICFREQ, 0x1000, 0);
+            SendMessage(hVolume, TBM_SETPOS, TRUE, (LPARAM)Settings_GetSoundVolume());
+
+            return (INT_PTR)FALSE;
+        }
+    case WM_COMMAND:
+        switch (LOWORD(wParam))
+        {
+        case IDOK:
+            {
+                HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
+                DWORD volume = SendMessage(hVolume, TBM_GETPOS, 0, 0);
+                Settings_SetSoundVolume((WORD)volume);
+            }
+
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        case IDCANCEL:
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        default:
+            return (INT_PTR)FALSE;
+        }
+        break;
+    }
+    return (INT_PTR) FALSE;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// Settings Colors Dialog
+
+BOOL ShowSettingsColorsDialog()
+{
+    return IDOK == DialogBox(g_hInst, MAKEINTRESOURCE(IDD_SETTINGS_COLORS), g_hwnd, SettingsColorsProc);
+}
+
 int CALLBACK SettingsDialog_EnumFontProc(const LOGFONT* lpelfe, const TEXTMETRIC* /*lpntme*/, DWORD /*FontType*/, LPARAM lParam)
 {
     if ((lpelfe->lfPitchAndFamily & FIXED_PITCH) == 0)
@@ -399,7 +449,7 @@ int CALLBACK SettingsDialog_EnumFontProc(const LOGFONT* lpelfe, const TEXTMETRIC
     return TRUE;
 }
 
-void FillDebugFontCombo(HWND hCombo)
+void SettingsDialog_FillDebugFontCombo(HWND hCombo)
 {
     LOGFONT logfont;  ZeroMemory(&logfont, sizeof logfont);
     logfont.lfCharSet = DEFAULT_CHARSET;
@@ -414,37 +464,123 @@ void FillDebugFontCombo(HWND hCombo)
     ::SendMessage(hCombo, CB_SELECTSTRING, 0, (LPARAM)logfont.lfFaceName);
 }
 
-INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
+void SettingsDialog_FillColorsList(HWND hList)
+{
+    for (int itemIndex = 0; itemIndex < ColorIndicesCount; itemIndex++)
+    {
+        LPCTSTR colorName = Settings_GetColorFriendlyName((ColorIndices)itemIndex);
+        ::SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)colorName);
+        ::SendMessage(hList, LB_SETITEMDATA, itemIndex, (LPARAM)Settings_GetColor((ColorIndices)itemIndex));
+    }
+
+    ::SendMessage(hList, LB_SETCURSEL, 0, 0);
+}
+
+void SettingsDialog_InitColorDialog(HWND hDlg)
+{
+    HWND hDebugFont = GetDlgItem(hDlg, IDC_DEBUGFONT);
+    SettingsDialog_FillDebugFontCombo(hDebugFont);
+
+    HWND hColorList = GetDlgItem(hDlg, IDC_LIST1);
+    SettingsDialog_FillColorsList(hColorList);
+}
+
+void SettingsDialog_OnColorListDrawItem(PDRAWITEMSTRUCT lpDrawItem)
+{
+    if (lpDrawItem->itemID == -1) return;
+
+    HDC hdc = lpDrawItem->hDC;
+    switch (lpDrawItem->itemAction)
+    {
+    case ODA_DRAWENTIRE:
+    case ODA_SELECT:
+        {
+            HBRUSH hBrushBk = ::GetSysColorBrush((lpDrawItem->itemState & ODS_SELECTED) ? COLOR_HIGHLIGHT : COLOR_WINDOW);
+            ::FillRect(hdc, &lpDrawItem->rcItem, hBrushBk);
+
+            int colorIndex = lpDrawItem->itemID;
+            COLORREF color = (COLORREF)(lpDrawItem->itemData);
+
+            HBRUSH hBrush = ::CreateSolidBrush(color);
+            RECT rcFill;  ::CopyRect(&rcFill, &lpDrawItem->rcItem);
+            ::InflateRect(&rcFill, -1, -1);
+            rcFill.left = rcFill.right - 50;
+            ::FillRect(hdc, &rcFill, hBrush);
+
+            ::SetTextColor(hdc, ::GetSysColor((lpDrawItem->itemState & ODS_SELECTED) ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
+            RECT rcText;  ::CopyRect(&rcText, &lpDrawItem->rcItem);
+            ::InflateRect(&rcText, -2, 0);
+            LPCTSTR colorName = Settings_GetColorFriendlyName((ColorIndices)colorIndex);
+            ::DrawText(hdc, colorName, _tcslen(colorName), &rcText, DT_LEFT | DT_NOPREFIX);
+        }
+        break;
+    case ODA_FOCUS:
+        break;
+    }
+}
+
+void SettingsDialog_OnChooseColor(HWND hDlg)
+{
+    HWND hList = GetDlgItem(hDlg, IDC_LIST1);
+    int itemIndex = ::SendMessage(hList, LB_GETCURSEL, 0, 0);
+    COLORREF color = ::SendMessage(hList, LB_GETITEMDATA, itemIndex, 0);
+
+    CHOOSECOLOR cc;  memset(&cc, 0, sizeof(cc));
+    cc.lStructSize = sizeof(cc);
+    cc.hwndOwner = hDlg;
+    cc.lpCustColors = (LPDWORD)m_DialogSettings_acrCustClr;
+    cc.rgbResult = color;
+    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+    if (::ChooseColor(&cc))
+    {
+        ::SendMessage(hList, LB_SETITEMDATA, itemIndex, (LPARAM)cc.rgbResult);
+        ::InvalidateRect(hList, NULL, TRUE);
+    }
+}
+
+void SettingsDialog_OnResetColor(HWND hDlg)
+{
+    HWND hList = GetDlgItem(hDlg, IDC_LIST1);
+    int itemIndex = ::SendMessage(hList, LB_GETCURSEL, 0, 0);
+    COLORREF color = Settings_GetDefaultColor((ColorIndices)itemIndex);
+
+    ::SendMessage(hList, LB_SETITEMDATA, itemIndex, color);
+    ::InvalidateRect(hList, NULL, TRUE);
+}
+
+void SettingsDialog_SaveFontsAndColors(HWND hDlg)
+{
+    TCHAR buffer[32];
+    GetDlgItemText(hDlg, IDC_DEBUGFONT, buffer, 32);
+    Settings_SetDebugFontName(buffer);
+
+    HWND hList = GetDlgItem(hDlg, IDC_LIST1);
+    for (int itemIndex = 0; itemIndex < ColorIndicesCount; itemIndex++)
+    {
+        COLORREF color = ::SendMessage(hList, LB_GETITEMDATA, itemIndex, 0);
+        Settings_SetColor((ColorIndices)itemIndex, color);
+    }
+}
+
+INT_PTR CALLBACK SettingsColorsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
     case WM_INITDIALOG:
-        {
-            HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
-            SendMessage(hVolume, TBM_SETRANGEMIN, 0, (LPARAM)0);
-            SendMessage(hVolume, TBM_SETRANGEMAX, 0, (LPARAM)0xffff);
-            SendMessage(hVolume, TBM_SETTICFREQ, 0x1000, 0);
-            SendMessage(hVolume, TBM_SETPOS, TRUE, (LPARAM)Settings_GetSoundVolume());
-
-            HWND hDebugFont = GetDlgItem(hDlg, IDC_DEBUGFONT);
-            FillDebugFontCombo(hDebugFont);
-            return (INT_PTR)FALSE;
-        }
+        SettingsDialog_InitColorDialog(hDlg);
+        return (INT_PTR)FALSE;
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
+        case IDC_BUTTON1:
+            SettingsDialog_OnChooseColor(hDlg);
+            break;
+        case IDC_BUTTON2:
+            SettingsDialog_OnResetColor(hDlg);
+            break;
         case IDOK:
-            {
-                HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
-                DWORD volume = SendMessage(hVolume, TBM_GETPOS, 0, 0);
-                Settings_SetSoundVolume((WORD)volume);
-
-                TCHAR buffer[32];
-
-                GetDlgItemText(hDlg, IDC_DEBUGFONT, buffer, 32);
-                Settings_SetDebugFontName(buffer);
-            }
-
+            SettingsDialog_SaveFontsAndColors(hDlg);
             EndDialog(hDlg, LOWORD(wParam));
             return (INT_PTR)TRUE;
         case IDCANCEL:
@@ -454,8 +590,13 @@ INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*l
             return (INT_PTR)FALSE;
         }
         break;
+    case WM_CTLCOLORLISTBOX:
+        return (LRESULT)CreateSolidBrush(GetSysColor(COLOR_WINDOW));
+    case WM_DRAWITEM:
+        SettingsDialog_OnColorListDrawItem((PDRAWITEMSTRUCT)lParam);
+        break;
     }
-    return (INT_PTR) FALSE;
+    return (INT_PTR)FALSE;
 }
 
 

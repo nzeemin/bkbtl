@@ -26,5 +26,7 @@ BOOL ShowOpenDialog(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strFilter, TCHAR* 
 void ShowLoadBinDialog();
 
 void ShowSettingsDialog();
+BOOL ShowSettingsColorsDialog();
+
 
 //////////////////////////////////////////////////////////////////////

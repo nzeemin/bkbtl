@@ -79,6 +79,7 @@ void MainWindow_DoFileScreenshot();
 void MainWindow_DoFileScreenshotSaveAs();
 void MainWindow_DoFileLoadBin();
 void MainWindow_DoFileSettings();
+void MainWindow_DoFileSettingsColors();
 void MainWindow_OnToolbarGetInfoTip(LPNMTBGETINFOTIP);
 
 
@@ -318,8 +319,9 @@ void MainWindow_RestorePositionAndShow()
     //    MainWindow_DoViewFullscreen();
 }
 
-void MainWindow_UpdateWindowTitle(LPCTSTR emustate)
+void MainWindow_UpdateWindowTitle()
 {
+    LPCTSTR emustate = g_okEmulatorRunning ? _T("run") : _T("stop");
     TCHAR buffer[100];
     wsprintf(buffer, _T("%s [%s]"), g_szTitle, emustate);
     SetWindowText(g_hwnd, buffer);
@@ -1017,6 +1019,9 @@ bool MainWindow_DoCommand(int commandId)
     case ID_FILE_SETTINGS:
         MainWindow_DoFileSettings();
         break;
+    case ID_FILE_SETTINGS_COLORS:
+        MainWindow_DoFileSettingsColors();
+        break;
     default:
         return false;
     }
@@ -1215,6 +1220,14 @@ void MainWindow_DoFileLoadBin()
 void MainWindow_DoFileSettings()
 {
     ShowSettingsDialog();
+}
+
+void MainWindow_DoFileSettingsColors()
+{
+    if (ShowSettingsColorsDialog())
+    {
+        RedrawWindow(g_hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
+    }
 }
 
 void MainWindow_DoEmulatorConf(BKConfiguration configuration)
