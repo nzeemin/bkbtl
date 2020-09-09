@@ -8,9 +8,6 @@ shallow_clone: true
 matrix:
   fast_finish: false
 
-platform:
-  - Win32
-
 configuration:
   - Debug
   - Release
@@ -20,15 +17,19 @@ environment:
   matrix:
     - toolchain: msvc13
       project_name: emulator\BKBTL-VS2013.sln
+      platform: Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - toolchain: msvc15
       project_name: emulator\BKBTL-VS2015.sln
+      platform: x86
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - toolchain: msvc17
       project_name: emulator\BKBTL-VS2015.sln
+      platform: x86
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     - toolchain: msvc19
       project_name: emulator\BKBTL-VS2015.sln
+      platform: x86
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 build:
