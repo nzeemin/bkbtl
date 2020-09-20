@@ -23,14 +23,14 @@ environment:
       project_name: emulator\BKBTL-VS2015.sln
       platform: x86
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    - toolchain: msvc17
-      project_name: emulator\BKBTL-VS2015.sln
-      platform: x86
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    - toolchain: msvc19
-      project_name: emulator\BKBTL-VS2015.sln
-      platform: x86
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+#    - toolchain: msvc17
+#      project_name: emulator\BKBTL-VS2015.sln
+#      platform: x86
+#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+#    - toolchain: msvc19
+#      project_name: emulator\BKBTL-VS2015.sln
+#      platform: x86
+#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 build:
   project: $(project_name)
