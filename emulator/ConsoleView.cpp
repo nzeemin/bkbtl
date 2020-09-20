@@ -529,6 +529,7 @@ void ConsoleView_ShowBreakpoints()
 void ConsoleView_RemoveAllBreakpoints()
 {
     Emulator_RemoveAllBreakpoints();
+    DebugView_Redraw();
     DisasmView_Redraw();
 }
 void ConsoleView_AddBreakpoint(WORD address)
@@ -536,6 +537,7 @@ void ConsoleView_AddBreakpoint(WORD address)
     bool result = Emulator_AddCPUBreakpoint(address);
     if (!result)
         ConsoleView_Print(_T("  Failed to add breakpoint.\r\n"));
+    DebugView_Redraw();
     DisasmView_Redraw();
 }
 void ConsoleView_RemoveBreakpoint(WORD address)
@@ -543,6 +545,7 @@ void ConsoleView_RemoveBreakpoint(WORD address)
     bool result = Emulator_RemoveCPUBreakpoint(address);
     if (!result)
         ConsoleView_Print(_T("  Failed to remove breakpoint.\r\n"));
+    DebugView_Redraw();
     DisasmView_Redraw();
 }
 

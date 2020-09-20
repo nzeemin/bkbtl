@@ -268,6 +268,7 @@ void DisasmView_OnLButtonDown(WPARAM /*wParam*/, LPARAM lParam)
                     if (!result)
                         AlertWarningFormat(_T("Failed to remove breakpoint at %06ho."), address);
                 }
+                DebugView_Redraw();
                 DisasmView_Redraw();
             }
         }
