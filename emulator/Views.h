@@ -90,7 +90,6 @@ void DisasmView_Redraw();
 LRESULT CALLBACK DisasmViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK DisasmViewViewerWndProc(HWND, UINT, WPARAM, LPARAM);
 void DisasmView_OnUpdate();
-void DisasmView_SetCurrentProc(BOOL okCPU);
 
 
 //////////////////////////////////////////////////////////////////////

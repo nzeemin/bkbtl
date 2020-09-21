@@ -28,7 +28,7 @@ public:  // Constructor / initialization
     void        DeassertHALT();
     void        MemoryError();
     void        AssertIRQ1();
-    int			GetInternalTick() const { return m_internalTick; }
+    int         GetInternalTick() const { return m_internalTick; }
     void        SetInternalTick (uint16_t tick) { m_internalTick = tick; }
 
 public:
@@ -46,8 +46,8 @@ protected:  // Processor state
     bool        m_okStopped;        // "Processor stopped" flag
     bool        m_userspace;        // Read TRUE if user space is used -- CPU is accessing I/O from HALT mode using user space
     bool        m_stepmode;         // Read TRUE if it's step mode
-    bool        m_haltpin;			// HALT
-    bool        m_waitmode;			// WAIT
+    bool        m_haltpin;          // HALT
+    bool        m_waitmode;         // WAIT
 
 protected:  // Current instruction processing
     uint16_t    m_instruction;      // Curent instruction

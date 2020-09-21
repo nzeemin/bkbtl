@@ -65,10 +65,10 @@ enum BKConfiguration
 #define TRACE_ALL    0177777  // Trace all
 
 //floppy debug
-#define FLOPPY_FSM_WAITFORLSB	0
-#define FLOPPY_FSM_WAITFORMSB	1
-#define FLOPPY_FSM_WAITFORTERM1	2
-#define FLOPPY_FSM_WAITFORTERM2	3
+#define FLOPPY_FSM_WAITFORLSB   0
+#define FLOPPY_FSM_WAITFORMSB   1
+#define FLOPPY_FSM_WAITFORTERM1 2
+#define FLOPPY_FSM_WAITFORTERM2 3
 
 // Emulator image constants
 #define BKIMAGE_HEADER_SIZE 32

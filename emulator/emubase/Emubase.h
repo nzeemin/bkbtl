@@ -37,25 +37,25 @@ int DisassembleInstruction(uint16_t* pMemory, uint16_t addr, TCHAR* sInstr, TCHA
 //////////////////////////////////////////////////////////////////////
 // CFloppy
 
-#define FLOPPY_FSM_IDLE			0
+#define FLOPPY_FSM_IDLE         0
 
-#define FLOPPY_CMD_CORRECTION250		04
-#define FLOPPY_CMD_ENGINESTART			020
-#define FLOPPY_CMD_CORRECTION500		010
-#define FLOPPY_CMD_SIDEUP				040
-#define FLOPPY_CMD_DIR					0100
-#define FLOPPY_CMD_STEP					0200
-#define FLOPPY_CMD_SEARCHSYNC			0400
-#define FLOPPY_CMD_SKIPSYNC				01000
+#define FLOPPY_CMD_CORRECTION250        04
+#define FLOPPY_CMD_ENGINESTART          020
+#define FLOPPY_CMD_CORRECTION500        010
+#define FLOPPY_CMD_SIDEUP               040
+#define FLOPPY_CMD_DIR                  0100
+#define FLOPPY_CMD_STEP                 0200
+#define FLOPPY_CMD_SEARCHSYNC           0400
+#define FLOPPY_CMD_SKIPSYNC             01000
 //dir == 0 to center (towards trk0)
 //dir == 1 from center (towards trk80)
 
-#define FLOPPY_STATUS_TRACK0			01
-#define FLOPPY_STATUS_RDY				02
-#define FLOPPY_STATUS_WRITEPROTECT		04
-#define FLOPPY_STATUS_MOREDATA			0200
-#define FLOPPY_STATUS_CHECKSUMOK		040000
-#define FLOPPY_STATUS_INDEXMARK			0100000
+#define FLOPPY_STATUS_TRACK0            01
+#define FLOPPY_STATUS_RDY               02
+#define FLOPPY_STATUS_WRITEPROTECT      04
+#define FLOPPY_STATUS_MOREDATA          0200
+#define FLOPPY_STATUS_CHECKSUMOK        040000
+#define FLOPPY_STATUS_INDEXMARK         0100000
 
 #define FLOPPY_RAWTRACKSIZE             6250
 #define FLOPPY_RAWMARKERSIZE            (FLOPPY_RAWTRACKSIZE / 2)

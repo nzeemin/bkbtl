@@ -321,7 +321,7 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 ìêñ (BK-0011), 23437
     }
 }
 
-void CMotherboard::SetTimerReload(uint16_t val)	 // Sets timer reload value, write to port 177706
+void CMotherboard::SetTimerReload(uint16_t val)  // Sets timer reload value, write to port 177706
 {
     //DebugPrintFormat(_T("SetTimerReload %06o\r\n"), val);
     m_timerreload = val;
@@ -1134,81 +1134,6 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
     const uint8_t* pImageRam = pImage + 69632;
     memcpy(m_pRAM, pImageRam, 128 * 1024);
 }
-
-//void CMotherboard::FloppyDebug(uint8_t val)
-//{
-////#if !defined(PRODUCT)
-////    TCHAR buffer[512];
-////#endif
-///*
-//m_floppyaddr=0;
-//m_floppystate=FLOPPY_FSM_WAITFORLSB;
-//#define FLOPPY_FSM_WAITFORLSB	0
-//#define FLOPPY_FSM_WAITFORMSB	1
-//#define FLOPPY_FSM_WAITFORTERM1	2
-//#define FLOPPY_FSM_WAITFORTERM2	3
-//
-//*/
-//	switch(m_floppystate)
-//	{
-//		case FLOPPY_FSM_WAITFORLSB:
-//			if(val!=0xff)
-//			{
-//				m_floppyaddr=val;
-//				m_floppystate=FLOPPY_FSM_WAITFORMSB;
-//			}
-//			break;
-//		case FLOPPY_FSM_WAITFORMSB:
-//			if(val!=0xff)
-//			{
-//				m_floppyaddr|=val<<8;
-//				m_floppystate=FLOPPY_FSM_WAITFORTERM1;
-//			}
-//			else
-//			{
-//				m_floppystate=FLOPPY_FSM_WAITFORLSB;
-//			}
-//			break;
-//		case FLOPPY_FSM_WAITFORTERM1:
-//			if(val==0xff)
-//			{ //done
-//				uint16_t par;
-//				uint8_t trk,sector,side;
-//
-//				par=m_pFirstMemCtl->GetWord(m_floppyaddr,0);
-//
-////#if !defined(PRODUCT)
-////				wsprintf(buffer,_T(">>>>FDD Cmd %d "),(par>>8)&0xff);
-////				DebugPrint(buffer);
-////#endif
-//                par=m_pFirstMemCtl->GetWord(m_floppyaddr+2,0);
-//				side=par&0x8000?1:0;
-////#if !defined(PRODUCT)
-////				wsprintf(buffer,_T("Side %d Drv %d, Type %d "),par&0x8000?1:0,(par>>8)&0x7f,par&0xff);
-////				DebugPrint(buffer);
-////#endif
-//				par=m_pFirstMemCtl->GetWord(m_floppyaddr+4,0);
-//				sector=(par>>8)&0xff;
-//				trk=par&0xff;
-////#if !defined(PRODUCT)
-////				wsprintf(buffer,_T("Sect %d, Trk %d "),(par>>8)&0xff,par&0xff);
-////				DebugPrint(buffer);
-////				PrintOctalValue(buffer,m_pFirstMemCtl->GetWord(m_floppyaddr+6,0));
-////				DebugPrint(_T("Addr "));
-////				DebugPrint(buffer);
-////#endif
-//				par=m_pFirstMemCtl->GetWord(m_floppyaddr+8,0);
-////#if !defined(PRODUCT)
-////				wsprintf(buffer,_T(" Block %d Len %d\n"),trk*20+side*10+sector-1,par);
-////				DebugPrint(buffer);
-////#endif
-//
-//				m_floppystate=FLOPPY_FSM_WAITFORLSB;
-//			}
-//			break;
-//
-//	}
-//}
 
 
 //////////////////////////////////////////////////////////////////////

@@ -24,23 +24,23 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #define STEP  2
 
 /* register id's */
-#define AY_AFINE	(0)
-#define AY_ACOARSE	(1)
-#define AY_BFINE	(2)
-#define AY_BCOARSE	(3)
-#define AY_CFINE	(4)
-#define AY_CCOARSE	(5)
-#define AY_NOISEPER	(6)
-#define AY_ENABLE	(7)
-#define AY_AVOL		(8)
-#define AY_BVOL		(9)
-#define AY_CVOL		(10)
-#define AY_EFINE	(11)
-#define AY_ECOARSE	(12)
-#define AY_ESHAPE	(13)
+#define AY_AFINE    (0)
+#define AY_ACOARSE  (1)
+#define AY_BFINE    (2)
+#define AY_BCOARSE  (3)
+#define AY_CFINE    (4)
+#define AY_CCOARSE  (5)
+#define AY_NOISEPER (6)
+#define AY_ENABLE   (7)
+#define AY_AVOL     (8)
+#define AY_BVOL     (9)
+#define AY_CVOL     (10)
+#define AY_EFINE    (11)
+#define AY_ECOARSE  (12)
+#define AY_ESHAPE   (13)
 
-#define AY_PORTA	(14)
-#define AY_PORTB	(15)
+#define AY_PORTA    (14)
+#define AY_PORTB    (15)
 
 
 unsigned int CSoundAY::VolTable[32];
@@ -266,7 +266,7 @@ void CSoundAY::Callback(uint8_t* stream, int length)
 
     /* for the noise channel we must not touch OutputN - it's also not necessary */
     /* since we use outn. */
-    if ((this->Regs[AY_ENABLE] & 0x38) == 0x38)	/* all off */
+    if ((this->Regs[AY_ENABLE] & 0x38) == 0x38) /* all off */
         if (this->CountN <= STEP2) this->CountN += STEP2;
 
     outn = (this->OutputN | this->Regs[AY_ENABLE]);
@@ -400,7 +400,7 @@ void CSoundAY::Callback(uint8_t* stream, int length)
             if (this->CountN <= 0)
             {
                 /* Is noise output going to change? */
-                if ((this->RNG + 1) & 2)	/* (bit0^bit1)? */
+                if ((this->RNG + 1) & 2)    /* (bit0^bit1)? */
                 {
                     this->OutputN = ~this->OutputN;
                     outn = (this->OutputN | this->Regs[AY_ENABLE]);
@@ -480,8 +480,8 @@ void CSoundAY::BuildMixerTable()
     double out = MAX_OUTPUT;
     for (int i = 31; i > 0; i--)
     {
-        VolTable[i] = (unsigned)(out + 0.5);	/* round to nearest */
-        out /= 1.188502227;	/* = 10 ^ (1.5/20) = 1.5dB */
+        VolTable[i] = (unsigned)(out + 0.5);    /* round to nearest */
+        out /= 1.188502227; /* = 10 ^ (1.5/20) = 1.5dB */
     }
     VolTable[0] = 0;
 }

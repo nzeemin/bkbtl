@@ -41,6 +41,7 @@ void MemoryView_Scroll(int nDeltaLines);
 void MemoryView_UpdateScrollPos();
 void MemoryView_UpdateWindowText();
 LPCTSTR MemoryView_GetMemoryModeName();
+void MemoryView_AdjustWindowLayout();
 
 //enum MemoryViewMode {
 //    MEMMODE_RAM0 = 0,  // RAM plane 0
@@ -64,17 +65,17 @@ void MemoryView_RegisterClass()
     WNDCLASSEX wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style			= CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc	= MemoryViewViewerWndProc;
-    wcex.cbClsExtra		= 0;
-    wcex.cbWndExtra		= 0;
-    wcex.hInstance		= g_hInst;
-    wcex.hIcon			= NULL;
-    wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName	= NULL;
-    wcex.lpszClassName	= CLASSNAME_MEMORYVIEW;
-    wcex.hIconSm		= NULL;
+    wcex.style          = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc    = MemoryViewViewerWndProc;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = g_hInst;
+    wcex.hIcon          = NULL;
+    wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName   = NULL;
+    wcex.lpszClassName  = CLASSNAME_MEMORYVIEW;
+    wcex.hIconSm        = NULL;
 
     RegisterClassEx(&wcex);
 }
@@ -324,7 +325,7 @@ LPCTSTR MemoryView_GetMemoryModeName()
     //      case MEMMODE_ROM:   return _T("ROM");
     //      case MEMMODE_CPU:   return _T("CPU");
     //default:
-    //	return _T("UKWN");  // Unknown mode
+    //    return _T("UKWN");  // Unknown mode
     //  }
     return _T("");  //STUB
 }

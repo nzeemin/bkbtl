@@ -13,8 +13,8 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #pragma once
 
-#define BUFSIZE	((SOUNDSAMPLERATE / 25) * 4)
-#define BLOCK_COUNT	8
+#define BUFSIZE     ((SOUNDSAMPLERATE / 25) * 4)
+#define BLOCK_COUNT 8
 #define BLOCK_SIZE  BUFSIZE
 
 void SoundGen_Initialize(WORD volume);
