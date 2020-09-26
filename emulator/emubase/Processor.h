@@ -29,7 +29,7 @@ public:  // Constructor / initialization
     void        MemoryError();
     void        AssertIRQ1();
     int         GetInternalTick() const { return m_internalTick; }
-    void        SetInternalTick (uint16_t tick) { m_internalTick = tick; }
+    void        ClearInternalTick() { m_internalTick = 0; }
 
 public:
     static void Init();  // Initialize static tables
@@ -161,8 +161,8 @@ protected:  // PSW bits calculations
 
 protected:  // Implementation - instruction execution
     // No fields
-    uint16_t        GetWordAddr (uint8_t meth, uint8_t reg);
-    uint16_t        GetByteAddr (uint8_t meth, uint8_t reg);
+    uint16_t    GetWordAddr(uint8_t meth, uint8_t reg);
+    uint16_t    GetByteAddr(uint8_t meth, uint8_t reg);
 
     void        ExecuteUNKNOWN ();  // Нет такой инструкции - просто вызывается TRAP 10
     void        ExecuteHALT ();

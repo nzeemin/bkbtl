@@ -19,6 +19,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 
 const int MAX_BREAKPOINTCOUNT = 16;
+const int MAX_WATCHPOINTCOUNT = 16;
 
 extern CMotherboard* g_pBoard;
 extern BKConfiguration g_nEmulatorConfiguration;  // Current configuration
@@ -45,6 +46,11 @@ const uint16_t* Emulator_GetCPUBreakpointList();
 bool Emulator_IsBreakpoint();
 bool Emulator_IsBreakpoint(uint16_t address);
 void Emulator_RemoveAllBreakpoints();
+
+bool Emulator_AddWatchpoint(uint16_t address);
+const uint16_t* Emulator_GetWatchpointList();
+bool Emulator_RemoveWatchpoint(uint16_t address);
+void Emulator_RemoveAllWatchpoints();
 
 void Emulator_SetSound(bool soundOnOff);
 void Emulator_SetCovox(bool covoxOnOff);

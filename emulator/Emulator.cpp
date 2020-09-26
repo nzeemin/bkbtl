@@ -32,6 +32,8 @@ bool g_okEmulatorRunning = false;
 int m_wEmulatorCPUBpsCount = 0;
 uint16_t m_EmulatorCPUBps[MAX_BREAKPOINTCOUNT + 1];
 uint16_t m_wEmulatorTempCPUBreakpoint = 0177777;
+int m_wEmulatorWatchesCount = 0;
+uint16_t m_EmulatorWatches[MAX_BREAKPOINTCOUNT + 1];
 
 bool m_okEmulatorSound = false;
 uint16_t m_wEmulatorSoundSpeed = 100;
@@ -190,6 +192,11 @@ bool Emulator_Init()
     for (int i = 0; i <= MAX_BREAKPOINTCOUNT; i++)
     {
         m_EmulatorCPUBps[i] = 0177777;
+    }
+    m_wEmulatorWatchesCount = 0;
+    for (int i = 0; i <= MAX_WATCHPOINTCOUNT; i++)
+    {
+        m_EmulatorWatches[i] = 0177777;
     }
 
     g_pBoard = new CMotherboard();
@@ -396,6 +403,12 @@ void Emulator_Start()
 
     m_nFrameCount = 0;
     m_dwTickCount = GetTickCount();
+
+    // For proper breakpoint processing
+    if (m_wEmulatorCPUBpsCount != 0)
+    {
+        g_pBoard->GetCPU()->ClearInternalTick();
+    }
 }
 void Emulator_Stop()
 {
@@ -406,6 +419,7 @@ void Emulator_Stop()
     // Reset title bar message
     MainWindow_UpdateWindowTitle();
     MainWindow_UpdateMenu();
+
     // Reset FPS indicator
     MainWindow_SetStatusbarText(StatusbarPartFPS, nullptr);
 
@@ -514,6 +528,54 @@ void Emulator_RemoveAllBreakpoints()
     for (int i = 0; i < MAX_BREAKPOINTCOUNT; i++)
         m_EmulatorCPUBps[i] = 0177777;
     m_wEmulatorCPUBpsCount = 0;
+}
+
+bool Emulator_AddWatchpoint(uint16_t address)
+{
+    if (m_wEmulatorWatchesCount == MAX_WATCHPOINTCOUNT - 1 || address == 0177777)
+        return false;
+    for (int i = 0; i < m_wEmulatorWatchesCount; i++)  // Check if the BP exists
+    {
+        if (m_EmulatorWatches[i] == address)
+            return false;  // Already in the list
+    }
+    for (int i = 0; i < MAX_BREAKPOINTCOUNT; i++)  // Put in the first empty cell
+    {
+        if (m_EmulatorWatches[i] == 0177777)
+        {
+            m_EmulatorWatches[i] = address;
+            break;
+        }
+    }
+    m_wEmulatorWatchesCount++;
+    return true;
+}
+const uint16_t* Emulator_GetWatchpointList() { return m_EmulatorWatches; }
+bool Emulator_RemoveWatchpoint(uint16_t address)
+{
+    if (m_wEmulatorWatchesCount == 0 || address == 0177777)
+        return false;
+    for (int i = 0; i < MAX_WATCHPOINTCOUNT; i++)
+    {
+        if (m_EmulatorWatches[i] == address)
+        {
+            m_EmulatorWatches[i] = 0177777;
+            m_wEmulatorWatchesCount--;
+            if (m_wEmulatorWatchesCount > i)  // fill the hole
+            {
+                m_EmulatorWatches[i] = m_EmulatorWatches[m_wEmulatorWatchesCount];
+                m_EmulatorWatches[m_wEmulatorWatchesCount] = 0177777;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+void Emulator_RemoveAllWatchpoints()
+{
+    for (int i = 0; i < MAX_WATCHPOINTCOUNT; i++)
+        m_EmulatorWatches[i] = 0177777;
+    m_wEmulatorWatchesCount = 0;
 }
 
 void Emulator_SetSpeed(uint16_t realspeed)

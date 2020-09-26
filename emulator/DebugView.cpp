@@ -37,6 +37,7 @@ void DebugView_DoDraw(HDC hdc);
 BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM lParam);
 void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged, WORD oldPsw);
 void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, int x, int y, WORD oldValue);
+BOOL DebugView_DrawWatchpoints(HDC hdc, const CProcessor* pProc, int x, int y);
 void DebugView_DrawPorts(HDC hdc, const CMotherboard* pBoard, int x, int y);
 BOOL DebugView_DrawBreakpoints(HDC hdc, int x, int y);
 void DebugView_UpdateWindowText();
@@ -274,7 +275,9 @@ void DebugView_DoDraw(HDC hdc)
     // Draw stack for the current processor
     DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, 30 + 35 * cxChar, 2 + 0 * cyLine, oldSP);
 
-    DebugView_DrawPorts(hdc, g_pBoard, 30 + 57 * cxChar, 2 + 0 * cyLine);
+    BOOL okWatches = DebugView_DrawWatchpoints(hdc, pDebugPU, 30 + 57 * cxChar, 2 + 0 * cyLine);
+    if (!okWatches)
+        DebugView_DrawPorts(hdc, g_pBoard, 30 + 57 * cxChar, 2 + 0 * cyLine);
 
     DebugView_DrawBreakpoints(hdc, 30 + 89 * cxChar, 2 + 0 * cyLine);
 
@@ -408,6 +411,40 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     }
 
     SetTextColor(hdc, colorOld);
+}
+
+BOOL DebugView_DrawWatchpoints(HDC hdc, const CProcessor* pProc, int x, int y)
+{
+    const uint16_t* pws = Emulator_GetWatchpointList();
+    if (*pws == 0177777)
+        return FALSE;
+
+    BOOL okHaltMode = pProc->IsHaltMode();
+
+    int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
+    COLORREF colorText = Settings_GetColor(ColorDebugText);
+    COLORREF colorChanged = Settings_GetColor(ColorDebugValueChanged);
+
+    TextOut(hdc, x, y, _T("Watches:"), 8);
+    y += cyLine;
+    while (*pws != 0177777)
+    {
+        uint16_t address = *pws;
+
+        //TODO: Replace it with call to DebugView_DrawAddressAndValue()
+        SetTextColor(hdc, colorText);
+        DrawOctalValue(hdc, x, y, address);
+        int addrtype;
+        uint16_t value = g_pBoard->GetWordView(address, okHaltMode, false, &addrtype);
+        uint16_t wChanged = Emulator_GetChangeRamStatus(address);
+        SetTextColor(hdc, (wChanged != 0) ? colorChanged : colorText);
+        DrawOctalValue(hdc, x + 8 * cxChar, y, value);
+
+        y += cyLine;
+        pws++;
+    }
+
+    return TRUE;
 }
 
 void DebugView_DrawPorts(HDC hdc, const CMotherboard* /*pBoard*/, int x, int y)

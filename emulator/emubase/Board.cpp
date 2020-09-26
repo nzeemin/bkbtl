@@ -336,7 +336,7 @@ void CMotherboard::SetTimerState(uint16_t val) // Sets timer state, write to por
 
 void CMotherboard::DebugTicks()
 {
-    m_pCPU->SetInternalTick(0);
+    m_pCPU->ClearInternalTick();
     m_pCPU->Execute();
     if (m_pFloppyCtl != nullptr)
         m_pFloppyCtl->Periodic();
