@@ -38,6 +38,8 @@
 #define IDC_BUTTON2                     1026
 #define IDC_LIST1                       1029
 #define IDC_DEBUGFONT                   1030
+#define IDC_SYSLINK1                    1032
+#define IDC_VERSION                     1033
 #define ID_FILE                         32771
 #define ID_FILE_SAVESTATE               32772
 #define ID_FILE_LOADSTATE               32773
