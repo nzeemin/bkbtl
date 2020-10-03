@@ -9,7 +9,6 @@ See the GNU Lesser General Public License for more details.
 BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 // MainWindow.cpp
-//
 
 #include "stdafx.h"
 #include <commdlg.h>
@@ -24,7 +23,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Views.h"
 #include "ToolWindow.h"
 #include "Joystick.h"
-
 
 //////////////////////////////////////////////////////////////////////
 

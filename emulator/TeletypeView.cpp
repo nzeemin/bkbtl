@@ -17,7 +17,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //#include "Emulator.h"
 //#include "emubase\Emubase.h"
 
-
 //////////////////////////////////////////////////////////////////////
 
 
@@ -113,5 +112,6 @@ void TeletypeView_OutputSymbol(TCHAR symbol)
 
     TeletypeView_Output(message);
 }
+
 
 //////////////////////////////////////////////////////////////////////

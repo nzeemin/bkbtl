@@ -21,7 +21,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "SoundGen.h"
 #include "Joystick.h"
 
-
 //////////////////////////////////////////////////////////////////////
 
 

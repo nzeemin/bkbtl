@@ -15,8 +15,8 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "emubase\Board.h"
 #include "Views.h"
 
-
 //////////////////////////////////////////////////////////////////////
+
 
 const int MAX_BREAKPOINTCOUNT = 16;
 const int MAX_WATCHPOINTCOUNT = 16;

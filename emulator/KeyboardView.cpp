@@ -15,8 +15,8 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Views.h"
 #include "Emulator.h"
 
-
 //////////////////////////////////////////////////////////////////////
+
 
 #define COLOR_BK_BACKGROUND RGB(115,115,115)
 

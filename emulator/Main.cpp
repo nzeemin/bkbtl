@@ -9,7 +9,6 @@ See the GNU Lesser General Public License for more details.
 BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 // BKBTL.cpp : Defines the entry point for the application.
-//
 
 #include "stdafx.h"
 #include <commdlg.h>
@@ -24,7 +23,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Dialogs.h"
 #include "Views.h"
 #include "Joystick.h"
-
 
 //////////////////////////////////////////////////////////////////////
 // Global Variables

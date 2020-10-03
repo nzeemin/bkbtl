@@ -14,7 +14,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include <Mmsystem.h>
 #include "Joystick.h"
 
-
 //////////////////////////////////////////////////////////////////////
 
 
