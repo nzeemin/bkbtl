@@ -834,9 +834,9 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
         if (m_pFloppyCtl != nullptr)
         {
             uint16_t state = m_pFloppyCtl->GetState();
-//#if !defined(PRODUCT)
+
 //            DebugLogFormat(_T("Floppy GETSTATE %06o\t\tCPU %06o\n"), state, m_pCPU->GetInstructionPC());
-//#endif
+
             return state;
         }
         return 0;
@@ -850,9 +850,9 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
         if (m_pFloppyCtl != nullptr)
         {
             uint16_t word = m_pFloppyCtl->GetData();
-//#if !defined(PRODUCT)
+
 //            DebugLogFormat(_T("Floppy READ\t\t%04x\tCPU %06o\n"), word, m_pCPU->GetInstructionPC());
-//#endif
+
             return word;
         }
         return 0;
@@ -950,15 +950,11 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         //TODO
         break;
     case 0177564:  // Serial port output status register
-//#if !defined(PRODUCT)
 //        DebugPrintFormat(_T("177564 write '%06o'\r\n"), word);
-//#endif
         m_Port177564 = word;
         break;
     case 0177566:  // Serial port output data
-//#if !defined(PRODUCT)
 //        DebugPrintFormat(_T("177566 write '%c'\r\n"), (uint8_t)word);
-//#endif
         m_Port177566 = word;
         m_Port177564 &= ~0200;
         break;
@@ -989,9 +985,8 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         if (word & 04000)
         {
             m_Port177716mem = word;
-//#if !defined(PRODUCT)
+
 //            DebugLogFormat(_T("177716mem %06o\t\t%06o\r\n"), word, m_pCPU->GetInstructionPC());
-//#endif
         }
         else
         {
@@ -1034,9 +1029,8 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
                 }
                 word &= ~(0x0c);
             }
-//#if !defined(PRODUCT)
 //            DebugLogFormat(_T("Floppy COMMAND %06o\t\tCPU %06o\r\n"), word, m_pCPU->GetInstructionPC());
-//#endif
+
             m_pFloppyCtl->SetCommand(word);
         }
         break;

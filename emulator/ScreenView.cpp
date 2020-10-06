@@ -252,9 +252,8 @@ void ScreenView_PrepareScreen()
 
 void ScreenView_PutKeyEventToQueue(WORD keyevent)
 {
-//#if !defined(PRODUCT)
 //    DebugPrintFormat(_T("Scan: 0x%0x\r\n"), keyevent & 127);
-//#endif
+
     if (m_ScreenKeyQueueCount == KEYEVENT_QUEUE_SIZE) return;  // Full queue
 
     m_ScreenKeyQueue[m_ScreenKeyQueueTop] = keyevent;
@@ -346,9 +345,9 @@ void ScreenView_ScanKeyboard()
             if ((newstate & 128) != (oldstate & 128))  // Key state changed - key pressed or released
             {
                 BYTE pcscan = (BYTE) scan;
-//#if !defined(PRODUCT)
+
 //                DebugPrintFormat(_T("Key PC: 0x%0x 0x%0x 0x%0x\r\n"), scan, keys[VK_SHIFT], keys[VK_CONTROL]);
-//#endif
+
                 BYTE bkscan = pTable[pcscan];
                 if (bkscan != 0)
                 {
@@ -381,10 +380,8 @@ void ScreenView_ProcessKeyboard()
         if (((bkscan & 0370) == 0260) && Settings_GetJoystick() != 0)  // Skip joystick events if NumPad joystick is off
             return;
 
-//#if !defined(PRODUCT)
 //        TCHAR bufoct[7];  PrintOctalValue(bufoct, bkscan);
 //        DebugPrintFormat(_T("KeyEvent: %s %d %d\r\n"), bufoct, pressed, ctrl);
-//#endif
 
         g_pBoard->KeyboardEvent(bkscan, pressed, ctrl);
     }

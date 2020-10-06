@@ -377,9 +377,7 @@ BOOL CALLBACK TapeView_TapeReadCallback(unsigned int samples)
         TapeView_UpdatePosition();
     }
 
-//#if !defined(PRODUCT)
 //    DebugPrintFormat(_T("Tape: %d\r\n"), result);
-//#endif
 
     return result;
 }
