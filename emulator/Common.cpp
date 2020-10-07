@@ -73,7 +73,7 @@ void DebugPrint(LPCTSTR) {}
 void DebugPrintFormat(LPCTSTR, ...) {}
 void DebugLogClear() {}
 void DebugLogCloseFile() {}
-void DebugLog(LPCTSTR message) {}
+void DebugLog(LPCTSTR) {}
 void DebugLogFormat(LPCTSTR, ...) {}
 
 #else
