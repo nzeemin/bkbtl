@@ -154,6 +154,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Step Into\tF11",              ID_DEBUG_STEPINTO
         MENUITEM "Step Over\tShift+F11",        ID_DEBUG_STEPOVER
+        MENUITEM SEPARATOR
+        MENUITEM "Clear Console Log",           ID_DEBUG_CLEARCONSOLE
+        MENUITEM "Delete All Breakpoints",      ID_DEBUG_DELETEALLBREAKPTS
     END
     POPUP "&Help"
     BEGIN

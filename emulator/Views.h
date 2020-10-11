@@ -154,6 +154,8 @@ void ConsoleView_Print(LPCTSTR message);
 void ConsoleView_Activate();
 void ConsoleView_StepInto();
 void ConsoleView_StepOver();
+void ConsoleView_ClearConsole();
+void ConsoleView_DeleteAllBreakpoints();
 
 
 //////////////////////////////////////////////////////////////////////

@@ -777,9 +777,9 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_EMULATOR_RUN, (g_okEmulatorRunning ? MF_CHECKED : MF_UNCHECKED));
     SendMessage(m_hwndToolbar, TB_CHECKBUTTON, ID_EMULATOR_RUN, (g_okEmulatorRunning ? 1 : 0));
     //MainWindow_SetToolbarImage(ID_EMULATOR_RUN, g_okEmulatorRunning ? ToolbarImageRun : ToolbarImagePause);
-    // View|Debug check
+
+    // View menu
     CheckMenuItem(hMenu, ID_VIEW_TOOLBAR, (Settings_GetToolbar() ? MF_CHECKED : MF_UNCHECKED));
-    CheckMenuItem(hMenu, ID_VIEW_DEBUG, (Settings_GetDebug() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_MEMORYMAP, (Settings_GetMemoryMap() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_KEYBOARD, (Settings_GetKeyboard() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_TAPE, (Settings_GetTape() ? MF_CHECKED : MF_UNCHECKED));
@@ -854,6 +854,17 @@ void MainWindow_UpdateMenu()
             g_pBoard->IsFloppyImageAttached(2) ? (g_pBoard->IsFloppyReadOnly(2) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
     MainWindow_SetToolbarImage(ID_EMULATOR_FLOPPY3,
             g_pBoard->IsFloppyImageAttached(3) ? (g_pBoard->IsFloppyReadOnly(3) ? ToolbarImageFloppyDiskWP : ToolbarImageFloppyDisk) : ToolbarImageFloppySlot);
+
+    // Debug menu
+    BOOL okDebug = Settings_GetDebug();
+    CheckMenuItem(hMenu, ID_VIEW_DEBUG, (okDebug ? MF_CHECKED : MF_UNCHECKED));
+    EnableMenuItem(hMenu, ID_VIEW_MEMORYMAP, (okDebug ? MF_ENABLED : MF_DISABLED));
+    EnableMenuItem(hMenu, ID_DEBUG_SPRITES, (okDebug ? MF_ENABLED : MF_DISABLED));
+    EnableMenuItem(hMenu, ID_DEBUG_STEPINTO, (okDebug ? MF_ENABLED : MF_DISABLED));
+    EnableMenuItem(hMenu, ID_DEBUG_STEPOVER, (okDebug ? MF_ENABLED : MF_DISABLED));
+    EnableMenuItem(hMenu, ID_DEBUG_TELETYPE, (okDebug ? MF_ENABLED : MF_DISABLED));
+    EnableMenuItem(hMenu, ID_DEBUG_CLEARCONSOLE, (okDebug ? MF_ENABLED : MF_DISABLED));
+    EnableMenuItem(hMenu, ID_DEBUG_DELETEALLBREAKPTS, (okDebug ? MF_ENABLED : MF_DISABLED));
 }
 
 // Process menu command
@@ -919,6 +930,9 @@ bool MainWindow_DoCommand(int commandId)
     case ID_EMULATOR_AUTOSTART:
         MainWindow_DoEmulatorAutostart();
         break;
+    case ID_DEBUG_SPRITES:
+        MainWindow_DoViewSpriteViewer();
+        break;
     case ID_DEBUG_STEPINTO:
         if (!g_okEmulatorRunning && Settings_GetDebug())
             ConsoleView_StepInto();
@@ -927,8 +941,13 @@ bool MainWindow_DoCommand(int commandId)
         if (!g_okEmulatorRunning && Settings_GetDebug())
             ConsoleView_StepOver();
         break;
-    case ID_DEBUG_SPRITES:
-        MainWindow_DoViewSpriteViewer();
+    case ID_DEBUG_CLEARCONSOLE:
+        if (Settings_GetDebug())
+            ConsoleView_ClearConsole();
+        break;
+    case ID_DEBUG_DELETEALLBREAKPTS:
+        if (Settings_GetDebug())
+            ConsoleView_DeleteAllBreakpoints();
         break;
     case ID_DEBUG_MEMORY_WORDBYTE:
         MemoryView_SwitchWordByte();
