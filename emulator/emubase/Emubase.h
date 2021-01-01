@@ -31,7 +31,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //   sInstr  - instruction mnemonics buffer - at least 8 characters
 //   sArg    - instruction arguments buffer - at least 32 characters
 //   Return value: number of words in the instruction
-int DisassembleInstruction(uint16_t* pMemory, uint16_t addr, TCHAR* sInstr, TCHAR* sArg);
+uint16_t DisassembleInstruction(const uint16_t* pMemory, uint16_t addr, TCHAR* sInstr, TCHAR* sArg);
 
 
 //////////////////////////////////////////////////////////////////////

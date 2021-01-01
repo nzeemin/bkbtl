@@ -422,7 +422,7 @@ void CFloppyController::PrepareTrack()
     if (m_pDrive->fpFile != NULL)
     {
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
-        count = (uint32_t) ::fread(&data, 1, 5120, m_pDrive->fpFile);
+        count = (uint32_t) ::fread(data, 1, 5120, m_pDrive->fpFile);
         //TODO: Контроль ошибок чтения
     }
 
@@ -475,7 +475,7 @@ void CFloppyController::FlushChanges()
 
         // Save data into the file
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
-        uint32_t dwBytesWritten = (uint32_t) ::fwrite(&data, 1, 5120, m_pDrive->fpFile);
+        uint32_t dwBytesWritten = (uint32_t) ::fwrite(data, 1, 5120, m_pDrive->fpFile);
         //TODO: Проверка на ошибки записи
     }
     else
