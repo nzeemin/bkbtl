@@ -303,7 +303,7 @@ void MemoryView_OnDraw(HDC hdc)
     SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
     SelectObject(hdc, hOldFont);
-    DeleteObject(hFont);
+    VERIFY(::DeleteObject(hFont));
 
     if (::GetFocus() == m_hwndMemoryViewer)
     {

@@ -309,7 +309,7 @@ LRESULT CALLBACK KeyboardViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
             // Draw focus frame for the key pressed
             HDC hdc = ::GetDC(g_hwndKeyboard);
             Keyboard_DrawKey(hdc, keyscan);
-            ::ReleaseDC(g_hwndKeyboard, hdc);
+            VERIFY(::ReleaseDC(g_hwndKeyboard, hdc));
 
             // Remember key pressed
             m_nKeyboardKeyPressed = keyscan;
@@ -325,7 +325,7 @@ LRESULT CALLBACK KeyboardViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
             // Draw focus frame for the released key
             HDC hdc = ::GetDC(g_hwndKeyboard);
             Keyboard_DrawKey(hdc, m_nKeyboardKeyPressed);
-            ::ReleaseDC(g_hwndKeyboard, hdc);
+            VERIFY(::ReleaseDC(g_hwndKeyboard, hdc));
 
             m_nKeyboardKeyPressed = 0;
         }
@@ -359,7 +359,7 @@ void KeyboardView_OnDraw(HDC hdc)
     HGDIOBJ hOldBrush = ::SelectObject(hdc, hBkBrush);
     ::PatBlt(hdc, 0, 0, rc.right, rc.bottom, PATCOPY);
     ::SelectObject(hdc, hOldBrush);
-    ::DeleteObject(hBkBrush);
+    VERIFY(::DeleteObject(hBkBrush));
 
     HBITMAP hBmp = ::LoadBitmap(g_hInst, MAKEINTRESOURCE(bitmapresourceid));
     HDC hdcMem = ::CreateCompatibleDC(hdc);
@@ -374,8 +374,8 @@ void KeyboardView_OnDraw(HDC hdc)
     ::BitBlt(hdc, m_nKeyboardBitmapLeft, m_nKeyboardBitmapTop, cxBitmap, cyBitmap, hdcMem, 0, 0, SRCCOPY);
 
     ::SelectObject(hdcMem, hOldBitmap);
-    ::DeleteDC(hdcMem);
-    ::DeleteObject(hBmp);
+    VERIFY(::DeleteDC(hdcMem));
+    VERIFY(::DeleteObject(hBmp));
 
     if (m_nKeyboardKeyPressed != 0)
         Keyboard_DrawKey(hdc, m_nKeyboardKeyPressed);

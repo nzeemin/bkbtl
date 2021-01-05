@@ -82,7 +82,7 @@ void ScreenView_Done()
 {
     if (m_hbmp != NULL)
     {
-        DeleteObject(m_hbmp);
+        VERIFY(::DeleteObject(m_hbmp));
         m_hbmp = NULL;
     }
 
@@ -95,11 +95,11 @@ void ScreenView_CreateDisplay()
 
     if (m_hbmp != NULL)
     {
-        DeleteObject(m_hbmp);
+        VERIFY(::DeleteObject(m_hbmp));
         m_hbmp = NULL;
     }
 
-    HDC hdc = GetDC( g_hwnd );
+    HDC hdc = ::GetDC(g_hwnd);
 
     m_bmpinfo.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
     m_bmpinfo.bmiHeader.biWidth = m_cxScreenWidth;
@@ -115,7 +115,7 @@ void ScreenView_CreateDisplay()
 
     m_hbmp = CreateDIBSection( hdc, &m_bmpinfo, DIB_RGB_COLORS, (void **) &m_bits, NULL, 0 );
 
-    ReleaseDC( g_hwnd, hdc );
+    VERIFY(::ReleaseDC(g_hwnd, hdc));
 }
 
 // Create Screen View as child of Main Window
@@ -225,7 +225,7 @@ void ScreenView_OnDraw(HDC hdc)
     }
 
     ::SelectObject(hdc, hOldBrush);
-    ::DeleteObject(hBrush);
+    VERIFY(::DeleteObject(hBrush));
 
     DrawDibDraw(m_hdd, hdc,
             m_xScreenOffset, m_yScreenOffset, -1, -1,
@@ -238,9 +238,9 @@ void ScreenView_RedrawScreen()
 {
     ScreenView_PrepareScreen();
 
-    HDC hdc = GetDC(g_hwndScreen);
+    HDC hdc = ::GetDC(g_hwndScreen);
     ScreenView_OnDraw(hdc);
-    ::ReleaseDC(g_hwndScreen, hdc);
+    VERIFY(::ReleaseDC(g_hwndScreen, hdc));
 }
 
 void ScreenView_PrepareScreen()

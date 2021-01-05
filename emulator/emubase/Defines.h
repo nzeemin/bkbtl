@@ -16,10 +16,10 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 //////////////////////////////////////////////////////////////////////
 
-inline uint16_t GetDigit(uint16_t word, int pos)
+inline uint8_t GetDigit(uint16_t word, int pos)
 {
     //return (word >>= pos * 3) % 8;
-    return (word >>= ((pos << 1) + pos)) & 7;
+    return (uint8_t)((word >>= ((pos << 1) + pos)) & 7);
 }
 
 // Constants for "pos" argument
@@ -173,15 +173,4 @@ inline uint16_t GetDigit(uint16_t word, int pos)
 #define PI_FSUB         0075010
 #define PI_FMUL         0075020
 #define PI_FDIV         0075030
-
-// Commands -- special commands, HALT mode only
-#define PI_GO           0000012  // Return to USER mode;  PC := CPC; PSW := CPS
-#define PI_STEP         0000016
-#define PI_RSEL         0000020  // R0 := SEL  - Read SEL register
-#define PI_MFUS         0000021  // R0 := (R5)+
-#define PI_RCPC         0000022  // R0 := CPC
-#define PI_RCPS         0000024  // R0 := CPS
-#define PI_MTUS         0000031  // -(R5) := R0
-#define PI_WCPC         0000032  // CPC := R0
-#define PI_WCPS         0000034  // CPS := R0
 

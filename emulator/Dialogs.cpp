@@ -33,6 +33,9 @@ INT_PTR CALLBACK SettingsColorsProc(HWND hDlg, UINT message, WPARAM wParam, LPAR
 LPCTSTR m_strInputBoxTitle = NULL;
 WORD* m_pInputBoxValueOctal = NULL;
 
+// Show the standard Choose Color dialog box
+BOOL ShowColorDialog(COLORREF& color);
+
 COLORREF m_DialogSettings_acrCustClr[16];  // array of custom colors to use in ChooseColor()
 COLORREF m_DialogSettings_OsdLineColor = RGB(120, 0, 0);
 
@@ -390,6 +393,27 @@ void Dialogs_DoLoadBinLoad(LPCTSTR strFileName)
     }
 }
 
+
+//////////////////////////////////////////////////////////////////////
+// Color Dialog
+
+BOOL ShowColorDialog(COLORREF& color, HWND hWndOwner)
+{
+    CHOOSECOLOR cc;  memset(&cc, 0, sizeof(cc));
+    cc.lStructSize = sizeof(cc);
+    cc.hwndOwner = hWndOwner;
+    cc.lpCustColors = (LPDWORD)m_DialogSettings_acrCustClr;
+    cc.rgbResult = color;
+    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+    if (!::ChooseColor(&cc))
+        return FALSE;
+
+    color = cc.rgbResult;
+    return TRUE;
+}
+
+
 //////////////////////////////////////////////////////////////////////
 // Settings Dialog
 
@@ -469,7 +493,7 @@ void SettingsDialog_FillDebugFontCombo(HWND hCombo)
 
     HDC hdc = GetDC(NULL);
     EnumFontFamiliesEx(hdc, &logfont, (FONTENUMPROC)SettingsDialog_EnumFontProc, (LPARAM)hCombo, 0);
-    ReleaseDC(NULL, hdc);
+    VERIFY(::ReleaseDC(NULL, hdc));
 
     Settings_GetDebugFontName(logfont.lfFaceName);
     ::SendMessage(hCombo, CB_SELECTSTRING, 0, (LPARAM)logfont.lfFaceName);
@@ -535,17 +559,9 @@ void SettingsDialog_OnChooseColor(HWND hDlg)
     HWND hList = GetDlgItem(hDlg, IDC_LIST1);
     int itemIndex = ::SendMessage(hList, LB_GETCURSEL, 0, 0);
     COLORREF color = ::SendMessage(hList, LB_GETITEMDATA, itemIndex, 0);
-
-    CHOOSECOLOR cc;  memset(&cc, 0, sizeof(cc));
-    cc.lStructSize = sizeof(cc);
-    cc.hwndOwner = hDlg;
-    cc.lpCustColors = (LPDWORD)m_DialogSettings_acrCustClr;
-    cc.rgbResult = color;
-    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-
-    if (::ChooseColor(&cc))
+    if (ShowColorDialog(color, hDlg))
     {
-        ::SendMessage(hList, LB_SETITEMDATA, itemIndex, (LPARAM)cc.rgbResult);
+        ::SendMessage(hList, LB_SETITEMDATA, itemIndex, (LPARAM)color);
         ::InvalidateRect(hList, NULL, TRUE);
     }
 }
