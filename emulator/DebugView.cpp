@@ -190,7 +190,8 @@ LRESULT CALLBACK DebugViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, 
         }
         break;
     case WM_LBUTTONDOWN:
-        SetFocus(hWnd);
+    case WM_RBUTTONDOWN:
+        ::SetFocus(hWnd);
         break;
     case WM_KEYDOWN:
         return (LRESULT) DebugView_OnKeyDown(wParam, lParam);
@@ -446,73 +447,41 @@ BOOL DebugView_DrawWatchpoints(HDC hdc, const CProcessor* pProc, int x, int y)
     return TRUE;
 }
 
+struct DebugViewPortWatch
+{
+    uint16_t address;
+    LPCTSTR description;
+}
+m_DebugViewPorts[] =
+{
+    { 0177660, _T("keyb state") },
+    { 0177662, _T("keyb data") },
+    { 0177664, _T("scroll") },
+    { 0177706, _T("timer reload") },
+    { 0177710, _T("timer value") },
+    { 0177712, _T("timer manage") },
+    { 0177714, _T("parallel") },
+    { 0177716, _T("system") },
+    { 0177130, _T("floppy state") },
+    { 0177132, _T("floppy data") },
+};
+
 void DebugView_DrawPorts(HDC hdc, const CMotherboard* /*pBoard*/, int x, int y)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
 
     TextOut(hdc, x, y, _T("Port"), 6);
 
-    WORD value;
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177660);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177660);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("keyb state"), 10);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177662);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177662);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("keyb data"), 9);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177664);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177664);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("scroll"), 6);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177706);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177706);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("timer reload"), 12);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177710);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177710);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("timer value"), 11);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177712);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177712);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("timer manage"), 12);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177714);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177714);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("parallel"), 8);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177716);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177716);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("system"), 6);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177130);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177130);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("floppy state"), 12);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177132);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177132);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("floppy data"), 11);
+    int portsCount = sizeof(m_DebugViewPorts) / sizeof(m_DebugViewPorts[0]);
+    for (int i = 0; i < portsCount; i++)
+    {
+        const DebugViewPortWatch& watch = m_DebugViewPorts[i];
+        uint16_t value = g_pBoard->GetPortView(watch.address);
+        DrawOctalValue(hdc, x + 0 * cxChar, y, watch.address);
+        DrawOctalValue(hdc, x + 8 * cxChar, y, value);
+        TextOut(hdc, x + 16 * cxChar, y, watch.description, _tcslen(watch.description));
+        y += cyLine;
+    }
 }
 
 BOOL DebugView_DrawBreakpoints(HDC hdc, int x, int y)

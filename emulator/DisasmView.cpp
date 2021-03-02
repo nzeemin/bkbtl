@@ -213,6 +213,9 @@ LRESULT CALLBACK DisasmViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
     case WM_LBUTTONDOWN:
         DisasmView_OnLButtonDown(wParam, lParam);
         break;
+    case WM_RBUTTONDOWN:
+        ::SetFocus(hWnd);
+        break;
     case WM_KEYDOWN:
         return (LRESULT) DisasmView_OnKeyDown(wParam, lParam);
     case WM_SETFOCUS:
@@ -245,33 +248,34 @@ void DisasmView_OnLButtonDown(WPARAM /*wParam*/, LPARAM lParam)
 {
     ::SetFocus(m_hwndDisasmViewer);
 
-    // For click in the breakpoint zone at the left - try to find the line/address and add/remove breakpoint
-    if (GET_X_LPARAM(lParam) < m_cxDisasmBreakpointZone)
+    if (GET_X_LPARAM(lParam) >= m_cxDisasmBreakpointZone)
+        return;
+
+    int lineindex = (GET_Y_LPARAM(lParam) - 2) / m_cyDisasmLine;
+    if (lineindex < 0 || lineindex >= MAX_DISASMLINECOUNT)
+        return;
+
+    DisasmLineItem* pLineItem = m_pDisasmLineItems + lineindex;
+    if (pLineItem->type == LINETYPE_NONE)
+        return;
+
+    // Try to and add/remove breakpoint for the line
+    WORD address = pLineItem->address;
+    if (!Emulator_IsBreakpoint(address))
     {
-        int lineindex = (GET_Y_LPARAM(lParam) - 2) / m_cyDisasmLine;
-        if (lineindex >= 0 && lineindex < MAX_DISASMLINECOUNT)
-        {
-            DisasmLineItem* pLineItem = m_pDisasmLineItems + lineindex;
-            if (pLineItem->type != LINETYPE_NONE)
-            {
-                WORD address = pLineItem->address;
-                if (!Emulator_IsBreakpoint(address))
-                {
-                    bool result = Emulator_AddCPUBreakpoint(address);
-                    if (!result)
-                        AlertWarningFormat(_T("Failed to add breakpoint at %06ho."), address);
-                }
-                else
-                {
-                    bool result = Emulator_RemoveCPUBreakpoint(address);
-                    if (!result)
-                        AlertWarningFormat(_T("Failed to remove breakpoint at %06ho."), address);
-                }
-                DebugView_Redraw();
-                DisasmView_Redraw();
-            }
-        }
+        bool result = Emulator_AddCPUBreakpoint(address);
+        if (!result)
+            AlertWarningFormat(_T("Failed to add breakpoint at %06ho."), address);
     }
+    else
+    {
+        bool result = Emulator_RemoveCPUBreakpoint(address);
+        if (!result)
+            AlertWarningFormat(_T("Failed to remove breakpoint at %06ho."), address);
+    }
+
+    DebugView_Redraw();
+    DisasmView_Redraw();
 }
 
 void DisasmView_UpdateWindowText()
