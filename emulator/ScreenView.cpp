@@ -418,5 +418,43 @@ BOOL ScreenView_SaveScreenshot(LPCTSTR sFileName)
     return result;
 }
 
+HGLOBAL ScreenView_GetScreenshotAsDIB()
+{
+    void* pBits = ::calloc(m_cxScreenWidth * m_cyScreenHeight, 4);
+    Emulator_PrepareScreenRGB32(pBits, m_ScreenMode);
+
+    BITMAPINFOHEADER bi;
+    ::ZeroMemory(&bi, sizeof(BITMAPINFOHEADER));
+    bi.biSize = sizeof(BITMAPINFOHEADER);
+    bi.biWidth = m_cxScreenWidth;
+    bi.biHeight = m_cyScreenHeight;
+    bi.biPlanes = 1;
+    bi.biBitCount = 32;
+    bi.biCompression = BI_RGB;
+    bi.biSizeImage = bi.biWidth * bi.biHeight * 4;
+
+    HGLOBAL hDIB = ::GlobalAlloc(GMEM_MOVEABLE, sizeof(BITMAPINFOHEADER) + bi.biSizeImage);
+    if (hDIB == NULL)
+    {
+        ::free(pBits);
+        return NULL;
+    }
+
+    LPBYTE p = (LPBYTE) ::GlobalLock(hDIB);
+    ::CopyMemory(p, &bi, sizeof(BITMAPINFOHEADER));
+    p += sizeof(BITMAPINFOHEADER);
+    for (int line = 0; line < m_cyScreenHeight; line++)
+    {
+        LPBYTE psrc = (LPBYTE)pBits + line * m_cxScreenWidth * 4;
+        ::CopyMemory(p, psrc, m_cxScreenWidth * 4);
+        p += m_cxScreenWidth * 4;
+    }
+    ::GlobalUnlock(hDIB);
+
+    ::free(pBits);
+
+    return hDIB;
+}
+
 
 //////////////////////////////////////////////////////////////////////

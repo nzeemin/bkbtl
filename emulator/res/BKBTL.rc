@@ -88,6 +88,7 @@ BEGIN
         MENUITEM "Save State…",                 ID_FILE_SAVESTATE
         MENUITEM SEPARATOR
         MENUITEM "Screenshot",                  ID_FILE_SCREENSHOT
+        MENUITEM "Screenshot to Clipboard",     ID_FILE_SCREENSHOTTOCLIPBOARD
         MENUITEM "Save Screenshot as...",       ID_FILE_SAVESCREENSHOTAS
         MENUITEM SEPARATOR
         MENUITEM "Settings General",            ID_FILE_SETTINGS
