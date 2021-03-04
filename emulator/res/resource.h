@@ -112,8 +112,9 @@
 #define ID_DEBUG_MEMORY_GOTO            32895
 #define ID_DEBUG_CLEARCONSOLE           32896
 #define ID_DEBUG_DELETEALLBREAKPTS      32897
-#define ID_DISASM_COPY_ADDRESS          32898
-#define ID_DISASM_COPY_VALUE            32899
+#define ID_DEBUG_COPY_ADDRESS           32898
+#define ID_DEBUG_COPY_VALUE             32899
+#define ID_DEBUG_GOTO_ADDRESS           32900
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

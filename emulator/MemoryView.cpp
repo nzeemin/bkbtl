@@ -12,6 +12,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #include "stdafx.h"
 #include <commctrl.h>
+#include <windowsx.h>
 #include "Main.h"
 #include "Views.h"
 #include "ToolWindow.h"
@@ -25,22 +26,12 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 HWND g_hwndMemory = (HWND) INVALID_HANDLE_VALUE;  // Memory view window handler
 WNDPROC m_wndprocMemoryToolWindow = NULL;  // Old window proc address of the ToolWindow
 
-int m_cyLineMemory = 0;  // Line height in pixels
-int m_nPageSize = 0;  // Page size in lines
-
 HWND m_hwndMemoryViewer = (HWND) INVALID_HANDLE_VALUE;
 HWND m_hwndMemoryToolbar = (HWND) INVALID_HANDLE_VALUE;
 
-void MemoryView_OnDraw(HDC hdc);
-BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM lParam);
-BOOL MemoryView_OnMouseWheel(WPARAM wParam, LPARAM lParam);
-BOOL MemoryView_OnVScroll(WPARAM wParam, LPARAM lParam);
-void MemoryView_ScrollTo(WORD wAddress);
-void MemoryView_Scroll(int nDeltaLines);
-void MemoryView_UpdateScrollPos();
-void MemoryView_UpdateWindowText();
-LPCTSTR MemoryView_GetMemoryModeName();
-void MemoryView_AdjustWindowLayout();
+int m_cxChar = 0;
+int m_cyLineMemory = 0;  // Line height in pixels
+int m_nPageSize = 100;  // Page size in lines
 
 //enum MemoryViewMode {
 //    MEMMODE_RAM0 = 0,  // RAM plane 0
@@ -52,8 +43,24 @@ void MemoryView_AdjustWindowLayout();
 //};
 
 //int     m_Mode = MEMMODE_ROM;  // See MemoryViewMode enum
-WORD    m_wBaseAddress = 0;
+WORD    m_wBaseAddress = 0xFFFF;
+WORD    m_wCurrentAddress = 0xFFFF;
 BOOL    m_okMemoryByteMode = FALSE;
+
+void MemoryView_AdjustWindowLayout();
+BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM lParam);
+void MemoryView_OnLButtonDown(int mousex, int mousey);
+void MemoryView_OnRButtonDown(int mousex, int mousey);
+BOOL MemoryView_OnMouseWheel(WPARAM wParam, LPARAM lParam);
+BOOL MemoryView_OnVScroll(WORD scrollcmd, WORD scrollpos);
+void MemoryView_CopyValueToClipboard(WPARAM command);
+void MemoryView_GotoAddress(WORD wAddress);
+void MemoryView_ScrollTo(WORD wBaseAddress);
+void MemoryView_UpdateWindowText();
+//LPCTSTR MemoryView_GetMemoryModeName();
+void MemoryView_UpdateScrollPos();
+void MemoryView_GetCurrentValueRect(LPRECT pRect, int cxChar, int cyLine);
+void MemoryView_OnDraw(HDC hdc);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -134,8 +141,8 @@ void MemoryView_Create(HWND hwndParent, int x, int y, int width, int height)
 
     SendMessage(m_hwndMemoryToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons);
 
-    MemoryView_ScrollTo(Settings_GetDebugMemoryAddress());
-    //MemoryView_UpdateToolbar();
+    MemoryView_ScrollTo(Settings_GetDebugMemoryBase());
+    MemoryView_GotoAddress(Settings_GetDebugMemoryAddress());
 }
 
 // Adjust position of client windows
@@ -172,7 +179,12 @@ LRESULT CALLBACK MemoryViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
     switch (message)
     {
     case WM_COMMAND:
-        ::PostMessage(g_hwnd, WM_COMMAND, wParam, lParam);
+        if (wParam == ID_DEBUG_COPY_VALUE || wParam == ID_DEBUG_COPY_ADDRESS)  // Copy command from context menu
+            MemoryView_CopyValueToClipboard(wParam);
+        else if (wParam == ID_DEBUG_GOTO_ADDRESS)  // "Go to Address" from context menu
+            MemoryView_SelectAddress();
+        else
+            ::PostMessage(g_hwnd, WM_COMMAND, wParam, lParam);
         break;
     case WM_PAINT:
         {
@@ -185,15 +197,17 @@ LRESULT CALLBACK MemoryViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
         }
         break;
     case WM_LBUTTONDOWN:
+        MemoryView_OnLButtonDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+        break;
     case WM_RBUTTONDOWN:
-        ::SetFocus(hWnd);
+        MemoryView_OnRButtonDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
         break;
     case WM_KEYDOWN:
         return (LRESULT) MemoryView_OnKeyDown(wParam, lParam);
     case WM_MOUSEWHEEL:
         return (LRESULT) MemoryView_OnMouseWheel(wParam, lParam);
     case WM_VSCROLL:
-        return (LRESULT) MemoryView_OnVScroll(wParam, lParam);
+        return (LRESULT) MemoryView_OnVScroll(LOWORD(wParam), HIWORD(wParam));
     case WM_SETFOCUS:
     case WM_KILLFOCUS:
         ::InvalidateRect(hWnd, NULL, TRUE);
@@ -202,6 +216,268 @@ LRESULT CALLBACK MemoryViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return (LRESULT)FALSE;
+}
+
+// Returns even address 0-65534, or -1 if out of area
+int MemoryView_GetAddressByPoint(int mousex, int mousey)
+{
+    int line = mousey / m_cyLineMemory - 1;
+    if (line < 0) return -1;
+    else if (line >= m_nPageSize) return -1;
+    int pos = (mousex - 12 * m_cxChar - m_cxChar / 2) / (m_cxChar * 7);
+    if (pos < 0) return -1;
+    else if (pos > 7) return -1;
+
+    return (WORD)(m_wBaseAddress + line * 16 + pos * 2);
+}
+
+BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
+{
+    switch (vkey)
+    {
+    case VK_ESCAPE:
+        ConsoleView_Activate();
+        break;
+    case VK_HOME:
+        MemoryView_GotoAddress(0);
+        break;
+    case VK_LEFT:
+        MemoryView_GotoAddress((WORD)(m_wCurrentAddress - 2));
+        break;
+    case VK_RIGHT:
+        MemoryView_GotoAddress((WORD)(m_wCurrentAddress + 2));
+        break;
+    case VK_UP:
+        MemoryView_GotoAddress((WORD)(m_wCurrentAddress - 16));
+        break;
+    case VK_DOWN:
+        MemoryView_GotoAddress((WORD)(m_wCurrentAddress + 16));
+        break;
+    case VK_PRIOR:
+        MemoryView_GotoAddress((WORD)(m_wCurrentAddress - m_nPageSize * 16));
+        break;
+    case VK_NEXT:
+        MemoryView_GotoAddress((WORD)(m_wCurrentAddress + m_nPageSize * 16));
+        break;
+    case 0x47:  // G - Go To Address
+        MemoryView_SelectAddress();
+        break;
+    case 0x42:  // B - change byte/word mode
+    case 0x57:  // W
+        MemoryView_SwitchWordByte();
+        break;
+    default:
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void MemoryView_OnLButtonDown(int mousex, int mousey)
+{
+    ::SetFocus(m_hwndMemoryViewer);
+
+    int addr = MemoryView_GetAddressByPoint(mousex, mousey);
+    if (addr >= 0)
+        MemoryView_GotoAddress((WORD)addr);
+}
+
+void MemoryView_OnRButtonDown(int mousex, int mousey)
+{
+    ::SetFocus(m_hwndMemoryViewer);
+
+    int addr = MemoryView_GetAddressByPoint(mousex, mousey);
+    if (addr >= 0)
+        MemoryView_GotoAddress((WORD)addr);
+
+    RECT rcValue;
+    MemoryView_GetCurrentValueRect(&rcValue, m_cxChar, m_cyLineMemory);
+
+    HMENU hMenu = ::CreatePopupMenu();
+    ::AppendMenu(hMenu, 0, ID_DEBUG_COPY_VALUE, _T("Copy Value"));
+    ::AppendMenu(hMenu, 0, ID_DEBUG_COPY_ADDRESS, _T("Copy Address"));
+    ::AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+    ::AppendMenu(hMenu, 0, ID_DEBUG_GOTO_ADDRESS, _T("Go to Address..."));
+
+    POINT pt = { rcValue.left, rcValue.bottom };
+    ::ClientToScreen(m_hwndMemoryViewer, &pt);
+    ::TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, m_hwndMemoryViewer, NULL);
+
+    VERIFY(::DestroyMenu(hMenu));
+}
+
+BOOL MemoryView_OnMouseWheel(WPARAM wParam, LPARAM /*lParam*/)
+{
+    short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+    int nDelta = zDelta / 120;
+    if (nDelta > 5) nDelta = 5;
+    if (nDelta < -5) nDelta = -5;
+
+    MemoryView_GotoAddress((WORD)(m_wCurrentAddress - nDelta * 2 * 16));
+
+    return FALSE;
+}
+
+BOOL MemoryView_OnVScroll(WORD scrollcmd, WORD scrollpos)
+{
+    switch (scrollcmd)
+    {
+    case SB_LINEDOWN:
+        MemoryView_GotoAddress((WORD)(m_wCurrentAddress + 16));
+        break;
+    case SB_LINEUP:
+        MemoryView_GotoAddress((WORD)(m_wCurrentAddress - 16));
+        break;
+    case SB_PAGEDOWN:
+        MemoryView_GotoAddress((WORD)(m_wCurrentAddress + m_nPageSize * 16));
+        break;
+    case SB_PAGEUP:
+        MemoryView_GotoAddress((WORD)(m_wCurrentAddress - m_nPageSize * 16));
+        break;
+    case SB_THUMBPOSITION:
+        MemoryView_GotoAddress((WORD)(scrollpos * 16));
+        break;
+    }
+
+    return FALSE;
+}
+
+void MemoryView_UpdateWindowText()
+{
+    TCHAR buffer[64];
+    swprintf_s(buffer, 64, _T("Memory - %06o"), m_wCurrentAddress);
+    ::SetWindowText(g_hwndMemory, buffer);
+}
+
+void MemoryView_CopyValueToClipboard(WPARAM command)
+{
+    WORD address = m_wCurrentAddress;
+    WORD value;
+
+    if (command == ID_DEBUG_COPY_ADDRESS)
+    {
+        value = address;
+    }
+    else
+    {
+        // Get word from memory
+        int addrtype;
+        BOOL okHalt = g_pBoard->GetCPU()->IsHaltMode();
+        value = g_pBoard->GetWordView(address, okHalt, FALSE, &addrtype);
+        BOOL okValid = (addrtype != ADDRTYPE_IO) && (addrtype != ADDRTYPE_DENY);
+
+        if (!okValid)
+        {
+            AlertWarning(_T("Failed to get value: invalid memory type."));
+            return;
+        }
+    }
+
+    TCHAR buffer[7];
+    PrintOctalValue(buffer, value);
+
+    // Prepare global memory object for the text
+    HGLOBAL hglbCopy = ::GlobalAlloc(GMEM_MOVEABLE, sizeof(buffer));
+    LPTSTR lptstrCopy = (LPTSTR) ::GlobalLock(hglbCopy);
+    memcpy(lptstrCopy, buffer, sizeof(buffer));
+    ::GlobalUnlock(hglbCopy);
+
+    // Send the text to the Clipboard
+    ::OpenClipboard(g_hwnd);
+    ::EmptyClipboard();
+    ::SetClipboardData(CF_UNICODETEXT, hglbCopy);
+    ::CloseClipboard();
+}
+
+LPCTSTR MemoryView_GetMemoryModeName()
+{
+    //  switch (m_Mode) {
+    //      case MEMMODE_RAM0:  return _T("RAM0");
+    //      case MEMMODE_RAM1:  return _T("RAM1");
+    //      case MEMMODE_RAM2:  return _T("RAM2");
+    //      case MEMMODE_ROM:   return _T("ROM");
+    //      case MEMMODE_CPU:   return _T("CPU");
+    //default:
+    //    return _T("UKWN");  // Unknown mode
+    //  }
+    return _T("");  //STUB
+}
+
+void MemoryView_SwitchWordByte()
+{
+    m_okMemoryByteMode = !m_okMemoryByteMode;
+    Settings_SetDebugMemoryByte(m_okMemoryByteMode);
+
+    InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
+}
+
+void MemoryView_SelectAddress()
+{
+    WORD value = m_wCurrentAddress;
+    if (InputBoxOctal(m_hwndMemoryViewer, _T("Go To Address"), &value))
+        MemoryView_GotoAddress(value);
+    ::SetFocus(m_hwndMemoryViewer);
+}
+
+void MemoryView_GotoAddress(WORD wAddress)
+{
+    m_wCurrentAddress = wAddress & ((WORD)~1);  // Address should be even
+    Settings_SetDebugMemoryAddress(m_wCurrentAddress);
+
+    int addroffset = wAddress - m_wBaseAddress;
+    if (addroffset < 0)
+    {
+        WORD baseaddr = (m_wCurrentAddress & 0xFFF0);  // Base address should be 16-byte aligned
+        MemoryView_ScrollTo(baseaddr);
+    }
+    else if (addroffset >= m_nPageSize * 16)
+    {
+        WORD baseaddr = (WORD)((m_wCurrentAddress & 0xFFF0) - (m_nPageSize - 1) * 16);
+        MemoryView_ScrollTo(baseaddr);
+    }
+
+    MemoryView_UpdateWindowText();
+}
+
+// Scroll window to the given base address
+void MemoryView_ScrollTo(WORD wBaseAddress)
+{
+    if (wBaseAddress == m_wBaseAddress)
+        return;
+
+    m_wBaseAddress = wBaseAddress;
+    Settings_SetDebugMemoryBase(wBaseAddress);
+
+    InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
+
+    MemoryView_UpdateScrollPos();
+}
+
+void MemoryView_UpdateScrollPos()
+{
+    SCROLLINFO si;
+    ZeroMemory(&si, sizeof(si));
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_PAGE | SIF_POS | SIF_RANGE;
+    si.nPage = m_nPageSize;
+    si.nPos = m_wBaseAddress / 16;
+    si.nMin = 0;
+    si.nMax = 0x10000 / 16 - 1;
+    SetScrollInfo(m_hwndMemoryViewer, SB_VERT, &si, TRUE);
+}
+
+void MemoryView_GetCurrentValueRect(LPRECT pRect, int cxChar, int cyLine)
+{
+    ASSERT(pRect != NULL);
+
+    int addroffset = m_wCurrentAddress - m_wBaseAddress;
+    int line = addroffset / 16;
+    int pos = addroffset & 15;
+
+    pRect->left = cxChar * (13 + 7 * (pos / 2)) - cxChar / 2;
+    pRect->right = pRect->left + cxChar * 7;
+    pRect->top = (line + 1) * cyLine - 1;
+    pRect->bottom = pRect->top + cyLine + 1;
 }
 
 void MemoryView_OnDraw(HDC hdc)
@@ -219,11 +495,12 @@ void MemoryView_OnDraw(HDC hdc)
     COLORREF colorOld = SetTextColor(hdc, colorText);
     COLORREF colorBkOld = SetBkColor(hdc, GetSysColor(COLOR_WINDOW));
 
+    m_cxChar = cxChar;
     m_cyLineMemory = cyLine;
 
     TCHAR buffer[7];
     const TCHAR* ADDRESS_LINE = _T(" addr   0      2      4      6      10     12     14     16");
-    TextOut(hdc, cxChar * 5, 0, ADDRESS_LINE, (int) _tcslen(ADDRESS_LINE));
+    TextOut(hdc, cxChar * 5, 0, ADDRESS_LINE, (int)_tcslen(ADDRESS_LINE));
 
     RECT rcClip;
     GetClipBox(hdc, &rcClip);
@@ -308,163 +585,10 @@ void MemoryView_OnDraw(HDC hdc)
 
     if (::GetFocus() == m_hwndMemoryViewer)
     {
-        RECT rcFocus = rcClient;
-        rcFocus.left += cxChar * 5 - 1;
-        rcFocus.top += cyLine - 1;
-        rcFocus.right = cxChar * (63 + 24);
+        RECT rcFocus;
+        MemoryView_GetCurrentValueRect(&rcFocus, cxChar, cyLine);
         DrawFocusRect(hdc, &rcFocus);
     }
-}
-
-LPCTSTR MemoryView_GetMemoryModeName()
-{
-    //  switch (m_Mode) {
-    //      case MEMMODE_RAM0:  return _T("RAM0");
-    //      case MEMMODE_RAM1:  return _T("RAM1");
-    //      case MEMMODE_RAM2:  return _T("RAM2");
-    //      case MEMMODE_ROM:   return _T("ROM");
-    //      case MEMMODE_CPU:   return _T("CPU");
-    //default:
-    //    return _T("UKWN");  // Unknown mode
-    //  }
-    return _T("");  //STUB
-}
-
-void MemoryView_SwitchWordByte()
-{
-    m_okMemoryByteMode = !m_okMemoryByteMode;
-    Settings_SetDebugMemoryByte(m_okMemoryByteMode);
-
-    InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
-}
-
-void MemoryView_SelectAddress()
-{
-    WORD value = m_wBaseAddress;
-    if (InputBoxOctal(m_hwndMemoryViewer, _T("Go To Address"), &value))
-        MemoryView_ScrollTo(value);
-}
-
-void MemoryView_UpdateWindowText()
-{
-    //TCHAR buffer[64];
-    //swprintf_s(buffer, 64, _T("Memory - %s"), MemoryView_GetMemoryModeName());
-    ::SetWindowText(g_hwndMemory, _T("Memory"));
-}
-
-BOOL MemoryView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
-{
-    switch (vkey)
-    {
-    case VK_ESCAPE:
-        ConsoleView_Activate();
-        break;
-    case VK_HOME:
-        MemoryView_ScrollTo(0);
-        break;
-    case VK_LEFT:
-        MemoryView_Scroll(-2);
-        break;
-    case VK_RIGHT:
-        MemoryView_Scroll(2);
-        break;
-    case VK_UP:
-        MemoryView_Scroll(-16);
-        break;
-    case VK_DOWN:
-        MemoryView_Scroll(16);
-        break;
-    case VK_PRIOR:
-        MemoryView_Scroll(-m_nPageSize * 16);
-        break;
-    case VK_NEXT:
-        MemoryView_Scroll(m_nPageSize * 16);
-        break;
-    case 0x47:  // G - Go To Address
-        MemoryView_SelectAddress();
-        break;
-    case 0x42:  // B - change byte/word mode
-    case 0x57:  // W
-        MemoryView_SwitchWordByte();
-        break;
-    default:
-        return TRUE;
-    }
-    return FALSE;
-}
-
-BOOL MemoryView_OnMouseWheel(WPARAM wParam, LPARAM /*lParam*/)
-{
-    short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-
-    int nDelta = zDelta / 120;
-    if (nDelta > 5) nDelta = 5;
-    if (nDelta < -5) nDelta = -5;
-
-    MemoryView_Scroll(-nDelta * 2 * 16);
-
-    return FALSE;
-}
-
-BOOL MemoryView_OnVScroll(WPARAM wParam, LPARAM /*lParam*/)
-{
-    WORD scrollpos = HIWORD(wParam);
-    WORD scrollcmd = LOWORD(wParam);
-    switch (scrollcmd)
-    {
-    case SB_LINEDOWN:
-        MemoryView_Scroll(16);
-        break;
-    case SB_LINEUP:
-        MemoryView_Scroll(-16);
-        break;
-    case SB_PAGEDOWN:
-        MemoryView_Scroll(m_nPageSize * 16);
-        break;
-    case SB_PAGEUP:
-        MemoryView_Scroll(-m_nPageSize * 16);
-        break;
-    case SB_THUMBPOSITION:
-        MemoryView_ScrollTo(scrollpos * 16);
-        break;
-    }
-
-    return FALSE;
-}
-
-// Scroll window to given base address
-void MemoryView_ScrollTo(WORD wAddress)
-{
-    m_wBaseAddress = wAddress & ((WORD)~1);
-    Settings_SetDebugMemoryAddress(m_wBaseAddress);
-
-    InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
-
-    MemoryView_UpdateScrollPos();
-}
-// Scroll window on given lines forward or backward
-void MemoryView_Scroll(int nDelta)
-{
-    if (nDelta == 0) return;
-
-    m_wBaseAddress = (WORD)(m_wBaseAddress + nDelta) & ((WORD)~1);
-    Settings_SetDebugMemoryAddress(m_wBaseAddress);
-
-    InvalidateRect(m_hwndMemoryViewer, NULL, TRUE);
-
-    MemoryView_UpdateScrollPos();
-}
-void MemoryView_UpdateScrollPos()
-{
-    SCROLLINFO si;
-    ZeroMemory(&si, sizeof(si));
-    si.cbSize = sizeof(si);
-    si.fMask = SIF_PAGE | SIF_POS | SIF_RANGE;
-    si.nPage = m_nPageSize;
-    si.nPos = m_wBaseAddress / 16;
-    si.nMin = 0;
-    si.nMax = 0x10000 / 16 - 1;
-    SetScrollInfo(m_hwndMemoryViewer, SB_VERT, &si, TRUE);
 }
 
 

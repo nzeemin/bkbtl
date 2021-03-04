@@ -145,6 +145,8 @@ void Settings_GetDebugFontName(LPTSTR buffer);
 void Settings_SetDebugFontName(LPCTSTR sFontName);
 void Settings_SetDebugMemoryAddress(WORD address);
 WORD Settings_GetDebugMemoryAddress();
+void Settings_SetDebugMemoryBase(WORD address);
+WORD Settings_GetDebugMemoryBase();
 BOOL Settings_GetDebugMemoryByte();
 void Settings_SetDebugMemoryByte(BOOL flag);
 void Settings_SetAutostart(BOOL flag);
