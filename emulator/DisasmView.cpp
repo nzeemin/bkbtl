@@ -11,6 +11,8 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 // DisasmView.cpp
 
 #include "stdafx.h"
+#include <vector>
+
 #include <commdlg.h>
 #include <windowsx.h>
 #include "Main.h"
@@ -22,24 +24,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 //////////////////////////////////////////////////////////////////////
 
-
-HWND g_hwndDisasm = (HWND) INVALID_HANDLE_VALUE;  // Disasm View window handle
-WNDPROC m_wndprocDisasmToolWindow = NULL;  // Old window proc address of the ToolWindow
-
-HWND m_hwndDisasmViewer = (HWND) INVALID_HANDLE_VALUE;
-
-WORD m_wDisasmBaseAddr = 0;
-int m_nDisasmCurrentLineIndex = -1;
-
-void DisasmView_DoDraw(HDC hdc);
-int  DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x, int y);
-void DisasmView_UpdateWindowText();
-BOOL DisasmView_OnKeyDown(WPARAM vkey, LPARAM lParam);
-void DisasmView_OnLButtonDown(WPARAM wParam, int mousex, int mousey);
-void DisasmView_OnRButtonDown(WPARAM wParam, int mousex, int mousey);
-void DisasmView_CopyToClipboard(WPARAM command);
-void DisasmView_DoSubtitles();
-BOOL DisasmView_ParseSubtitles();
 
 enum DisasmSubtitleType
 {
@@ -55,12 +39,6 @@ struct DisasmSubtitleItem
     DisasmSubtitleType type;
     LPCTSTR comment;
 };
-
-BOOL m_okDisasmSubtitles = FALSE;
-TCHAR* m_strDisasmSubtitles = NULL;
-DisasmSubtitleItem* m_pDisasmSubtitleItems = NULL;
-int m_nDisasmSubtitleMax = 0;
-int m_nDisasmSubtitleCount = 0;
 
 enum DisasmLineType
 {
@@ -80,8 +58,21 @@ struct DisasmLineItem
     TCHAR strInstr[8];      // Disassembled instruction for LINETYPE_DISASM
     TCHAR strArg[32];       // Disassembled instruction arguments for LINETYPE_DISASM
     int   jumpdelta;        // Jump delta for LINETYPE_JUMP
-    DisasmSubtitleItem* pSubItem;  // Link to subtitles item for LINETYPE_SUBTITLE
+    const DisasmSubtitleItem* pSubItem;  // Link to subtitles item for LINETYPE_SUBTITLE
 };
+
+
+HWND g_hwndDisasm = (HWND) INVALID_HANDLE_VALUE;  // Disasm View window handle
+WNDPROC m_wndprocDisasmToolWindow = NULL;  // Old window proc address of the ToolWindow
+
+HWND m_hwndDisasmViewer = (HWND) INVALID_HANDLE_VALUE;
+
+WORD m_wDisasmBaseAddr = 0;
+int m_nDisasmCurrentLineIndex = -1;
+
+bool m_okDisasmSubtitles = false;
+TCHAR* m_strDisasmSubtitles = nullptr;
+std::vector<DisasmSubtitleItem> m_SubtitleItems;
 
 const int MAX_DISASMLINECOUNT = 50;
 DisasmLineItem* m_pDisasmLineItems = nullptr;
@@ -92,6 +83,15 @@ TCHAR m_strDisasmHint2[42] = { 0 };
 
 int m_cxDisasmBreakpointZone = 16;  // Width of breakpoint zone at the left, for mouse click
 int m_cyDisasmLine = 10;
+
+void DisasmView_UpdateWindowText();
+BOOL DisasmView_OnKeyDown(WPARAM vkey, LPARAM lParam);
+void DisasmView_OnLButtonDown(int mousex, int mousey);
+void DisasmView_OnRButtonDown(int mousex, int mousey);
+void DisasmView_CopyToClipboard(WPARAM command);
+BOOL DisasmView_ParseSubtitles();
+void DisasmView_DoDraw(HDC hdc);
+int  DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previous, int x, int y);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -121,17 +121,15 @@ void DisasmView_Init()
 {
     m_pDisasmLineItems = static_cast<DisasmLineItem*>(::calloc(MAX_DISASMLINECOUNT, sizeof(DisasmLineItem)));
 }
+
 void DisasmView_Done()
 {
     if (m_strDisasmSubtitles != nullptr)
     {
         free(m_strDisasmSubtitles);  m_strDisasmSubtitles = nullptr;
     }
-    if (m_pDisasmSubtitleItems != nullptr)
-    {
-        free(m_pDisasmSubtitleItems);
-        m_pDisasmSubtitleItems = nullptr;
-    }
+
+    m_SubtitleItems.clear();
 
     if (m_pDisasmLineItems != nullptr)
     {
@@ -214,10 +212,10 @@ LRESULT CALLBACK DisasmViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
         }
         break;
     case WM_LBUTTONDOWN:
-        DisasmView_OnLButtonDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+        DisasmView_OnLButtonDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
         break;
     case WM_RBUTTONDOWN:
-        DisasmView_OnRButtonDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+        DisasmView_OnRButtonDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
         break;
     case WM_KEYDOWN:
         return (LRESULT) DisasmView_OnKeyDown(wParam, lParam);
@@ -241,7 +239,7 @@ BOOL DisasmView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
     switch (vkey)
     {
     case 0x53:  // S - Load/Unload Subtitles
-        DisasmView_DoSubtitles();
+        DisasmView_LoadUnloadSubtitles();
         break;
     case VK_ESCAPE:
         ConsoleView_Activate();
@@ -252,7 +250,7 @@ BOOL DisasmView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
     return FALSE;
 }
 
-void DisasmView_OnLButtonDown(WPARAM /*wParam*/, int mousex, int mousey)
+void DisasmView_OnLButtonDown(int mousex, int mousey)
 {
     ::SetFocus(m_hwndDisasmViewer);
 
@@ -286,7 +284,7 @@ void DisasmView_OnLButtonDown(WPARAM /*wParam*/, int mousex, int mousey)
     DisasmView_Redraw();
 }
 
-void DisasmView_OnRButtonDown(WPARAM /*wParam*/, int mousex, int mousey)
+void DisasmView_OnRButtonDown(int mousex, int /*mousey*/)
 {
     ::SetFocus(m_hwndDisasmViewer);
 
@@ -294,7 +292,7 @@ void DisasmView_OnRButtonDown(WPARAM /*wParam*/, int mousex, int mousey)
     ::AppendMenu(hMenu, 0, ID_DEBUG_COPY_ADDRESS, _T("Copy Address"));
     ::AppendMenu(hMenu, 0, ID_DEBUG_COPY_VALUE, _T("Copy Value"));
 
-    POINT pt = { mousex, mousey };
+    POINT pt = { mousex, 2 + m_nDisasmCurrentLineIndex * m_cyDisasmLine + m_cyDisasmLine };
     ::ClientToScreen(m_hwndDisasmViewer, &pt);
     ::TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, m_hwndDisasmViewer, NULL);
 
@@ -340,40 +338,21 @@ void DisasmView_UpdateWindowText()
         ::SetWindowText(g_hwndDisasm, _T("Disassemble"));
 }
 
-void DisasmView_ResizeSubtitleArray(int newSize)
+void DisasmView_AddSubtitle(WORD addr, int type, LPCTSTR pCommentText)
 {
-    DisasmSubtitleItem* pNewMemory = (DisasmSubtitleItem*) ::calloc(newSize, sizeof(DisasmSubtitleItem));
-    if (m_pDisasmSubtitleItems != NULL)
-    {
-        ::memcpy(pNewMemory, m_pDisasmSubtitleItems, sizeof(DisasmSubtitleItem) * m_nDisasmSubtitleMax);
-        ::free(m_pDisasmSubtitleItems);
-    }
-
-    m_pDisasmSubtitleItems = pNewMemory;
-    m_nDisasmSubtitleMax = newSize;
-}
-void DisasmView_AddSubtitle(WORD address, int type, LPCTSTR pCommentText)
-{
-    if (m_nDisasmSubtitleCount >= m_nDisasmSubtitleMax)
-    {
-        // Расширить массив
-        int newsize = m_nDisasmSubtitleMax + m_nDisasmSubtitleMax / 2;
-        DisasmView_ResizeSubtitleArray(newsize);
-    }
-
-    m_pDisasmSubtitleItems[m_nDisasmSubtitleCount].address = address;
-    m_pDisasmSubtitleItems[m_nDisasmSubtitleCount].type = (DisasmSubtitleType) type;
-    m_pDisasmSubtitleItems[m_nDisasmSubtitleCount].comment = pCommentText;
-    m_nDisasmSubtitleCount++;
+    DisasmSubtitleItem item;
+    item.address = addr;
+    item.type = (DisasmSubtitleType) type;
+    item.comment = pCommentText;
+    m_SubtitleItems.push_back(item);
 }
 
-void DisasmView_DoSubtitles()
+void DisasmView_LoadUnloadSubtitles()
 {
     if (m_okDisasmSubtitles)  // Reset subtitles
     {
-        ::free(m_strDisasmSubtitles);  m_strDisasmSubtitles = NULL;
-        ::free(m_pDisasmSubtitleItems);  m_pDisasmSubtitleItems = NULL;
-        m_nDisasmSubtitleMax = m_nDisasmSubtitleCount = 0;
+        ::free(m_strDisasmSubtitles);  m_strDisasmSubtitles = nullptr;
+        m_SubtitleItems.clear();
         m_okDisasmSubtitles = FALSE;
         DisasmView_UpdateWindowText();
         DisasmView_OnUpdate();  // We have to re-build the list of lines to show
@@ -404,23 +383,17 @@ void DisasmView_DoSubtitles()
         return;
     }
 
-    m_strDisasmSubtitles = (TCHAR*) ::calloc(dwSubFileSize + 2, 1);
+    m_strDisasmSubtitles = (TCHAR*) ::calloc(dwSubFileSize + sizeof(TCHAR), 1);
     DWORD dwBytesRead;
     ::ReadFile(hSubFile, m_strDisasmSubtitles, dwSubFileSize, &dwBytesRead, NULL);
     ASSERT(dwBytesRead == dwSubFileSize);
     ::CloseHandle(hSubFile);
 
-    // Estimate comment count and allocate memory
-    int estimateSubtitleCount = dwSubFileSize / (75 * sizeof(TCHAR));
-    if (estimateSubtitleCount < 256)
-        estimateSubtitleCount = 256;
-    DisasmView_ResizeSubtitleArray(estimateSubtitleCount);
-
     // Parse subtitles
     if (!DisasmView_ParseSubtitles())
     {
-        ::free(m_strDisasmSubtitles);  m_strDisasmSubtitles = NULL;
-        ::free(m_pDisasmSubtitleItems);  m_pDisasmSubtitleItems = NULL;
+        ::free(m_strDisasmSubtitles);  m_strDisasmSubtitles = nullptr;
+        m_SubtitleItems.clear();
         AlertWarning(_T("Failed to parse subtitles file."));
         return;
     }
@@ -432,18 +405,18 @@ void DisasmView_DoSubtitles()
 
 // Разбор текста "субтитров".
 // На входе -- текст в m_strDisasmSubtitles в формате UTF16 LE, заканчивается символом с кодом 0.
-// На выходе -- массив описаний [адрес в памяти, тип, адрес строки комментария] в m_pDisasmSubtitleItems.
+// На выходе -- массив описаний [адрес в памяти, тип, адрес строки комментария] в m_SubtitleItems.
 BOOL DisasmView_ParseSubtitles()
 {
-    ASSERT(m_strDisasmSubtitles != NULL);
+    ASSERT(m_strDisasmSubtitles != nullptr);
     TCHAR* pText = m_strDisasmSubtitles;
     if (*pText == 0 || *pText == 0xFFFE)  // EOF or Unicode Big Endian
         return FALSE;
     if (*pText == 0xFEFF)
         pText++;  // Skip Unicode LE mark
 
-    m_nDisasmSubtitleCount = 0;
-    TCHAR* pBlockCommentStart = NULL;
+    m_SubtitleItems.clear();
+    TCHAR* pBlockCommentStart = nullptr;
 
     for (;;)  // Text reading loop - line by line
     {
@@ -467,11 +440,11 @@ BOOL DisasmView_ParseSubtitles()
             ParseOctalValue(pAddrStart, &address);
             *pText = chSave;
 
-            if (pBlockCommentStart != NULL)  // На предыдущей строке был комментарий к блоку
+            if (pBlockCommentStart != nullptr)  // На предыдущей строке был комментарий к блоку
             {
                 // Сохраняем комментарий к блоку в массиве
                 DisasmView_AddSubtitle(address, SUBTYPE_BLOCKCOMMENT, pBlockCommentStart);
-                pBlockCommentStart = NULL;
+                pBlockCommentStart = nullptr;
             }
 
             // Пропускаем разделители
@@ -510,7 +483,7 @@ BOOL DisasmView_ParseSubtitles()
             if (*pText == _T(';'))  // Строка начинается с комментария - предположительно, комментарий к блоку
                 pBlockCommentStart = pText;
             else
-                pBlockCommentStart = NULL;
+                pBlockCommentStart = nullptr;
 
             while (*pText != 0 && *pText != _T('\n') && *pText != _T('\r')) pText++;
             if (*pText == 0) break;
@@ -525,14 +498,19 @@ BOOL DisasmView_ParseSubtitles()
     return TRUE;
 }
 
-DisasmSubtitleItem* DisasmView_FindSubtitle(WORD address, int typemask)
+const DisasmSubtitleItem* DisasmView_FindSubtitle(WORD address, int typemask)
 {
-    DisasmSubtitleItem* pItem = m_pDisasmSubtitleItems;
+    if (m_SubtitleItems.empty())
+        return nullptr;
+
+    const DisasmSubtitleItem* pItem = m_SubtitleItems.data();
     while (pItem->type != 0)
     {
+        if (pItem->address > address)
+            return nullptr;
         if (pItem->address == address && (pItem->type & typemask) != 0)
             return pItem;
-        pItem++;
+        ++pItem;
     }
 
     return nullptr;
@@ -996,7 +974,7 @@ void DisasmView_OnUpdate()
         if (m_okDisasmSubtitles)
         {
             // Subtitles - find a comment for a block
-            DisasmSubtitleItem* pSubItem = DisasmView_FindSubtitle(address, SUBTYPE_BLOCKCOMMENT);
+            const DisasmSubtitleItem* pSubItem = DisasmView_FindSubtitle(address, SUBTYPE_BLOCKCOMMENT);
             if (pSubItem != nullptr && pSubItem->comment != nullptr)
             {
                 pLineItem->type = LINETYPE_SUBTITLE;
@@ -1102,7 +1080,7 @@ void DisasmView_DrawJump(HDC hdc, int yFrom, int delta, int x, int cyLine, COLOR
 
 void DisasmView_DoDraw(HDC hdc)
 {
-    ASSERT(g_pBoard != NULL);
+    ASSERT(g_pBoard != nullptr);
 
     // Create and select font
     HFONT hFont = CreateMonospacedFont();

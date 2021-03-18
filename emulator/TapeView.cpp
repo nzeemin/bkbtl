@@ -54,7 +54,7 @@ void TapeView_DoSaveWav();
 void TapeView_DoPlayStop();
 void TapeView_DoRewind();
 
-BOOL CALLBACK TapeView_TapeReadCallback(unsigned int samples);
+bool CALLBACK TapeView_TapeReadCallback(unsigned int samples);
 void CALLBACK TapeView_TapeWriteCallback(int value, unsigned int samples);
 
 
@@ -353,7 +353,7 @@ void TapeView_DoRewind()
 //   samples    Number of samples to play.
 // Output:
 //   result     Bit to put in tape input port.
-BOOL CALLBACK TapeView_TapeReadCallback(unsigned int samples)
+bool CALLBACK TapeView_TapeReadCallback(unsigned int samples)
 {
     if (m_hTapeWavPcmFile == (HWAVPCMFILE)INVALID_HANDLE_VALUE) return 0;
     if (m_okTapeRecording) return 0;
@@ -364,7 +364,7 @@ BOOL CALLBACK TapeView_TapeReadCallback(unsigned int samples)
     {
         value = WavPcmFile_ReadOne(m_hTapeWavPcmFile);
     }
-    BOOL result = (value > UINT_MAX / 2);
+    bool result = (value > UINT_MAX / 2);
 
     DWORD wavLength = WavPcmFile_GetLength(m_hTapeWavPcmFile);
     DWORD wavPos = WavPcmFile_GetPosition(m_hTapeWavPcmFile);

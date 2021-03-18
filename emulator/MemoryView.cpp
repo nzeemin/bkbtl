@@ -362,9 +362,9 @@ void MemoryView_CopyValueToClipboard(WPARAM command)
     {
         // Get word from memory
         int addrtype;
-        BOOL okHalt = g_pBoard->GetCPU()->IsHaltMode();
+        bool okHalt = g_pBoard->GetCPU()->IsHaltMode();
         value = g_pBoard->GetWordView(address, okHalt, FALSE, &addrtype);
-        BOOL okValid = (addrtype != ADDRTYPE_IO) && (addrtype != ADDRTYPE_DENY);
+        bool okValid = (addrtype != ADDRTYPE_IO) && (addrtype != ADDRTYPE_DENY);
 
         if (!okValid)
         {
@@ -520,9 +520,9 @@ void MemoryView_OnDraw(HDC hdc)
         {
             // Get word from memory
             int addrtype;
-            BOOL okHalt = g_pBoard->GetCPU()->IsHaltMode();
+            bool okHalt = g_pBoard->GetCPU()->IsHaltMode();
             WORD word = g_pBoard->GetWordView(address, okHalt, FALSE, &addrtype);
-            BOOL okValid = (addrtype != ADDRTYPE_IO) && (addrtype != ADDRTYPE_DENY);
+            bool okValid = (addrtype != ADDRTYPE_IO) && (addrtype != ADDRTYPE_DENY);
             WORD wChanged = Emulator_GetChangeRamStatus(address);
 
             if (okValid)

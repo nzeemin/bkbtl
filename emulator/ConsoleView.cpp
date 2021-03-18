@@ -300,7 +300,7 @@ void ConsoleView_PrintMemoryDump(CProcessor* pProc, WORD address, int lines = 8)
 {
     address &= ~1;  // Line up to even address
 
-    BOOL okHaltMode = pProc->IsHaltMode();
+    bool okHaltMode = pProc->IsHaltMode();
 
     for (int line = 0; line < lines; line++)
     {
@@ -347,7 +347,7 @@ void ConsoleView_PrintMemoryDump(CProcessor* pProc, WORD address, int lines = 8)
 // Return value: number of words in the last instruction
 int ConsoleView_PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okShort)
 {
-    BOOL okHaltMode = pProc->IsHaltMode();
+    bool okHaltMode = pProc->IsHaltMode();
 
     const int nWindowSize = 30;
     WORD memory[nWindowSize + 2];
@@ -563,7 +563,7 @@ void ConsoleView_RemoveBreakpoint(WORD address)
 void ConsoleView_ShowWatchpoints()
 {
     CProcessor* pProc = ConsoleView_GetCurrentProcessor();
-    BOOL okHaltMode = pProc->IsHaltMode();
+    bool okHaltMode = pProc->IsHaltMode();
 
     const uint16_t* pws = Emulator_GetWatchpointList();
     if (pws == nullptr || *pws == 0177777)

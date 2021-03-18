@@ -626,7 +626,7 @@ void Emulator_SetSoundAY(bool onoff)
     g_pBoard->SetSoundAY(onoff);
 }
 
-int Emulator_SystemFrame()
+bool Emulator_SystemFrame()
 {
     SoundGen_SetVolume(Settings_GetSoundVolume());
 

@@ -419,7 +419,7 @@ BOOL DebugView_DrawWatchpoints(HDC hdc, const CProcessor* pProc, int x, int y)
     if (*pws == 0177777)
         return FALSE;
 
-    BOOL okHaltMode = pProc->IsHaltMode();
+    bool okHaltMode = pProc->IsHaltMode();
 
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
     COLORREF colorText = Settings_GetColor(ColorDebugText);

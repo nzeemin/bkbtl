@@ -34,6 +34,10 @@ CMotherboard::CMotherboard ()
     m_SoundGenCallback = nullptr;
     m_SoundPrevValue = 0;
     m_TeletypeCallback = nullptr;
+    m_okSoundAY = false;
+    m_nSoundAYReg = 0;
+    m_SoundChanges = 0;
+    m_CPUbps = nullptr;
 
     // Allocate memory for RAM and ROM
     m_pRAM = (uint8_t*) ::malloc(128 * 1024);  //::memset(m_pRAM, 0, 128 * 1024);
@@ -89,7 +93,7 @@ void CMotherboard::SetConfiguration(uint16_t conf)
     if (m_pFloppyCtl == nullptr && (conf & BK_COPT_FDD) != 0)
     {
         m_pFloppyCtl = new CFloppyController();
-        m_pFloppyCtl->SetTrace(m_dwTrace & TRACE_FLOPPY);
+        m_pFloppyCtl->SetTrace((m_dwTrace & TRACE_FLOPPY) != 0);
     }
     if (m_pFloppyCtl != nullptr && (conf & BK_COPT_FDD) == 0)
     {
@@ -101,7 +105,7 @@ void CMotherboard::SetTrace(uint32_t dwTrace)
 {
     m_dwTrace = dwTrace;
     if (m_pFloppyCtl != nullptr)
-        m_pFloppyCtl->SetTrace(dwTrace & TRACE_FLOPPY);
+        m_pFloppyCtl->SetTrace((dwTrace & TRACE_FLOPPY) != 0);
 }
 
 void CMotherboard::Reset ()
