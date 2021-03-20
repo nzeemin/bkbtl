@@ -242,7 +242,8 @@ void SpriteView_SetSpriteWidth(int width)
 void SpriteView_UpdateWindowText()
 {
     TCHAR buffer[48];
-    _stprintf_s(buffer, 48, _T("Sprite Viewer - address %06o, width %d"), m_wSprite_BaseAddress, m_nSprite_width);
+    _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1,
+            _T("Sprite Viewer - address %06o, width %d"), m_wSprite_BaseAddress, m_nSprite_width);
     ::SetWindowText(g_hwndSprite, buffer);
 }
 

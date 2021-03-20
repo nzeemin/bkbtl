@@ -648,7 +648,7 @@ bool Emulator_SystemFrame()
         double dFramesPerSecond = m_nFrameCount * 1000.0 / nTicksElapsed;
         double dSpeed = dFramesPerSecond / 25.0 * 100;
         TCHAR buffer[16];
-        swprintf_s(buffer, 16, _T("%03.f%%"), dSpeed);
+        _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%03.f%%"), dSpeed);
         MainWindow_SetStatusbarText(StatusbarPartFPS, buffer);
 
         bool floppyEngine = g_pBoard->IsFloppyEngineOn();
@@ -670,7 +670,7 @@ bool Emulator_SystemFrame()
         int hours   = (int) (m_dwEmulatorUptime / 3600 % 60);
 
         TCHAR buffer[20];
-        swprintf_s(buffer, 20, _T("Uptime: %02d:%02d:%02d"), hours, minutes, seconds);
+        _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("Uptime: %02d:%02d:%02d"), hours, minutes, seconds);
         MainWindow_SetStatusbarText(StatusbarPartUptime, buffer);
     }
 
@@ -995,7 +995,7 @@ void CALLBACK Emulator_TeletypeCallback(uint8_t symbol)
         else
         {
             TCHAR buffer[32];
-            _snwprintf_s(buffer, 32, _T("<%02x>"), symbol);
+            _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("<%02x>"), symbol);
             TeletypeView_Output(buffer);
         }
     }

@@ -185,10 +185,10 @@ BOOL InitInstance(HINSTANCE /*hInstance*/, int /*nCmdShow*/)
     if (!Emulator_InitConfiguration((BKConfiguration)conf))
         return FALSE;
 
-    Emulator_SetSound(Settings_GetSound());
+    Emulator_SetSound(Settings_GetSound() != 0);
     Emulator_SetSpeed(Settings_GetRealSpeed());
-    Emulator_SetCovox(Settings_GetSoundCovox());
-    Emulator_SetSoundAY(Settings_GetSoundAY());
+    Emulator_SetCovox(Settings_GetSoundCovox() != 0);
+    Emulator_SetSoundAY(Settings_GetSoundAY() != 0);
 
     if (!CreateMainWindow())
         return FALSE;

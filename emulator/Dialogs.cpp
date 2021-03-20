@@ -56,9 +56,9 @@ INT_PTR CALLBACK AboutBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
     case WM_INITDIALOG:
         {
             TCHAR buffer[64];
-            wsprintf(buffer, _T("BKBTL Version %s"), _T(APP_VERSION_STRING));
+            _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("BKBTL Version %s"), _T(APP_VERSION_STRING));
             ::SetDlgItemText(hDlg, IDC_VERSION, buffer);
-            wsprintf(buffer, _T("Build date: %S %S"), __DATE__, __TIME__);
+            _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("Build date: %S %S"), __DATE__, __TIME__);
             ::SetDlgItemText(hDlg, IDC_BUILDDATE, buffer);
             return (INT_PTR)TRUE;
         }
@@ -108,7 +108,7 @@ INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
             HWND hEdit = GetDlgItem(hDlg, IDC_EDIT1);
 
             TCHAR buffer[8];
-            _sntprintf_s(buffer, 8, _T("%06ho"), *m_pInputBoxValueOctal);
+            _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%06ho"), *m_pInputBoxValueOctal);
             SetWindowText(hEdit, buffer);
             SendMessage(hEdit, EM_SETSEL, 0, -1);
 
@@ -120,15 +120,16 @@ INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
         {
         case IDC_EDIT1:
             {
-                TCHAR buffer[8];
-                GetDlgItemText(hDlg, IDC_EDIT1, buffer, 8);
-                if (_sntscanf_s(buffer, 8, _T("%ho"), m_pInputBoxValueOctal) > 0)
+                const size_t buffersize = 8;
+                TCHAR buffer[buffersize];
+                GetDlgItemText(hDlg, IDC_EDIT1, buffer, buffersize);
+                if (_sntscanf_s(buffer, buffersize, _T("%ho"), m_pInputBoxValueOctal) > 0)
                 {
-                    GetDlgItemText(hDlg, IDC_EDIT2, buffer, 8);
+                    GetDlgItemText(hDlg, IDC_EDIT2, buffer, buffersize);
                     WORD otherValue;
-                    if (_sntscanf_s(buffer, 8, _T("%hx"), &otherValue) <= 0 || *m_pInputBoxValueOctal != otherValue)
+                    if (_sntscanf_s(buffer, buffersize, _T("%hx"), &otherValue) <= 0 || *m_pInputBoxValueOctal != otherValue)
                     {
-                        _sntprintf_s(buffer, 8, _T("%04hx"), *m_pInputBoxValueOctal);
+                        _sntprintf(buffer, buffersize - 1, _T("%04hx"), *m_pInputBoxValueOctal);
                         SetDlgItemText(hDlg, IDC_EDIT2, buffer);
                     }
                 }
@@ -136,15 +137,16 @@ INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
             return (INT_PTR)TRUE;
         case IDC_EDIT2:
             {
-                TCHAR buffer[8];
-                GetDlgItemText(hDlg, IDC_EDIT2, buffer, 8);
-                if (_sntscanf_s(buffer, 8, _T("%hx"), m_pInputBoxValueOctal) > 0)
+                const size_t buffersize = 8;
+                TCHAR buffer[buffersize];
+                GetDlgItemText(hDlg, IDC_EDIT2, buffer, buffersize);
+                if (_sntscanf_s(buffer, buffersize, _T("%hx"), m_pInputBoxValueOctal) > 0)
                 {
-                    GetDlgItemText(hDlg, IDC_EDIT1, buffer, 8);
+                    GetDlgItemText(hDlg, IDC_EDIT1, buffer, buffersize);
                     WORD otherValue;
-                    if (_sntscanf_s(buffer, 8, _T("%ho"), &otherValue) <= 0 || *m_pInputBoxValueOctal != otherValue)
+                    if (_sntscanf_s(buffer, buffersize, _T("%ho"), &otherValue) <= 0 || *m_pInputBoxValueOctal != otherValue)
                     {
-                        _sntprintf_s(buffer, 8, _T("%06ho"), *m_pInputBoxValueOctal);
+                        _sntprintf(buffer, buffersize - 1, _T("%06ho"), *m_pInputBoxValueOctal);
                         SetDlgItemText(hDlg, IDC_EDIT1, buffer);
                     }
                 }
