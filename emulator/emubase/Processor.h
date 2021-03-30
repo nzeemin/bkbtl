@@ -1,4 +1,4 @@
-/*  This file is part of BKBTL.
+п»ї/*  This file is part of BKBTL.
     BKBTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -164,7 +164,7 @@ protected:  // Implementation - instruction execution
     uint16_t    GetWordAddr(uint8_t meth, uint8_t reg);
     uint16_t    GetByteAddr(uint8_t meth, uint8_t reg);
 
-    void        ExecuteUNKNOWN ();  // Нет такой инструкции - просто вызывается TRAP 10
+    void        ExecuteUNKNOWN ();  // РќРµС‚ С‚Р°РєРѕР№ РёРЅСЃС‚СЂСѓРєС†РёРё - РїСЂРѕСЃС‚Рѕ РІС‹Р·С‹РІР°РµС‚СЃСЏ TRAP 10
     void        ExecuteHALT ();
     void        ExecuteWAIT ();
     void        ExecuteRTI ();

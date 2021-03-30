@@ -1,4 +1,4 @@
-/*  This file is part of BKBTL.
+п»ї/*  This file is part of BKBTL.
     BKBTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -16,7 +16,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 
 // Timings ///////////////////////////////////////////////////////////
-// Таблицы таймингов основаны на статье Ю. А. Зальцмана, журнал "Персональный компьютер БК" №1 1995.
+// РўР°Р±Р»РёС†С‹ С‚Р°Р№РјРёРЅРіРѕРІ РѕСЃРЅРѕРІР°РЅС‹ РЅР° СЃС‚Р°С‚СЊРµ Р®. Рђ. Р—Р°Р»СЊС†РјР°РЅР°, Р¶СѓСЂРЅР°Р» "РџРµСЂСЃРѕРЅР°Р»СЊРЅС‹Р№ РєРѕРјРїСЊСЋС‚РµСЂ Р‘Рљ" в„–1 1995.
 
 const int TIMING_BRANCH =   16;  // 5.4 us - BR, BEQ etc.
 const int TIMING_ILLEGAL = 144;
@@ -53,7 +53,7 @@ void CProcessor::Init()
     ASSERT(m_pExecuteMethodMap == NULL);
     m_pExecuteMethodMap = (CProcessor::ExecuteMethodRef*) ::calloc(65536, sizeof(CProcessor::ExecuteMethodRef));
 
-    // Сначала заполняем таблицу ссылками на метод ExecuteUNKNOWN, выполняющий TRAP 10
+    // РЎРЅР°С‡Р°Р»Р° Р·Р°РїРѕР»РЅСЏРµРј С‚Р°Р±Р»РёС†Сѓ СЃСЃС‹Р»РєР°РјРё РЅР° РјРµС‚РѕРґ ExecuteUNKNOWN, РІС‹РїРѕР»РЅСЏСЋС‰РёР№ TRAP 10
     RegisterMethodRef( 0000000, 0177777, &CProcessor::ExecuteUNKNOWN );
 
     RegisterMethodRef( 0000000, 0000000, &CProcessor::ExecuteHALT );
@@ -201,7 +201,7 @@ void CProcessor::Start ()
     uint16_t pc = m_pBoard->GetSelRegister() & 0177400;
     SetPC(pc);
     SetPSW(0340);
-    m_internalTick = 1000000;  // Количество тактов на включение процессора (значение с потолка)
+    m_internalTick = 1000000;  // РљРѕР»РёС‡РµСЃС‚РІРѕ С‚Р°РєС‚РѕРІ РЅР° РІРєР»СЋС‡РµРЅРёРµ РїСЂРѕС†РµСЃСЃРѕСЂР° (Р·РЅР°С‡РµРЅРёРµ СЃ РїРѕС‚РѕР»РєР°)
 }
 void CProcessor::Stop ()
 {
@@ -283,17 +283,17 @@ void CProcessor::Execute()
                 intrVector = 0000034;  intrMode = false;
                 m_TRAPrq = false;
             }
-            else if (m_RPLYrq && currMode)  // Зависание в HALT, priority 1
+            else if (m_RPLYrq && currMode)  // Р—Р°РІРёСЃР°РЅРёРµ РІ HALT, priority 1
             {
                 intrVector = 0004;  intrMode = true;
                 m_RPLYrq = false;
             }
-            else if (m_RPLYrq && !currMode)  // Зависание в USER, priority 1
+            else if (m_RPLYrq && !currMode)  // Р—Р°РІРёСЃР°РЅРёРµ РІ USER, priority 1
             {
                 intrVector = 0000004;  intrMode = false;
                 m_RPLYrq = false;
             }
-            else if (m_RPL2rq)  // Двойное зависание, priority 1
+            else if (m_RPL2rq)  // Р”РІРѕР№РЅРѕРµ Р·Р°РІРёСЃР°РЅРёРµ, priority 1
             {
                 intrVector = 0174;  intrMode = true;
                 m_RPL2rq = false;
@@ -425,9 +425,9 @@ void CProcessor::AssertIRQ1()
 //////////////////////////////////////////////////////////////////////
 
 
-// Вычисление адреса операнда, в зависимости от метода адресации
-//   meth - метод адресации
-//   reg  - номер регистра
+// Р’С‹С‡РёСЃР»РµРЅРёРµ Р°РґСЂРµСЃР° РѕРїРµСЂР°РЅРґР°, РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РјРµС‚РѕРґР° Р°РґСЂРµСЃР°С†РёРё
+//   meth - РјРµС‚РѕРґ Р°РґСЂРµСЃР°С†РёРё
+//   reg  - РЅРѕРјРµСЂ СЂРµРіРёСЃС‚СЂР°
 uint16_t CProcessor::CalculateOperAddrSrc (int meth, int reg)
 {
     uint16_t arg;
@@ -671,7 +671,7 @@ uint16_t CProcessor::GetDstWordArgAsBranch ()
 
 void CProcessor::FetchInstruction()
 {
-    // Считываем очередную инструкцию
+    // РЎС‡РёС‚С‹РІР°РµРј РѕС‡РµСЂРµРґРЅСѓСЋ РёРЅСЃС‚СЂСѓРєС†РёСЋ
     uint16_t pc = GetPC();
     pc = pc & ~1;
 
@@ -692,7 +692,7 @@ void CProcessor::TranslateInstruction ()
     (this->*methodref)();  // Call command implementation method
 }
 
-void CProcessor::ExecuteUNKNOWN ()  // Нет такой инструкции - просто вызывается TRAP 10
+void CProcessor::ExecuteUNKNOWN ()  // РќРµС‚ С‚Р°РєРѕР№ РёРЅСЃС‚СЂСѓРєС†РёРё - РїСЂРѕСЃС‚Рѕ РІС‹Р·С‹РІР°РµС‚СЃСЏ TRAP 10
 {
 //    DebugPrintFormat(_T(">>Invalid OPCODE = %06o %06o\r\n"), GetPC()-2, m_instruction);
 
@@ -726,12 +726,12 @@ void CProcessor::ExecuteRUN()
     //SetPSW(m_savepsw);
 }
 
-void CProcessor::ExecuteHALT ()  // HALT - Останов
+void CProcessor::ExecuteHALT ()  // HALT - РћСЃС‚Р°РЅРѕРІ
 {
     m_HALTrq = true;
 }
 
-void CProcessor::ExecuteRTI ()  // RTI - Возврат из прерывания
+void CProcessor::ExecuteRTI ()  // RTI - Р’РѕР·РІСЂР°С‚ РёР· РїСЂРµСЂС‹РІР°РЅРёСЏ
 {
     uint16_t new_psw;
     SetReg(7, GetWord( GetSP() ) );  // Pop PC
@@ -785,7 +785,7 @@ void CProcessor::ExecuteRTT ()  // RTT - return from trace trap
     m_internalTick = TIMING_RTI;
 }
 
-void CProcessor::ExecuteRTS ()  // RTS - return from subroutine - Возврат из процедуры
+void CProcessor::ExecuteRTS ()  // RTS - return from subroutine - Р’РѕР·РІСЂР°С‚ РёР· РїСЂРѕС†РµРґСѓСЂС‹
 {
     SetPC(GetReg(m_regdest));
     SetReg(m_regdest, GetWord(GetSP()));
@@ -794,7 +794,7 @@ void CProcessor::ExecuteRTS ()  // RTS - return from subroutine - Возврат из про
     m_internalTick = TIMING_RTS;
 }
 
-void CProcessor::ExecuteNOP ()  // NOP - Нет операции
+void CProcessor::ExecuteNOP ()  // NOP - РќРµС‚ РѕРїРµСЂР°С†РёРё
 {
     m_internalTick = TIMING_NOP;
 }
@@ -812,7 +812,7 @@ void CProcessor::ExecuteSCC ()
 
 void CProcessor::ExecuteJMP ()  // JMP - jump: PC = &d (a-mode > 0)
 {
-    if (m_methdest == 0)  // Неправильный метод адресации
+    if (m_methdest == 0)  // РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ РјРµС‚РѕРґ Р°РґСЂРµСЃР°С†РёРё
     {
         m_RPLYrq = true;
 
@@ -924,7 +924,7 @@ void CProcessor::ExecuteCOM ()  // COM
     }
 }
 
-void CProcessor::ExecuteINC ()  // INC - Инкремент
+void CProcessor::ExecuteINC ()  // INC - РРЅРєСЂРµРјРµРЅС‚
 {
     uint16_t ea = 0;
     if (m_instruction & 0100000)
@@ -969,7 +969,7 @@ void CProcessor::ExecuteINC ()  // INC - Инкремент
     }
 }
 
-void CProcessor::ExecuteDEC ()  // DEC - Декремент
+void CProcessor::ExecuteDEC ()  // DEC - Р”РµРєСЂРµРјРµРЅС‚
 {
     uint16_t ea = 0;
     if (m_instruction & 0100000)
@@ -1917,7 +1917,7 @@ void CProcessor::ExecuteJSR ()  // JSR - Jump subroutine: *--SP = R; R = PC; PC 
     //int meth = GetDigit(m_instruction, DST + 1);
     if (m_methdest == 0)
     {
-        // Неправильный метод адресации
+        // РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ РјРµС‚РѕРґ Р°РґСЂРµСЃР°С†РёРё
         m_RPLYrq = true;
         m_internalTick = TIMING_EMT;
     }

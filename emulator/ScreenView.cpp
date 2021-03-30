@@ -1,4 +1,4 @@
-/*  This file is part of BKBTL.
+п»ї/*  This file is part of BKBTL.
     BKBTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -298,12 +298,12 @@ WORD ScreenView_GetKeyEventFromQueue()
     return keyevent;
 }
 
-// АР2 = Ctrl;
-// Ins = ВС;  Tab = ТАБ;
-// РУС = End, 0x23;  ЛАТ = Home, 0x24;
-// джойстик = NumPad;
-//TODO: СТОП = Break, 0x13;
-const BYTE arrPcscan2BkscanRus[256] =    // BK keys from PC keys, РУС
+// РђР 2 = Ctrl;
+// Ins = Р’РЎ;  Tab = РўРђР‘;
+// Р РЈРЎ = End, 0x23;  Р›РђРў = Home, 0x24;
+// РґР¶РѕР№СЃС‚РёРє = NumPad;
+//TODO: РЎРўРћРџ = Break, 0x13;
+const BYTE arrPcscan2BkscanRus[256] =    // BK keys from PC keys, Р РЈРЎ
 {
     /*       0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f  */
     /*0*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0030, 0015, 0000, 0000, 0000, 0012, 0000, 0000,
@@ -323,7 +323,7 @@ const BYTE arrPcscan2BkscanRus[256] =    // BK keys from PC keys, РУС
     /*e*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000,
     /*f*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000,
 };
-const BYTE arrPcscan2BkscanLat[256] =    // BK keys from PC keys, ЛАТ
+const BYTE arrPcscan2BkscanLat[256] =    // BK keys from PC keys, Р›РђРў
 {
     /*       0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f  */
     /*0*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0030, 0015, 0000, 0000, 0000, 0012, 0000, 0000,
@@ -357,7 +357,7 @@ void ScreenView_ScanKeyboard()
         BOOL okCtrl = ((keys[VK_CONTROL] & 128) != 0);
         WORD bkregister = g_pBoard->GetKeyboardRegister();
 
-        // Выбираем таблицу маппинга в зависимости от флага РУС/ЛАТ в БК
+        // Р’С‹Р±РёСЂР°РµРј С‚Р°Р±Р»РёС†Сѓ РјР°РїРїРёРЅРіР° РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С„Р»Р°РіР° Р РЈРЎ/Р›РђРў РІ Р‘Рљ
         const BYTE* pTable = ((bkregister & KEYB_LAT) == 0) ? arrPcscan2BkscanRus : arrPcscan2BkscanLat;
 
         // Check every key for state change

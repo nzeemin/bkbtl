@@ -1,4 +1,4 @@
-/*  This file is part of BKBTL.
+п»ї/*  This file is part of BKBTL.
     BKBTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -174,7 +174,7 @@ void DebugLogFormat(LPCTSTR pszFormat, ...)
 //////////////////////////////////////////////////////////////////////
 
 
-// Названия регистров процессора
+// РќР°Р·РІР°РЅРёСЏ СЂРµРіРёСЃС‚СЂРѕРІ РїСЂРѕС†РµСЃСЃРѕСЂР°
 const TCHAR* REGISTER_NAME[] = { _T("R0"), _T("R1"), _T("R2"), _T("R3"), _T("R4"), _T("R5"), _T("SP"), _T("PC") };
 
 
@@ -317,10 +317,10 @@ const TCHAR BK_CHAR_CODES[] =
 // Translate one KOI8-R character to Unicode character
 TCHAR Translate_BK_Unicode(BYTE ch)
 {
-    if (ch < 32) return _T('·');
+    if (ch < 32) return _T('В·');
     if (ch < 127) return (TCHAR) ch;
     if (ch == 127) return (TCHAR) 0x25A0;
-    if (/*ch >= 128 &&*/ ch < 160) return _T('·');
+    if (/*ch >= 128 &&*/ ch < 160) return _T('В·');
     return BK_CHAR_CODES[ch - 160];
 }
 

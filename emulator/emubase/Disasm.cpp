@@ -1,4 +1,4 @@
-/*  This file is part of BKBTL.
+п»ї/*  This file is part of BKBTL.
     BKBTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -16,12 +16,12 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Defines.h"
 
 
-// Формат отображения режимов адресации
+// Р¤РѕСЂРјР°С‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЂРµР¶РёРјРѕРІ Р°РґСЂРµСЃР°С†РёРё
 const LPCTSTR ADDRESS_MODE_FORMAT[] =
 {
     _T("%s"), _T("(%s)"), _T("(%s)+"), _T("@(%s)+"), _T("-(%s)"), _T("@-(%s)"), _T("%06o(%s)"), _T("@%06o(%s)")
 };
-// Формат отображения режимов адресации для регистра PC
+// Р¤РѕСЂРјР°С‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЂРµР¶РёРјРѕРІ Р°РґСЂРµСЃР°С†РёРё РґР»СЏ СЂРµРіРёСЃС‚СЂР° PC
 const LPCTSTR ADDRESS_MODE_PC_FORMAT[] =
 {
     _T("PC"), _T("(PC)"), _T("#%06o"), _T("@#%06o"), _T("-(PC)"), _T("@-(PC)"), _T("%06o"), _T("@%06o")

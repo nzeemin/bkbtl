@@ -1,4 +1,4 @@
-/*  This file is part of BKBTL.
+ï»¿/*  This file is part of BKBTL.
     BKBTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -403,9 +403,9 @@ void DisasmView_LoadUnloadSubtitles()
     DisasmView_OnUpdate();  // We have to re-build the list of lines to show
 }
 
-// Ðàçáîð òåêñòà "ñóáòèòðîâ".
-// Íà âõîäå -- òåêñò â m_strDisasmSubtitles â ôîðìàòå UTF16 LE, çàêàí÷èâàåòñÿ ñèìâîëîì ñ êîäîì 0.
-// Íà âûõîäå -- ìàññèâ îïèñàíèé [àäðåñ â ïàìÿòè, òèï, àäðåñ ñòðîêè êîììåíòàðèÿ] â m_SubtitleItems.
+// Ð Ð°Ð·Ð±Ð¾Ñ€ Ñ‚ÐµÐºÑÑ‚Ð° "ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ð¾Ð²".
+// ÐÐ° Ð²Ñ…Ð¾Ð´Ðµ -- Ñ‚ÐµÐºÑÑ‚ Ð² m_strDisasmSubtitles Ð² Ñ„Ð¾Ñ€Ð¼Ð°Ñ‚Ðµ UTF16 LE, Ð·Ð°ÐºÐ°Ð½Ñ‡Ð¸Ð²Ð°ÐµÑ‚ÑÑ ÑÐ¸Ð¼Ð²Ð¾Ð»Ð¾Ð¼ Ñ ÐºÐ¾Ð´Ð¾Ð¼ 0.
+// ÐÐ° Ð²Ñ‹Ñ…Ð¾Ð´Ðµ -- Ð¼Ð°ÑÑÐ¸Ð² Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ð¹ [Ð°Ð´Ñ€ÐµÑ Ð² Ð¿Ð°Ð¼ÑÑ‚Ð¸, Ñ‚Ð¸Ð¿, Ð°Ð´Ñ€ÐµÑ ÑÑ‚Ñ€Ð¾ÐºÐ¸ ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ñ] Ð² m_SubtitleItems.
 BOOL DisasmView_ParseSubtitles()
 {
     ASSERT(m_strDisasmSubtitles != nullptr);
@@ -428,9 +428,9 @@ BOOL DisasmView_ParseSubtitles()
             continue;
         }
 
-        if (*pText >= _T('0') && *pText <= _T('9'))  // Öèôðà -- ñ÷èòàåì ÷òî ýòî àäðåñ
+        if (*pText >= _T('0') && *pText <= _T('9'))  // Ð¦Ð¸Ñ„Ñ€Ð° -- ÑÑ‡Ð¸Ñ‚Ð°ÐµÐ¼ Ñ‡Ñ‚Ð¾ ÑÑ‚Ð¾ Ð°Ð´Ñ€ÐµÑ
         {
-            // Ïàðñèì àäðåñ
+            // ÐŸÐ°Ñ€ÑÐ¸Ð¼ Ð°Ð´Ñ€ÐµÑ
             TCHAR* pAddrStart = pText;
             while (*pText != 0 && *pText >= _T('0') && *pText <= _T('9')) pText++;
             if (*pText == 0) break;
@@ -440,23 +440,23 @@ BOOL DisasmView_ParseSubtitles()
             ParseOctalValue(pAddrStart, &address);
             *pText = chSave;
 
-            if (pBlockCommentStart != nullptr)  // Íà ïðåäûäóùåé ñòðîêå áûë êîììåíòàðèé ê áëîêó
+            if (pBlockCommentStart != nullptr)  // ÐÐ° Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐ¹ ÑÑ‚Ñ€Ð¾ÐºÐµ Ð±Ñ‹Ð» ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ð¹ Ðº Ð±Ð»Ð¾ÐºÑƒ
             {
-                // Ñîõðàíÿåì êîììåíòàðèé ê áëîêó â ìàññèâå
+                // Ð¡Ð¾Ñ…Ñ€Ð°Ð½ÑÐµÐ¼ ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ð¹ Ðº Ð±Ð»Ð¾ÐºÑƒ Ð² Ð¼Ð°ÑÑÐ¸Ð²Ðµ
                 DisasmView_AddSubtitle(address, SUBTYPE_BLOCKCOMMENT, pBlockCommentStart);
                 pBlockCommentStart = nullptr;
             }
 
-            // Ïðîïóñêàåì ðàçäåëèòåëè
+            // ÐŸÑ€Ð¾Ð¿ÑƒÑÐºÐ°ÐµÐ¼ Ñ€Ð°Ð·Ð´ÐµÐ»Ð¸Ñ‚ÐµÐ»Ð¸
             while (*pText != 0 &&
                    (*pText == _T(' ') || *pText == _T('\t') || *pText == _T('$') || *pText == _T(':')))
                 pText++;
             BOOL okDirective = (*pText == _T('.'));
 
-            // Èùåì íà÷àëî êîììåíòàðèÿ è êîíåö ñòðîêè
+            // Ð˜Ñ‰ÐµÐ¼ Ð½Ð°Ñ‡Ð°Ð»Ð¾ ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ñ Ð¸ ÐºÐ¾Ð½ÐµÑ† ÑÑ‚Ñ€Ð¾ÐºÐ¸
             while (*pText != 0 && *pText != _T(';') && *pText != _T('\n') && *pText != _T('\r')) pText++;
             if (*pText == 0) break;
-            if (*pText == _T('\n') || *pText == _T('\r'))  // EOL, êîììåíòàðèé íå îáíàðóæåí
+            if (*pText == _T('\n') || *pText == _T('\r'))  // EOL, ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ð¹ Ð½Ðµ Ð¾Ð±Ð½Ð°Ñ€ÑƒÐ¶ÐµÐ½
             {
                 pText++;
 
@@ -465,22 +465,22 @@ BOOL DisasmView_ParseSubtitles()
                 continue;
             }
 
-            // Íàøëè íà÷àëî êîììåíòàðèÿ -- èùåì êîíåö ñòðîêè èëè ôàéëà
+            // ÐÐ°ÑˆÐ»Ð¸ Ð½Ð°Ñ‡Ð°Ð»Ð¾ ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ñ -- Ð¸Ñ‰ÐµÐ¼ ÐºÐ¾Ð½ÐµÑ† ÑÑ‚Ñ€Ð¾ÐºÐ¸ Ð¸Ð»Ð¸ Ñ„Ð°Ð¹Ð»Ð°
             TCHAR* pCommentStart = pText;
             while (*pText != 0 && *pText != _T('\n') && *pText != _T('\r')) pText++;
 
-            // Ñîõðàíÿåì êîììåíòàðèé â ìàññèâå
+            // Ð¡Ð¾Ñ…Ñ€Ð°Ð½ÑÐµÐ¼ ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ð¹ Ð² Ð¼Ð°ÑÑÐ¸Ð²Ðµ
             DisasmView_AddSubtitle(address,
                     (okDirective ? SUBTYPE_COMMENT | SUBTYPE_DATA : SUBTYPE_COMMENT),
                     pCommentStart);
 
             if (*pText == 0) break;
-            *pText = 0;  // Îáîçíà÷àåì êîíåö êîììåíòàðèÿ
+            *pText = 0;  // ÐžÐ±Ð¾Ð·Ð½Ð°Ñ‡Ð°ÐµÐ¼ ÐºÐ¾Ð½ÐµÑ† ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ñ
             pText++;
         }
-        else  // Íå öèôðà -- ïðîïóñêàåì äî êîíöà ñòðîêè
+        else  // ÐÐµ Ñ†Ð¸Ñ„Ñ€Ð° -- Ð¿Ñ€Ð¾Ð¿ÑƒÑÐºÐ°ÐµÐ¼ Ð´Ð¾ ÐºÐ¾Ð½Ñ†Ð° ÑÑ‚Ñ€Ð¾ÐºÐ¸
         {
-            if (*pText == _T(';'))  // Ñòðîêà íà÷èíàåòñÿ ñ êîììåíòàðèÿ - ïðåäïîëîæèòåëüíî, êîììåíòàðèé ê áëîêó
+            if (*pText == _T(';'))  // Ð¡Ñ‚Ñ€Ð¾ÐºÐ° Ð½Ð°Ñ‡Ð¸Ð½Ð°ÐµÑ‚ÑÑ Ñ ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ñ - Ð¿Ñ€ÐµÐ´Ð¿Ð¾Ð»Ð¾Ð¶Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾, ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ð¹ Ðº Ð±Ð»Ð¾ÐºÑƒ
                 pBlockCommentStart = pText;
             else
                 pBlockCommentStart = nullptr;
@@ -489,7 +489,7 @@ BOOL DisasmView_ParseSubtitles()
             if (*pText == 0) break;
             if (*pText == _T('\n') || *pText == _T('\r'))  // EOL
             {
-                *pText = 0;  // Îáîçíà÷àåì êîíåö êîììåíòàðèÿ - äëÿ êîììåíòàðèÿ ê áëîêó
+                *pText = 0;  // ÐžÐ±Ð¾Ð·Ð½Ð°Ñ‡Ð°ÐµÐ¼ ÐºÐ¾Ð½ÐµÑ† ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ñ - Ð´Ð»Ñ ÐºÐ¾Ð¼Ð¼ÐµÐ½Ñ‚Ð°Ñ€Ð¸Ñ Ðº Ð±Ð»Ð¾ÐºÑƒ
                 pText++;
             }
         }
@@ -593,8 +593,8 @@ BOOL DisasmView_GetJumpConditionHint(const WORD* memory, const CProcessor * pPro
     if (instr >= 0101000 && instr <= 0101777)  // BHI, BLOS
     {
         _sntprintf(buffer, 32, _T("C=%c, Z=%c"), (psw & PSW_C) ? '1' : '0', (psw & PSW_Z) ? '1' : '0');
-        // BHI:  IF ((Ñ or Z) == 0)
-        // BLOS: IF ((Ñ or Z) == 1)
+        // BHI:  IF ((Ð¡ or Z) == 0)
+        // BLOS: IF ((Ð¡ or Z) == 1)
         BOOL value = (((psw & PSW_C) != 0) || ((psw & PSW_Z) != 0));
         return ((instr & 0400) == 0) ? !value : value;
     }
@@ -1000,7 +1000,7 @@ void DisasmView_OnUpdate()
             {
                 pLineItem->type |= LINETYPE_SUBTITLE;
                 pLineItem->pSubItem = pSubItem;
-                // Ñòðîêó ñ ñóáòèòðîì ìû ìîæåì èñïîëüçîâàòü êàê îïîðíóþ äëÿ äèçàññåìáëåðà
+                // Ð¡Ñ‚Ñ€Ð¾ÐºÑƒ Ñ ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ð¾Ð¼ Ð¼Ñ‹ Ð¼Ð¾Ð¶ÐµÐ¼ Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÑŒ ÐºÐ°Ðº Ð¾Ð¿Ð¾Ñ€Ð½ÑƒÑŽ Ð´Ð»Ñ Ð´Ð¸Ð·Ð°ÑÑÐµÐ¼Ð±Ð»ÐµÑ€Ð°
                 if (disasmfrom > address)
                     disasmfrom = address;
             }

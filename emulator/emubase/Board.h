@@ -1,4 +1,4 @@
-/*  This file is part of BKBTL.
+п»ї/*  This file is part of BKBTL.
     BKBTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -31,16 +31,16 @@ enum BKConfiguration
     BK_COPT_FDD = 16,
 
     // Configurations BK-0010(01)
-    BK_CONF_BK0010_BASIC =  // БК-0010(01) и BASIC-86
+    BK_CONF_BK0010_BASIC =  // Р‘Рљ-0010(01) Рё BASIC-86
         BK_COPT_BK0010 | BK_COPT_ROM_BASIC,
-    BK_CONF_BK0010_FOCAL =  // БК-0010(01) и Фокал + тесты
+    BK_CONF_BK0010_FOCAL =  // Р‘Рљ-0010(01) Рё Р¤РѕРєР°Р» + С‚РµСЃС‚С‹
         BK_COPT_BK0010 | BK_COPT_ROM_FOCAL,
-    BK_CONF_BK0010_FDD   =  // БК-0010(01) и блок КНГМД с 16 КБ ОЗУ
+    BK_CONF_BK0010_FDD   =  // Р‘Рљ-0010(01) Рё Р±Р»РѕРє РљРќР“РњР” СЃ 16 РљР‘ РћР—РЈ
         BK_COPT_BK0010 | BK_COPT_FDD,
     // Configurations BK-0011M
-    BK_CONF_BK0011       =  // БК-0011М без блока КНГМД
+    BK_CONF_BK0011       =  // Р‘Рљ-0011Рњ Р±РµР· Р±Р»РѕРєР° РљРќР“РњР”
         BK_COPT_BK0011,
-    BK_CONF_BK0011_FDD   =  // БК-0011М и блок КНГМД
+    BK_CONF_BK0011_FDD   =  // Р‘Рљ-0011Рњ Рё Р±Р»РѕРє РљРќР“РњР”
         BK_COPT_BK0011 | BK_COPT_FDD,
 };
 
@@ -88,7 +88,7 @@ enum BKConfiguration
 #define BK_KEY_AR2          0276
 #define BK_KEY_STOP         0277
 
-// События от джойстика - передавать в метод KeyboardEvent
+// РЎРѕР±С‹С‚РёСЏ РѕС‚ РґР¶РѕР№СЃС‚РёРєР° - РїРµСЂРµРґР°РІР°С‚СЊ РІ РјРµС‚РѕРґ KeyboardEvent
 #define BK_KEY_JOYSTICK_BUTTON1 0260
 #define BK_KEY_JOYSTICK_BUTTON2 0261
 #define BK_KEY_JOYSTICK_BUTTON3 0262
@@ -98,7 +98,7 @@ enum BKConfiguration
 #define BK_KEY_JOYSTICK_LEFT    0266
 #define BK_KEY_JOYSTICK_UP      0267
 
-// Состояния клавиатуры БК - возвращаются из метода GetKeyboardRegister
+// РЎРѕСЃС‚РѕСЏРЅРёСЏ РєР»Р°РІРёР°С‚СѓСЂС‹ Р‘Рљ - РІРѕР·РІСЂР°С‰Р°СЋС‚СЃСЏ РёР· РјРµС‚РѕРґР° GetKeyboardRegister
 #define KEYB_RUS                0x01
 #define KEYB_LAT                0x02
 #define KEYB_LOWERREG           0x10
