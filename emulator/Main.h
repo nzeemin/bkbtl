@@ -129,8 +129,6 @@ BOOL Settings_GetWindowRect(RECT * pRect);
 void Settings_SetWindowRect(const RECT * pRect);
 void Settings_SetWindowMaximized(BOOL flag);
 BOOL Settings_GetWindowMaximized();
-void Settings_SetWindowFullscreen(BOOL flag);
-BOOL Settings_GetWindowFullscreen();
 void Settings_SetConfiguration(int configuration);
 int  Settings_GetConfiguration();
 void Settings_SetFloppyFilePath(int slot, LPCTSTR sFilePath);

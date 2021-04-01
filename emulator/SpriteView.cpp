@@ -39,6 +39,7 @@ const int m_nSprite_ViewCY = m_nSprite_ImageCY * m_nSprite_scale;
 
 WORD m_wSprite_BaseAddress = 0;
 int m_nSprite_width = 2;
+int m_nSprite_PageSizeBytes = m_nSprite_ImageCY * (m_nSprite_ImageCX / (8 + 2));
 
 void SpriteView_OnDraw(HDC hdc);
 BOOL SpriteView_OnKeyDown(WPARAM vkey, LPARAM lParam);
@@ -223,6 +224,7 @@ void SpriteView_GoToAddress(WORD address)
     SpriteView_UpdateWindowText();
     SpriteView_PrepareBitmap();
     InvalidateRect(m_hwndSpriteViewer, NULL, TRUE);
+    SpriteView_UpdateScrollPos();
 }
 void SpriteView_SetSpriteWidth(int width)
 {
@@ -237,6 +239,7 @@ void SpriteView_SetSpriteWidth(int width)
     SpriteView_UpdateWindowText();
     SpriteView_PrepareBitmap();
     InvalidateRect(m_hwndSpriteViewer, NULL, TRUE);
+    SpriteView_UpdateScrollPos();
 }
 
 void SpriteView_UpdateWindowText()
@@ -275,13 +278,25 @@ BOOL SpriteView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
     case VK_OEM_6: // ']' -- Increment Sprite Width
         SpriteView_SetSpriteWidth(m_nSprite_width + 1);
         break;
-    case 0x47:  // G - Go To Address
+    case 0x47:  // 'G' - Go To Address
         {
             WORD value = m_wSprite_BaseAddress;
             if (InputBoxOctal(m_hwndSpriteViewer, _T("Go To Address"), &value))
                 SpriteView_GoToAddress(value);
             break;
         }
+    case VK_HOME:
+        SpriteView_GoToAddress(0);
+        break;
+    case VK_END:
+        SpriteView_GoToAddress((WORD)(0x10000 - 1));
+        break;
+    case VK_PRIOR:
+        SpriteView_GoToAddress(m_wSprite_BaseAddress - (WORD)m_nSprite_PageSizeBytes);
+        break;
+    case VK_NEXT:
+        SpriteView_GoToAddress(m_wSprite_BaseAddress + (WORD)m_nSprite_PageSizeBytes);
+        break;
     default:
         return TRUE;
     }
@@ -313,12 +328,18 @@ BOOL SpriteView_OnVScroll(WPARAM wParam, LPARAM /*lParam*/)
     case SB_LINEUP:
         SpriteView_GoToAddress(m_wSprite_BaseAddress - (WORD)m_nSprite_width);
         break;
-        //case SB_PAGEDOWN:
-        //    break;
-        //case SB_PAGEUP:
-        //    break;
-        //case SB_THUMBPOSITION:
-        //    break;
+    case SB_PAGEDOWN:
+        SpriteView_GoToAddress(m_wSprite_BaseAddress + (WORD)m_nSprite_PageSizeBytes);
+        break;
+    case SB_PAGEUP:
+        SpriteView_GoToAddress(m_wSprite_BaseAddress - (WORD)m_nSprite_PageSizeBytes);
+        break;
+    case SB_THUMBPOSITION:
+        {
+            WORD scrollpos = HIWORD(wParam);
+            SpriteView_GoToAddress(scrollpos);
+        }
+        break;
     }
 
     return FALSE;
@@ -326,7 +347,27 @@ BOOL SpriteView_OnVScroll(WPARAM wParam, LPARAM /*lParam*/)
 
 void SpriteView_UpdateScrollPos()
 {
-    //TODO
+    int columns = 0;
+    int cx = m_nSprite_ImageCX;
+    while (cx > m_nSprite_width * 8)
+    {
+        columns++;
+        cx -= m_nSprite_width * 8;
+        if (cx <= 2)
+            break;
+        cx -= 2;
+    }
+    m_nSprite_PageSizeBytes = m_nSprite_ImageCY * columns * m_nSprite_width;
+
+    SCROLLINFO si;
+    ZeroMemory(&si, sizeof(si));
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_PAGE | SIF_POS | SIF_RANGE;
+    si.nPage = m_nSprite_PageSizeBytes;
+    si.nPos = m_wSprite_BaseAddress;
+    si.nMin = 0;
+    si.nMax = 0x10000 - 1 + m_nSprite_PageSizeBytes;
+    SetScrollInfo(m_hwndSpriteViewer, SB_VERT, &si, TRUE);
 }
 
 void SpriteView_PrepareBitmap()

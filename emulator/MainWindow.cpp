@@ -37,11 +37,6 @@ HWND m_hwndSplitter = (HWND)INVALID_HANDLE_VALUE;
 int m_MainWindowMinCx = BK_SCREEN_WIDTH + 16;
 int m_MainWindowMinCy = BK_SCREEN_HEIGHT + 40;
 
-BOOL m_MainWindow_Fullscreen = FALSE;
-LONG m_MainWindow_FullscreenOldStyle = 0;
-BOOL m_MainWindow_FullscreenOldMaximized = FALSE;
-RECT m_MainWindow_FullscreenOldRect;
-
 
 //////////////////////////////////////////////////////////////////////
 // Forward declarations
@@ -239,7 +234,7 @@ BOOL MainWindow_InitToolbar()
 BOOL MainWindow_InitStatusbar()
 {
     TCHAR buffer[100];
-    _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%s - version %s"), g_szTitle, _T(APP_VERSION_STRING));
+    _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%s version %s"), g_szTitle, _T(APP_VERSION_STRING));
     m_hwndStatusbar = CreateStatusWindow(
             WS_CHILD | WS_VISIBLE | SBT_TOOLTIPS | CCS_NOPARENTALIGN | CCS_NODIVIDER,
             buffer,
@@ -283,21 +278,12 @@ void MainWindow_RestoreSettings()
 
 void MainWindow_SavePosition()
 {
-    if (m_MainWindow_Fullscreen)
-    {
-        Settings_SetWindowRect(&m_MainWindow_FullscreenOldRect);
-        Settings_SetWindowMaximized(m_MainWindow_FullscreenOldMaximized);
-    }
-    else
-    {
-        WINDOWPLACEMENT placement;
-        placement.length = sizeof(WINDOWPLACEMENT);
-        ::GetWindowPlacement(g_hwnd, &placement);
+    WINDOWPLACEMENT placement;
+    placement.length = sizeof(WINDOWPLACEMENT);
+    ::GetWindowPlacement(g_hwnd, &placement);
 
-        Settings_SetWindowRect(&(placement.rcNormalPosition));
-        Settings_SetWindowMaximized(placement.showCmd == SW_SHOWMAXIMIZED);
-    }
-    Settings_SetWindowFullscreen(m_MainWindow_Fullscreen);
+    Settings_SetWindowRect(&(placement.rcNormalPosition));
+    Settings_SetWindowMaximized(placement.showCmd == SW_SHOWMAXIMIZED);
 }
 void MainWindow_RestorePositionAndShow()
 {
@@ -313,9 +299,6 @@ void MainWindow_RestorePositionAndShow()
     }
 
     ShowWindow(g_hwnd, Settings_GetWindowMaximized() ? SW_SHOWMAXIMIZED : SW_SHOW);
-
-    //if (Settings_GetWindowFullscreen())
-    //    MainWindow_DoViewFullscreen();
 }
 
 void MainWindow_UpdateWindowTitle()
@@ -354,11 +337,8 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
         {
             DefWindowProc(hWnd, message, wParam, lParam);
             MINMAXINFO* mminfo = (MINMAXINFO*)lParam;
-            if (!m_MainWindow_Fullscreen)
-            {
-                mminfo->ptMinTrackSize.x = m_MainWindowMinCx;
-                mminfo->ptMinTrackSize.y = m_MainWindowMinCy;
-            }
+            mminfo->ptMinTrackSize.x = m_MainWindowMinCx;
+            mminfo->ptMinTrackSize.y = m_MainWindowMinCy;
         }
         break;
     case WM_NOTIFY:
@@ -398,9 +378,6 @@ void MainWindow_AdjustWindowSize()
     const int MAX_DEBUG_WIDTH = 1450;
     const int MAX_DEBUG_HEIGHT = 1400;
 
-    // If Fullscreen or Maximized then do nothing
-    //if (m_MainWindow_Fullscreen)
-    //    return;
     WINDOWPLACEMENT placement;
     placement.length = sizeof(WINDOWPLACEMENT);
     ::GetWindowPlacement(g_hwnd, &placement);
@@ -469,8 +446,6 @@ void MainWindow_AdjustWindowLayout()
 {
     RECT rcStatus;  GetWindowRect(m_hwndStatusbar, &rcStatus);
     int cyStatus = rcStatus.bottom - rcStatus.top;
-    if (m_MainWindow_Fullscreen)
-        cyStatus = 0;
 
     int yScreen = 0;
     int cxScreen = 0, cyScreen = 0;
@@ -588,8 +563,7 @@ void MainWindow_AdjustWindowLayout()
     SetWindowPos(g_hwndScreen, NULL, 0, yScreen, cxScreen, cyScreen, SWP_NOZORDER);
 
     int cyStatusReal = rcStatus.bottom - rcStatus.top;
-    SetWindowPos(m_hwndStatusbar, NULL, 0, rc.bottom - cyStatusReal, cxScreen, cyStatusReal,
-            SWP_NOZORDER | (m_MainWindow_Fullscreen ? SWP_HIDEWINDOW : SWP_SHOWWINDOW));
+    SetWindowPos(m_hwndStatusbar, NULL, 0, rc.bottom - cyStatusReal, cxScreen, cyStatusReal, SWP_NOZORDER | SWP_SHOWWINDOW);
 }
 
 void MainWindow_ShowHideDebug()
@@ -874,26 +848,44 @@ bool MainWindow_DoCommand(int commandId)
 {
     switch (commandId)
     {
-    case IDM_ABOUT:
-        ShowAboutBox();
+    case ID_FILE_LOADSTATE:
+        MainWindow_DoFileLoadState();
+        break;
+    case ID_FILE_SAVESTATE:
+        MainWindow_DoFileSaveState();
+        break;
+    case ID_FILE_SCREENSHOT:
+        MainWindow_DoFileScreenshot();
+        break;
+    case ID_FILE_SCREENSHOTTOCLIPBOARD:
+        MainWindow_DoFileScreenshotToClipboard();
+        break;
+    case ID_FILE_SAVESCREENSHOTAS:
+        MainWindow_DoFileScreenshotSaveAs();
+        break;
+    case ID_FILE_LOADBIN:
+        MainWindow_DoFileLoadBin();
+        break;
+    case ID_FILE_SETTINGS:
+        MainWindow_DoFileSettings();
+        break;
+    case ID_FILE_SETTINGS_COLORS:
+        MainWindow_DoFileSettingsColors();
         break;
     case IDM_EXIT:
         DestroyWindow(g_hwnd);
-        break;
-    case ID_VIEW_DEBUG:
-        MainWindow_DoViewDebug();
-        break;
-    case ID_VIEW_MEMORYMAP:
-        MainWindow_DoDebugMemoryMap();
-        break;
-    case ID_DEBUG_TELETYPE:
-        MainWindow_DoDebugTeletype();
         break;
     case ID_VIEW_TOOLBAR:
         MainWindow_DoViewToolbar();
         break;
     case ID_VIEW_KEYBOARD:
         MainWindow_DoViewKeyboard();
+        break;
+    case ID_VIEW_MEMORYMAP:
+        MainWindow_DoDebugMemoryMap();
+        break;
+    case ID_DEBUG_TELETYPE:
+        MainWindow_DoDebugTeletype();
         break;
     case ID_VIEW_TAPE:
         MainWindow_DoViewTape();
@@ -928,8 +920,74 @@ bool MainWindow_DoCommand(int commandId)
     case ID_EMULATOR_RUN:
         MainWindow_DoEmulatorRun();
         break;
+    case ID_EMULATOR_RESET:
+        MainWindow_DoEmulatorReset();
+        break;
     case ID_EMULATOR_AUTOSTART:
         MainWindow_DoEmulatorAutostart();
+        break;
+    case ID_EMULATOR_SOUND:
+        MainWindow_DoEmulatorSound();
+        break;
+    case ID_EMULATOR_COVOX:
+        MainWindow_DoEmulatorCovox();
+        break;
+    case ID_EMULATOR_SOUNDAY:
+        MainWindow_DoEmulatorSoundAY();
+        break;
+    case ID_EMULATOR_SPEED25:
+        MainWindow_DoEmulatorSpeed(0x7ffe);
+        break;
+    case ID_EMULATOR_SPEED50:
+        MainWindow_DoEmulatorSpeed(0x7fff);
+        break;
+    case ID_EMULATOR_SPEEDMAX:
+        MainWindow_DoEmulatorSpeed(0);
+        break;
+    case ID_EMULATOR_REALSPEED:
+        MainWindow_DoEmulatorSpeed(1);
+        break;
+    case ID_EMULATOR_SPEED200:
+        MainWindow_DoEmulatorSpeed(2);
+        break;
+    case ID_EMULATOR_JOYSTICKNUMPAD:
+        MainWindow_DoEmulatorJoystick(0);
+        break;
+    case ID_EMULATOR_JOYSTICK1:
+        MainWindow_DoEmulatorJoystick(1);
+        break;
+    case ID_EMULATOR_JOYSTICK2:
+        MainWindow_DoEmulatorJoystick(2);
+        break;
+    case ID_EMULATOR_FLOPPY0:
+        MainWindow_DoEmulatorFloppy(0);
+        break;
+    case ID_EMULATOR_FLOPPY1:
+        MainWindow_DoEmulatorFloppy(1);
+        break;
+    case ID_EMULATOR_FLOPPY2:
+        MainWindow_DoEmulatorFloppy(2);
+        break;
+    case ID_EMULATOR_FLOPPY3:
+        MainWindow_DoEmulatorFloppy(3);
+        break;
+    case ID_CONF_BK0010BASIC:
+        MainWindow_DoEmulatorConf(BK_CONF_BK0010_BASIC);
+        break;
+    case ID_CONF_BK0010FOCAL:
+        MainWindow_DoEmulatorConf(BK_CONF_BK0010_FOCAL);
+        break;
+    case ID_CONF_BK0010FDD:
+        MainWindow_DoEmulatorConf(BK_CONF_BK0010_FDD);
+        break;
+    case ID_CONF_BK0011:
+        MainWindow_DoEmulatorConf(BK_CONF_BK0011);
+        break;
+    case ID_CONF_BK0011FDD:
+        MainWindow_DoEmulatorConf(BK_CONF_BK0011_FDD);
+        break;
+    case ID_VIEW_DEBUG:
+        MainWindow_DoViewDebug();
         break;
     case ID_DEBUG_SPRITES:
         MainWindow_DoViewSpriteViewer();
@@ -956,92 +1014,8 @@ bool MainWindow_DoCommand(int commandId)
     case ID_DEBUG_MEMORY_GOTO:
         MemoryView_SelectAddress();
         break;
-    case ID_EMULATOR_RESET:
-        MainWindow_DoEmulatorReset();
-        break;
-    case ID_EMULATOR_SPEED25:
-        MainWindow_DoEmulatorSpeed(0x7ffe);
-        break;
-    case ID_EMULATOR_SPEED50:
-        MainWindow_DoEmulatorSpeed(0x7fff);
-        break;
-    case ID_EMULATOR_SPEEDMAX:
-        MainWindow_DoEmulatorSpeed(0);
-        break;
-    case ID_EMULATOR_REALSPEED:
-        MainWindow_DoEmulatorSpeed(1);
-        break;
-    case ID_EMULATOR_SPEED200:
-        MainWindow_DoEmulatorSpeed(2);
-        break;
-    case ID_EMULATOR_SOUND:
-        MainWindow_DoEmulatorSound();
-        break;
-    case ID_EMULATOR_COVOX:
-        MainWindow_DoEmulatorCovox();
-        break;
-    case ID_EMULATOR_SOUNDAY:
-        MainWindow_DoEmulatorSoundAY();
-        break;
-    case ID_EMULATOR_JOYSTICKNUMPAD:
-        MainWindow_DoEmulatorJoystick(0);
-        break;
-    case ID_EMULATOR_JOYSTICK1:
-        MainWindow_DoEmulatorJoystick(1);
-        break;
-    case ID_EMULATOR_JOYSTICK2:
-        MainWindow_DoEmulatorJoystick(2);
-        break;
-    case ID_EMULATOR_FLOPPY0:
-        MainWindow_DoEmulatorFloppy(0);
-        break;
-    case ID_EMULATOR_FLOPPY1:
-        MainWindow_DoEmulatorFloppy(1);
-        break;
-    case ID_EMULATOR_FLOPPY2:
-        MainWindow_DoEmulatorFloppy(2);
-        break;
-    case ID_EMULATOR_FLOPPY3:
-        MainWindow_DoEmulatorFloppy(3);
-        break;
-    case ID_FILE_LOADSTATE:
-        MainWindow_DoFileLoadState();
-        break;
-    case ID_FILE_SAVESTATE:
-        MainWindow_DoFileSaveState();
-        break;
-    case ID_FILE_SCREENSHOT:
-        MainWindow_DoFileScreenshot();
-        break;
-    case ID_FILE_SCREENSHOTTOCLIPBOARD:
-        MainWindow_DoFileScreenshotToClipboard();
-        break;
-    case ID_FILE_SAVESCREENSHOTAS:
-        MainWindow_DoFileScreenshotSaveAs();
-        break;
-    case ID_FILE_LOADBIN:
-        MainWindow_DoFileLoadBin();
-        break;
-    case ID_CONF_BK0010BASIC:
-        MainWindow_DoEmulatorConf(BK_CONF_BK0010_BASIC);
-        break;
-    case ID_CONF_BK0010FOCAL:
-        MainWindow_DoEmulatorConf(BK_CONF_BK0010_FOCAL);
-        break;
-    case ID_CONF_BK0010FDD:
-        MainWindow_DoEmulatorConf(BK_CONF_BK0010_FDD);
-        break;
-    case ID_CONF_BK0011:
-        MainWindow_DoEmulatorConf(BK_CONF_BK0011);
-        break;
-    case ID_CONF_BK0011FDD:
-        MainWindow_DoEmulatorConf(BK_CONF_BK0011_FDD);
-        break;
-    case ID_FILE_SETTINGS:
-        MainWindow_DoFileSettings();
-        break;
-    case ID_FILE_SETTINGS_COLORS:
-        MainWindow_DoFileSettingsColors();
+    case IDM_ABOUT:
+        ShowAboutBox();
         break;
     default:
         return false;
@@ -1138,6 +1112,7 @@ void MainWindow_DoEmulatorSpeed(WORD speed)
 
     MainWindow_UpdateMenu();
 }
+
 void MainWindow_DoEmulatorSound()
 {
     Settings_SetSound(!Settings_GetSound());
@@ -1207,7 +1182,8 @@ void MainWindow_DoFileScreenshot()
     TCHAR bufFileName[MAX_PATH];
     SYSTEMTIME st;
     ::GetSystemTime(&st);
-    _sntprintf(bufFileName, sizeof(bufFileName) / sizeof(TCHAR) - 1, _T("%04d%02d%02d%02d%02d%02d%03d.png"),
+    _sntprintf(bufFileName, sizeof(bufFileName) / sizeof(TCHAR) - 1,
+            _T("%04d%02d%02d%02d%02d%02d%03d.png"),
             st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 
     if (!ScreenView_SaveScreenshot(bufFileName))

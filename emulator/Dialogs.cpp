@@ -55,10 +55,11 @@ INT_PTR CALLBACK AboutBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
     {
     case WM_INITDIALOG:
         {
-            TCHAR buffer[64];
-            _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("BKBTL Version %s"), _T(APP_VERSION_STRING));
+            const size_t buffersize = 64;
+            TCHAR buffer[buffersize];
+            _sntprintf(buffer, buffersize - 1, _T("BKBTL version %s revision %d"), _T(APP_VERSION_STRING), APP_REVISION);
             ::SetDlgItemText(hDlg, IDC_VERSION, buffer);
-            _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("Build date: %S %S"), __DATE__, __TIME__);
+            _sntprintf(buffer, buffersize - 1, _T("Build date: %S %S"), __DATE__, __TIME__);
             ::SetDlgItemText(hDlg, IDC_BUILDDATE, buffer);
             return (INT_PTR)TRUE;
         }
@@ -95,7 +96,6 @@ BOOL InputBoxOctal(HWND hwndOwner, LPCTSTR strTitle, WORD* pValue)
 
     return TRUE;
 }
-
 
 INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -285,7 +285,7 @@ void Dialogs_DoLoadBinPrepare(HWND hDlg, LPCTSTR strFileName)
     ::SetDlgItemText(hDlg, IDC_EDITFILE, NULL);
 
     // Open file for reading
-    HANDLE hFile = CreateFile(strFileName,
+    HANDLE hFile = ::CreateFile(strFileName,
             GENERIC_READ, FILE_SHARE_READ, NULL,
             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
@@ -327,7 +327,7 @@ void Dialogs_DoLoadBinPrepare(HWND hDlg, LPCTSTR strFileName)
 void Dialogs_DoLoadBinLoad(LPCTSTR strFileName)
 {
     // Open file for reading
-    HANDLE hFile = CreateFile(strFileName,
+    HANDLE hFile = ::CreateFile(strFileName,
             GENERIC_READ, FILE_SHARE_READ, NULL,
             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
