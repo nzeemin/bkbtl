@@ -637,7 +637,7 @@ bool Emulator_SystemFrame()
     Emulator_ProcessJoystick();
 
     if (!g_pBoard->SystemFrame())
-        return 0;
+        return false;
 
     // Calculate frames per second
     m_nFrameCount++;
@@ -739,7 +739,7 @@ bool Emulator_SystemFrame()
         }
     }
 
-    return 1;
+    return true;
 }
 
 void Emulator_GetEmt36FileName(TCHAR* filename)
