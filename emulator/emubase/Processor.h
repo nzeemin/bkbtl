@@ -71,8 +71,6 @@ protected:  // Interrupt processing
     bool        m_IOT_rq;           // IOT command interrupt pending
     bool        m_EMT_rq;           // EMT command interrupt pending
     bool        m_TRAPrq;           // TRAP command interrupt pending
-    //bool        m_VIRQrq;           // VIRQ vector interrupt pending
-    //uint16_t    m_VIRQvector;       // VIRQ interrupt vector
     int         m_virqrq;           // VIRQ pending
     uint16_t    m_virq[16];         // VIRQ vector
 protected:
@@ -83,7 +81,7 @@ public:  // Register control
     void        SetPSW(uint16_t word) { m_psw = word; }
     uint16_t    GetReg(int regno) const { return m_R[regno]; }
     void        SetReg(int regno, uint16_t word) { m_R[regno] = word; }
-    uint8_t     GetLReg(int regno) const { return (uint8_t)(m_R[regno] & 0xff); }
+    uint8_t     GetLReg(int regno) const { return static_cast<uint8_t>(m_R[regno] & 0xff); }
     uint16_t    GetSP() const { return m_R[6]; }
     void        SetSP(uint16_t word) { m_R[6] = word; }
     uint16_t    GetPC() const { return m_R[7]; }
@@ -129,8 +127,6 @@ protected:  // Implementation
     void        FetchInstruction();      // Read next instruction
     void        TranslateInstruction();  // Execute the instruction
 protected:  // Implementation - instruction processing
-    uint16_t    CalculateOperAddr (int meth, int reg);
-    uint16_t    CalculateOperAddrSrc (int meth, int reg);
     uint8_t     GetByteSrc();
     uint8_t     GetByteDest();
     void        SetByteDest(uint8_t);
