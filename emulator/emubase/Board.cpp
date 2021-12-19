@@ -15,18 +15,14 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Emubase.h"
 #include "Board.h"
 
-void TraceInstruction(CProcessor* pProc, CMotherboard* pBoard, uint16_t address, uint32_t dwTrace);
+void TraceInstruction(const CProcessor* pProc, const CMotherboard* pBoard, uint16_t address, uint32_t dwTrace);
 
 
 //////////////////////////////////////////////////////////////////////
 
-CMotherboard::CMotherboard ()
+CMotherboard::CMotherboard () :
+    m_pCPU(new CProcessor(this)), m_pFloppyCtl(nullptr), m_pSoundAY(new CSoundAY())
 {
-    // Create devices
-    m_pCPU = new CProcessor(this);
-    m_pFloppyCtl = nullptr;
-    m_pSoundAY = new CSoundAY();
-
     m_dwTrace = TRACE_NONE;
     m_TapeReadCallback = nullptr;
     m_TapeWriteCallback = nullptr;
@@ -40,8 +36,8 @@ CMotherboard::CMotherboard ()
     m_CPUbps = nullptr;
 
     // Allocate memory for RAM and ROM
-    m_pRAM = (uint8_t*) ::malloc(128 * 1024);  //::memset(m_pRAM, 0, 128 * 1024);
-    m_pROM = (uint8_t*) ::calloc(64 * 1024, 1);
+    m_pRAM = static_cast<uint8_t*>(::malloc(128 * 1024));  //::memset(m_pRAM, 0, 128 * 1024);
+    m_pROM = static_cast<uint8_t*>(::calloc(64 * 1024, 1));
 
     SetConfiguration(BK_CONF_BK0010_BASIC);  // Default configuration
 
@@ -52,8 +48,7 @@ CMotherboard::~CMotherboard ()
 {
     // Delete devices
     delete m_pCPU;
-    if (m_pFloppyCtl != nullptr)
-        delete m_pFloppyCtl;
+    delete m_pFloppyCtl;
     delete m_pSoundAY;
 
     // Free memory
@@ -201,8 +196,8 @@ uint16_t CMotherboard::GetRAMWord(uint16_t offset) const
 }
 uint16_t CMotherboard::GetRAMWord(uint8_t chunk, uint16_t offset) const
 {
-    uint32_t dwOffset = (((uint32_t)chunk & 7) << 14) + offset;
-    return *((uint16_t*)(m_pRAM + dwOffset));
+    uint32_t dwOffset = ((static_cast<uint32_t>(chunk) & 7) << 14) + offset;
+    return *reinterpret_cast<const uint16_t*>(m_pRAM + dwOffset);
 }
 uint8_t CMotherboard::GetRAMByte(uint16_t offset) const
 {
@@ -210,7 +205,7 @@ uint8_t CMotherboard::GetRAMByte(uint16_t offset) const
 }
 uint8_t CMotherboard::GetRAMByte(uint8_t chunk, uint16_t offset) const
 {
-    uint32_t dwOffset = (((uint32_t)chunk & 7) << 14) + offset;
+    uint32_t dwOffset = ((static_cast<uint32_t>(chunk) & 7) << 14) + offset;
     return m_pRAM[dwOffset];
 }
 void CMotherboard::SetRAMWord(uint16_t offset, uint16_t word)
@@ -219,7 +214,7 @@ void CMotherboard::SetRAMWord(uint16_t offset, uint16_t word)
 }
 void CMotherboard::SetRAMWord(uint8_t chunk, uint16_t offset, uint16_t word)
 {
-    uint32_t dwOffset = (((uint32_t)chunk & 7) << 14) + offset;
+    uint32_t dwOffset = ((static_cast<uint32_t>(chunk) & 7) << 14) + offset;
     *((uint16_t*)(m_pRAM + dwOffset)) = word;
 }
 void CMotherboard::SetRAMByte(uint16_t offset, uint8_t byte)
@@ -228,14 +223,14 @@ void CMotherboard::SetRAMByte(uint16_t offset, uint8_t byte)
 }
 void CMotherboard::SetRAMByte(uint8_t chunk, uint16_t offset, uint8_t byte)
 {
-    uint32_t dwOffset = (((uint32_t)chunk & 7) << 14) + offset;
+    uint32_t dwOffset = ((static_cast<uint32_t>(chunk) & 7) << 14) + offset;
     m_pRAM[dwOffset] = byte;
 }
 
 uint16_t CMotherboard::GetROMWord(uint16_t offset) const
 {
     ASSERT(offset < 1024 * 64);
-    return *((uint16_t*)(m_pROM + offset));
+    return *reinterpret_cast<const uint16_t*>(m_pROM + offset);
 }
 uint8_t CMotherboard::GetROMByte(uint16_t offset) const
 {
@@ -677,7 +672,7 @@ void CMotherboard::SetByte(uint16_t address, bool okHaltMode, uint8_t byte)
 }
 
 // Calculates video buffer start address, for screen drawing procedure
-const uint8_t* CMotherboard::GetVideoBuffer()
+const uint8_t* CMotherboard::GetVideoBuffer() const
 {
     if (m_Configuration & BK_COPT_BK0011)
     {
@@ -746,7 +741,7 @@ int CMotherboard::TranslateAddress(uint16_t address, bool /*okHaltMode*/, bool /
                     break;
                 }
 
-                address = (uint16_t)((address & 037777) + memoryRomChunk * 040000);
+                address = static_cast<uint16_t>((address & 037777) + memoryRomChunk * 040000);
             }
             else  // Включено ОЗУ 0..7
             {
@@ -780,16 +775,16 @@ uint8_t CMotherboard::GetPortByte(uint16_t address)
     if (address & 1)
         return GetPortWord(address & 0xfffe) >> 8;
 
-    return (uint8_t) GetPortWord(address);
+    return static_cast<uint8_t>(GetPortWord(address));
 }
 
 uint16_t CMotherboard::GetPortWord(uint16_t address)
 {
     switch (address)
     {
-    case 0177560:  // Serial port recieve status
+    case 0177560:  // Serial port receive status
         return m_Port177560;
-    case 0177562:  // Serial port recieve data
+    case 0177562:  // Serial port receive data
         return m_Port177562;
     case 0177564:  // Serial port translate status
         return m_Port177564;
@@ -874,9 +869,9 @@ uint16_t CMotherboard::GetPortView(uint16_t address) const
 {
     switch (address)
     {
-    case 0177560:  // Serial port recieve status
+    case 0177560:  // Serial port receive status
         return m_Port177560;
-    case 0177562:  // Serial port recieve data
+    case 0177562:  // Serial port receive data
         return m_Port177562;
     case 0177564:  // Serial port translate status
         return m_Port177564;
@@ -979,7 +974,7 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
     case 0177714:  // Parallel port register: printer and Covox
         if (m_okSoundAY)
         {
-            m_nSoundAYReg = (uint8_t)(word ^ 0xff);
+            m_nSoundAYReg = static_cast<uint8_t>(word ^ 0xff);
         }
         m_Port177714out = word;
         break;
@@ -1064,7 +1059,7 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
 void CMotherboard::SaveToImage(uint8_t* pImage)
 {
     // Board data
-    uint16_t* pwImage = (uint16_t*) (pImage + 32);
+    uint16_t* pwImage = reinterpret_cast<uint16_t*>(pImage + 32);
     *pwImage++ = m_Configuration;
     pwImage += 6;  // RESERVED
     *pwImage++ = m_Port177560;
@@ -1099,7 +1094,7 @@ void CMotherboard::SaveToImage(uint8_t* pImage)
 void CMotherboard::LoadFromImage(const uint8_t* pImage)
 {
     // Board data
-    uint16_t* pwImage = (uint16_t*) (pImage + 32);
+    const uint16_t* pwImage = reinterpret_cast<const uint16_t*>(pImage + 32);
     m_Configuration = *pwImage++;
     pwImage += 6;  // RESERVED
     m_Port177560 = *pwImage++;
@@ -1136,7 +1131,7 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
 
 //////////////////////////////////////////////////////////////////////
 
-uint16_t CMotherboard::GetKeyboardRegister(void)
+uint16_t CMotherboard::GetKeyboardRegister() const
 {
     uint16_t res = 0;
 
@@ -1227,7 +1222,7 @@ void CMotherboard::SetTeletypeCallback(TELETYPECALLBACK callback)
 
 #if !defined(PRODUCT)
 
-void TraceInstruction(CProcessor* pProc, CMotherboard* pBoard, uint16_t address, uint32_t dwTrace)
+void TraceInstruction(const CProcessor* pProc, const CMotherboard* pBoard, uint16_t address, uint32_t dwTrace)
 {
     bool okHaltMode = pProc->IsHaltMode();
 

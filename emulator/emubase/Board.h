@@ -174,7 +174,7 @@ public:
     void        ExecuteCPU();  // Execute one CPU instruction
     bool        SystemFrame();  // Do one frame -- use for normal run
     void        KeyboardEvent(uint8_t scancode, bool okPressed, bool okAr2);  // Key pressed or released
-    uint16_t    GetKeyboardRegister(void);
+    uint16_t    GetKeyboardRegister() const;
     uint16_t    GetPrinterOutPort() const { return m_Port177714out; }
     void        SetPrinterInPort(uint8_t data);
     bool        IsTapeMotorOn() const { return (m_Port177716tap & 0200) == 0; }
@@ -204,7 +204,7 @@ public:  // Memory
     // Write byte
     void SetByte(uint16_t address, bool okHaltMode, uint8_t byte);
     // Read word from memory for debugger
-    uint16_t GetWordView(uint16_t address, bool okHaltMode, bool okExec, int* pValid) const;
+    uint16_t GetWordView(uint16_t address, bool okHaltMode, bool okExec, int* pAddrType) const;
     // Read word from port for debugger
     uint16_t GetPortView(uint16_t address) const;
     // Read SEL register
@@ -212,11 +212,11 @@ public:  // Memory
     // Get palette number 0..15 (BK0011 only)
     uint8_t GetPalette() const { return (m_Port177662wr >> 8) & 0x0f; }
     // Get video buffer address
-    const uint8_t* GetVideoBuffer();
+    const uint8_t* GetVideoBuffer() const;
 private:
     void        TapeInput(bool inputBit);  // Tape input bit received
 private:
-    // Determite memory type for given address - see ADDRTYPE_Xxx constants
+    // Determine memory type for given address - see ADDRTYPE_Xxx constants
     //   okHaltMode - processor mode (USER/HALT)
     //   okExec - true: read instruction for execution; false: read memory
     //   pOffset - result - offset in memory plane

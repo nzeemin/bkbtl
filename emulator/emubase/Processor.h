@@ -44,13 +44,13 @@ protected:  // Processor state
     uint16_t    m_psw;              // Processor Status Word (PSW)
     uint16_t    m_R[8];             // Registers (R0..R5, R6=SP, R7=PC)
     bool        m_okStopped;        // "Processor stopped" flag
-    bool        m_userspace;        // Read TRUE if user space is used -- CPU is accessing I/O from HALT mode using user space
-    bool        m_stepmode;         // Read TRUE if it's step mode
+    bool        m_userspace;        // Read true if user space is used -- CPU is accessing I/O from HALT mode using user space
+    bool        m_stepmode;         // Read true if it's step mode
     bool        m_haltpin;          // HALT
     bool        m_waitmode;         // WAIT
 
 protected:  // Current instruction processing
-    uint16_t    m_instruction;      // Curent instruction
+    uint16_t    m_instruction;      // Current instruction
     uint16_t    m_instructionpc;    // Address of the current instruction
     uint8_t     m_regsrc;           // Source register number
     uint8_t     m_methsrc;          // Source address mode
@@ -58,6 +58,7 @@ protected:  // Current instruction processing
     uint8_t     m_regdest;          // Destination register number
     uint8_t     m_methdest;         // Destination address mode
     uint16_t    m_addrdest;         // Destination address
+
 protected:  // Interrupt processing
     bool        m_RPLYrq;           // Hangup interrupt pending
     bool        m_RSVDrq;           // Reserved instruction interrupt pending
@@ -155,85 +156,79 @@ protected:  // PSW bits calculations
     bool static CheckSubForCarry(uint8_t a, uint8_t b);
     bool static CheckSubForCarry(uint16_t a, uint16_t b);
 
-protected:  // Implementation - instruction execution
-    // No fields
+protected:
     uint16_t    GetWordAddr(uint8_t meth, uint8_t reg);
     uint16_t    GetByteAddr(uint8_t meth, uint8_t reg);
 
-    void        ExecuteUNKNOWN ();  // Нет такой инструкции - просто вызывается TRAP 10
-    void        ExecuteHALT ();
-    void        ExecuteWAIT ();
-    void        ExecuteRTI ();
-    void        ExecuteBPT ();
-    void        ExecuteIOT ();
-    void        ExecuteRESET ();
-    void        ExecuteSTEP ();
-    void        ExecuteRUN ();
-    void        ExecuteRTT ();
-    void        ExecuteNOP ();
-    void        ExecuteCCC ();
-    void        ExecuteSCC ();
+protected:  // Implementation - instruction execution
+    void        ExecuteUNKNOWN ();  // There is no such instruction -- just call TRAP 10
 
-    // One fiels
-    void        ExecuteRTS ();
-
-    // Two fields
-    void        ExecuteJMP ();
-    void        ExecuteSWAB ();
+    // One field
     void        ExecuteCLR ();
     void        ExecuteCOM ();
     void        ExecuteINC ();
     void        ExecuteDEC ();
     void        ExecuteNEG ();
-    void        ExecuteADC ();
-    void        ExecuteSBC ();
     void        ExecuteTST ();
-    void        ExecuteTSTB ();
-    void        ExecuteROR ();
-    void        ExecuteROL ();
+    void        ExecuteTSTB();
     void        ExecuteASR ();
     void        ExecuteASL ();
-    void        ExecuteMARK ();
+    void        ExecuteROR ();
+    void        ExecuteROL ();
+    void        ExecuteADC ();
+    void        ExecuteSBC ();
     void        ExecuteSXT ();
+    void        ExecuteSWAB ();
     void        ExecuteMTPS ();
     void        ExecuteMFPS ();
-
-    // Branchs & interrupts
+    void        ExecuteMARK ();
+    // Two fields
+    void        ExecuteMOV ();
+    void        ExecuteMOVB();
+    void        ExecuteCMP ();
+    void        ExecuteCMPB();
+    void        ExecuteADD ();
+    void        ExecuteSUB ();
+    void        ExecuteBIT ();
+    void        ExecuteBIC ();
+    void        ExecuteBIS ();
+    void        ExecuteXOR ();
+    // Branching
     void        ExecuteBR ();
     void        ExecuteBNE ();
     void        ExecuteBEQ ();
+    void        ExecuteBPL ();
+    void        ExecuteBMI ();
+    void        ExecuteBVC ();
+    void        ExecuteBVS ();
     void        ExecuteBGE ();
     void        ExecuteBLT ();
     void        ExecuteBGT ();
     void        ExecuteBLE ();
-    void        ExecuteBPL ();
-    void        ExecuteBMI ();
     void        ExecuteBHI ();
-    void        ExecuteBLOS ();
-    void        ExecuteBVC ();
-    void        ExecuteBVS ();
+    void        ExecuteBLOS ();  //BCC == BHIS
     void        ExecuteBHIS ();
-    void        ExecuteBLO ();
-
+    void        ExecuteBLO ();   //BCS == BLO
+    void        ExecuteJMP ();
+    void        ExecuteJSR ();
+    void        ExecuteRTS ();
+    void        ExecuteSOB ();
+    // Interrupts
     void        ExecuteEMT ();
     void        ExecuteTRAP ();
-
-    // Three fields
-    void        ExecuteJSR ();
-    void        ExecuteXOR ();
-    void        ExecuteSOB ();
-
-    // Four fields
-    void        ExecuteMOV ();
-    void        ExecuteMOVB ();
-    void        ExecuteCMP ();
-    void        ExecuteCMPB ();
-    void        ExecuteBIT ();
-    void        ExecuteBIC ();
-    void        ExecuteBIS ();
-
-    void        ExecuteADD ();
-    void        ExecuteSUB ();
+    void        ExecuteIOT ();
+    void        ExecuteBPT ();
+    void        ExecuteRTI ();
+    void        ExecuteRTT ();
+    void        ExecuteHALT ();
+    void        ExecuteWAIT ();
+    void        ExecuteRESET ();
+    void        ExecuteSTEP ();
+    void        ExecuteRUN ();
+    // Flags
+    void        ExecuteCCC ();
+    void        ExecuteSCC ();
+    void        ExecuteNOP ();
 };
 
 // PSW bits control - implementation
@@ -257,7 +252,7 @@ inline void CProcessor::SetZ (bool bFlag)
 // PSW bits calculations - implementation
 inline bool CProcessor::CheckAddForOverflow (uint8_t a, uint8_t b)
 {
-#if defined(_M_IX86) && defined(_MSC_VER)
+#if defined(_M_IX86) && defined(_MSC_VER) && !defined(_MANAGED)
     bool bOverflow = false;
     _asm
     {
@@ -281,7 +276,7 @@ inline bool CProcessor::CheckAddForOverflow (uint8_t a, uint8_t b)
 }
 inline bool CProcessor::CheckAddForOverflow (uint16_t a, uint16_t b)
 {
-#if defined(_M_IX86) && defined(_MSC_VER)
+#if defined(_M_IX86) && defined(_MSC_VER) && !defined(_MANAGED)
     bool bOverflow = false;
     _asm
     {
@@ -303,11 +298,10 @@ inline bool CProcessor::CheckAddForOverflow (uint16_t a, uint16_t b)
     return ((~a ^ b) & (a ^ sum)) & 0100000;
 #endif
 }
-//void        CProcessor::SetReg(int regno, uint16_t word)
 
 inline bool CProcessor::CheckSubForOverflow (uint8_t a, uint8_t b)
 {
-#if defined(_M_IX86) && defined(_MSC_VER)
+#if defined(_M_IX86) && defined(_MSC_VER) && !defined(_MANAGED)
     bool bOverflow = false;
     _asm
     {
@@ -331,7 +325,7 @@ inline bool CProcessor::CheckSubForOverflow (uint8_t a, uint8_t b)
 }
 inline bool CProcessor::CheckSubForOverflow (uint16_t a, uint16_t b)
 {
-#if defined(_M_IX86) && defined(_MSC_VER)
+#if defined(_M_IX86) && defined(_MSC_VER) && !defined(_MANAGED)
     bool bOverflow = false;
     _asm
     {
@@ -355,23 +349,23 @@ inline bool CProcessor::CheckSubForOverflow (uint16_t a, uint16_t b)
 }
 inline bool CProcessor::CheckAddForCarry (uint8_t a, uint8_t b)
 {
-    uint16_t sum = (uint16_t)a + (uint16_t)b;
+    uint16_t sum = static_cast<uint16_t>(a) + static_cast<uint16_t>(b);
     return (sum & 0xff00) != 0;
 }
 inline bool CProcessor::CheckAddForCarry (uint16_t a, uint16_t b)
 {
-    uint32_t sum = (uint32_t)a + (uint32_t)b;
-    return (uint16_t)((sum >> 16) & 0xffff) != 0;
+    uint32_t sum = static_cast<uint32_t>(a) + static_cast<uint32_t>(b);
+    return static_cast<uint16_t>((sum >> 16) & 0xffff) != 0;
 }
 inline bool CProcessor::CheckSubForCarry (uint8_t a, uint8_t b)
 {
-    uint16_t sum = (uint16_t)a - (uint16_t)b;
+    uint16_t sum = static_cast<uint16_t>(a) - static_cast<uint16_t>(b);
     return (sum & 0xff00) != 0;
 }
 inline bool CProcessor::CheckSubForCarry (uint16_t a, uint16_t b)
 {
-    uint32_t sum = (uint32_t)a - (uint32_t)b;
-    return (uint16_t)((sum >> 16) & 0xffff) != 0;
+    uint32_t sum = static_cast<uint32_t>(a) - static_cast<uint32_t>(b);
+    return static_cast<uint16_t>((sum >> 16) & 0xffff) != 0;
 }
 
 

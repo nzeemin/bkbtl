@@ -29,19 +29,6 @@ inline uint8_t GetDigit(uint16_t word, int pos)
 
 //////////////////////////////////////////////////////////////////////
 
-// Interrupts
-#define NO_INTERRUPT    0000
-#define INTERRUPT_4     0004
-#define INTERRUPT_10    0010
-#define INTERRUPT_14    0014
-#define INTERRUPT_20    0020
-#define INTERRUPT_24    0024
-#define INTERRUPT_30    0030
-#define INTERRUPT_34    0034
-#define INTERRUPT_60    0060
-#define INTERRUPT_100   0100
-#define INTERRUPT_274   0274
-
 // Process Status Word (PSW) bits
 #define PSW_C           1      // Carry
 #define PSW_V           2      // Arithmetic overflow
