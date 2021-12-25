@@ -20,7 +20,7 @@ void TraceInstruction(const CProcessor* pProc, const CMotherboard* pBoard, uint1
 
 //////////////////////////////////////////////////////////////////////
 
-CMotherboard::CMotherboard () :
+CMotherboard::CMotherboard() :
     m_pCPU(new CProcessor(this)), m_pFloppyCtl(nullptr), m_pSoundAY(new CSoundAY())
 {
     m_dwTrace = TRACE_NONE;
@@ -44,7 +44,7 @@ CMotherboard::CMotherboard () :
     Reset();
 }
 
-CMotherboard::~CMotherboard ()
+CMotherboard::~CMotherboard()
 {
     // Delete devices
     delete m_pCPU;
@@ -103,7 +103,7 @@ void CMotherboard::SetTrace(uint32_t dwTrace)
         m_pFloppyCtl->SetTrace((dwTrace & TRACE_FLOPPY) != 0);
 }
 
-void CMotherboard::Reset ()
+void CMotherboard::Reset()
 {
     m_pCPU->Stop();
 

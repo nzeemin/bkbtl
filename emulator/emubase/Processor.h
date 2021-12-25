@@ -103,7 +103,7 @@ public:  // PSW bits control
 public:  // Processor state
     // "Processor stopped" flag
     bool        IsStopped() const { return m_okStopped; }
-    // HALT flag (TRUE - HALT mode, false - USER mode)
+    // HALT flag (true - HALT mode, false - USER mode)
     bool        IsHaltMode() const
     {
         bool mode = ((m_psw & 0x100) != 0);
@@ -127,14 +127,6 @@ public:  // Saving/loading emulator status (pImage addresses up to 32 bytes)
 protected:  // Implementation
     void        FetchInstruction();      // Read next instruction
     void        TranslateInstruction();  // Execute the instruction
-protected:  // Implementation - instruction processing
-    uint8_t     GetByteSrc();
-    uint8_t     GetByteDest();
-    void        SetByteDest(uint8_t);
-    uint16_t    GetWordSrc();
-    uint16_t    GetWordDest();
-    void        SetWordDest(uint16_t);
-    uint16_t    GetDstWordArgAsBranch();
 protected:  // Implementation - memory access
     uint16_t    GetWordExec(uint16_t address) { return m_pBoard->GetWordExec(address, IsHaltMode()); }
     uint16_t    GetWord(uint16_t address) { return m_pBoard->GetWord(address, IsHaltMode()); }
@@ -165,23 +157,34 @@ protected:  // Implementation - instruction execution
 
     // One field
     void        ExecuteCLR ();
+    void        ExecuteCLRB();
     void        ExecuteCOM ();
+    void        ExecuteCOMB();
     void        ExecuteINC ();
+    void        ExecuteINCB();
     void        ExecuteDEC ();
+    void        ExecuteDECB();
     void        ExecuteNEG ();
+    void        ExecuteNEGB();
     void        ExecuteTST ();
     void        ExecuteTSTB();
     void        ExecuteASR ();
+    void        ExecuteASRB();
     void        ExecuteASL ();
+    void        ExecuteASLB();
     void        ExecuteROR ();
+    void        ExecuteRORB();
     void        ExecuteROL ();
+    void        ExecuteROLB();
     void        ExecuteADC ();
+    void        ExecuteADCB();
     void        ExecuteSBC ();
+    void        ExecuteSBCB();
     void        ExecuteSXT ();
-    void        ExecuteSWAB ();
-    void        ExecuteMTPS ();
-    void        ExecuteMFPS ();
-    void        ExecuteMARK ();
+    void        ExecuteSWAB();
+    void        ExecuteMTPS();
+    void        ExecuteMFPS();
+    void        ExecuteMARK();
     // Two fields
     void        ExecuteMOV ();
     void        ExecuteMOVB();
@@ -190,8 +193,11 @@ protected:  // Implementation - instruction execution
     void        ExecuteADD ();
     void        ExecuteSUB ();
     void        ExecuteBIT ();
+    void        ExecuteBITB();
     void        ExecuteBIC ();
+    void        ExecuteBICB();
     void        ExecuteBIS ();
+    void        ExecuteBISB();
     void        ExecuteXOR ();
     // Branching
     void        ExecuteBR ();
@@ -206,8 +212,8 @@ protected:  // Implementation - instruction execution
     void        ExecuteBGT ();
     void        ExecuteBLE ();
     void        ExecuteBHI ();
-    void        ExecuteBLOS ();  //BCC == BHIS
-    void        ExecuteBHIS ();
+    void        ExecuteBLOS();  //BCC == BHIS
+    void        ExecuteBHIS();
     void        ExecuteBLO ();   //BCS == BLO
     void        ExecuteJMP ();
     void        ExecuteJSR ();
@@ -215,15 +221,15 @@ protected:  // Implementation - instruction execution
     void        ExecuteSOB ();
     // Interrupts
     void        ExecuteEMT ();
-    void        ExecuteTRAP ();
+    void        ExecuteTRAP();
     void        ExecuteIOT ();
     void        ExecuteBPT ();
     void        ExecuteRTI ();
     void        ExecuteRTT ();
-    void        ExecuteHALT ();
-    void        ExecuteWAIT ();
-    void        ExecuteRESET ();
-    void        ExecuteSTEP ();
+    void        ExecuteHALT();
+    void        ExecuteWAIT();
+    void        ExecuteRESET();
+    void        ExecuteSTEP();
     void        ExecuteRUN ();
     // Flags
     void        ExecuteCCC ();
