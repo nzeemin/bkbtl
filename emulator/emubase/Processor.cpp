@@ -164,7 +164,7 @@ void CProcessor::RegisterMethodRef(uint16_t start, uint16_t end, CProcessor::Exe
 //////////////////////////////////////////////////////////////////////
 
 
-CProcessor::CProcessor (CMotherboard* pBoard)
+CProcessor::CProcessor(CMotherboard* pBoard)
 {
     ASSERT(pBoard != nullptr);
     m_pBoard = pBoard;
@@ -177,7 +177,6 @@ CProcessor::CProcessor (CMotherboard* pBoard)
     m_stepmode = false;
     m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ1rq = m_IRQ2rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
-    //m_VIRQrq = false;
     m_haltpin = false;
     m_instruction = m_instructionpc = 0;
     m_regsrc = m_methsrc = 0;
@@ -491,7 +490,7 @@ void CProcessor::ExecuteSTEP()
     //SetPSW(m_savepsw);
 }
 
-void CProcessor::ExecuteRTI()  // RTI - Return from Interrupt - Возврат из прерывания
+void CProcessor::ExecuteRTI()  // RTI - Return from Interrupt
 {
     uint16_t word = GetWord(GetSP());
     SetSP( GetSP() + 2 );
@@ -510,7 +509,7 @@ void CProcessor::ExecuteRTI()  // RTI - Return from Interrupt - Возврат �
     m_internalTick = TIMING_RTI;
 }
 
-void CProcessor::ExecuteRTT()  // RTT - Return from Trace Trap -- Возврат из прерывания
+void CProcessor::ExecuteRTT()  // RTT - Return from Trace Trap
 {
     uint16_t word = GetWord(GetSP());
     SetSP( GetSP() + 2 );
@@ -1150,7 +1149,7 @@ void CProcessor::ExecuteROL()
 
     if (m_methdest)
     {
-        ea = GetWordAddr((uint8_t)m_methdest, (uint8_t)m_regdest);
+        ea = GetWordAddr(m_methdest, m_regdest);
         if (m_RPLYrq) return;
         src = GetWord(ea);
         if (m_RPLYrq) return;
@@ -1545,7 +1544,7 @@ void CProcessor::ExecuteXOR()
     m_internalTick = TIMING_REGREG + TIMING_A2[m_methdest];
 }
 
-void CProcessor::ExecuteSOB()  // SOB - subtract one: R = R - 1 ; if R != 0 : PC = PC - 2*nn
+void CProcessor::ExecuteSOB()  // SOB - subtract one: R = R - 1; if R != 0 : PC = PC - 2*nn
 {
     uint16_t dst = GetReg(m_regsrc);
 
@@ -1627,8 +1626,7 @@ void CProcessor::ExecuteMOVB()  // MOVB - move byte
 void CProcessor::ExecuteCMP()  // CMP - compare
 {
     uint16_t src_addr, dst_addr;
-    uint16_t src;
-    uint16_t src2;
+    uint16_t src, src2;
 
     if (m_methsrc)
     {
@@ -1663,8 +1661,7 @@ void CProcessor::ExecuteCMP()  // CMP - compare
 void CProcessor::ExecuteCMPB()  // CMPB - compare byte
 {
     uint16_t src_addr, dst_addr;
-    uint8_t src;
-    uint8_t src2;
+    uint8_t src, src2;
 
     if (m_methsrc)
     {
@@ -1699,8 +1696,7 @@ void CProcessor::ExecuteCMPB()  // CMPB - compare byte
 void CProcessor::ExecuteBIT()  // BIT - bit test
 {
     uint16_t src_addr, dst_addr;
-    uint16_t src;
-    uint16_t src2;
+    uint16_t src, src2;
 
     if (m_methsrc)
     {
@@ -1734,8 +1730,7 @@ void CProcessor::ExecuteBIT()  // BIT - bit test
 void CProcessor::ExecuteBITB()  // BITB - bit test on byte
 {
     uint16_t src_addr, dst_addr;
-    uint8_t src;
-    uint8_t src2;
+    uint8_t src, src2;
 
     if (m_methsrc)
     {
@@ -1769,8 +1764,7 @@ void CProcessor::ExecuteBITB()  // BITB - bit test on byte
 void CProcessor::ExecuteBIC()  // BIC - bit clear
 {
     uint16_t src_addr, dst_addr = 0;
-    uint16_t src;
-    uint16_t src2;
+    uint16_t src, src2;
 
     if (m_methsrc)
     {
@@ -1810,8 +1804,7 @@ void CProcessor::ExecuteBIC()  // BIC - bit clear
 void CProcessor::ExecuteBICB()  // BICB - bit clear
 {
     uint16_t src_addr, dst_addr = 0;
-    uint8_t src;
-    uint8_t src2;
+    uint8_t src, src2;
 
     if (m_methsrc)
     {
@@ -1851,8 +1844,7 @@ void CProcessor::ExecuteBICB()  // BICB - bit clear
 void CProcessor::ExecuteBIS()  // BIS - bit set
 {
     uint16_t src_addr, dst_addr = 0;
-    uint16_t src;
-    uint16_t src2;
+    uint16_t src, src2;
 
     if (m_methsrc)
     {
@@ -1892,8 +1884,7 @@ void CProcessor::ExecuteBIS()  // BIS - bit set
 void CProcessor::ExecuteBISB()  // BISB - bit set on byte
 {
     uint16_t src_addr, dst_addr = 0;
-    uint8_t src;
-    uint8_t src2;
+    uint8_t src, src2;
 
     if (m_methsrc)
     {
@@ -1963,15 +1954,15 @@ void CProcessor::ExecuteADD()
         SetReg(m_regdest, dst);
     if (m_RPLYrq) return;
 
-    SetN(CheckForNegative (static_cast<uint16_t>(src2 + src)));
-    SetZ(CheckForZero (static_cast<uint16_t>(src2 + src)));
-    SetV(CheckAddForOverflow (src2, src));
-    SetC(CheckAddForCarry (src2, src));
+    SetN(CheckForNegative(static_cast<uint16_t>(src2 + src)));
+    SetZ(CheckForZero(static_cast<uint16_t>(src2 + src)));
+    SetV(CheckAddForOverflow(src2, src));
+    SetC(CheckAddForCarry(src2, src));
 
     m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
 }
 
-void CProcessor::ExecuteSUB()  // SUB
+void CProcessor::ExecuteSUB()
 {
     uint16_t src_addr, dst_addr = 0;
     uint16_t src, src2;
@@ -2004,10 +1995,10 @@ void CProcessor::ExecuteSUB()  // SUB
         SetReg(m_regdest, dst);
     if (m_RPLYrq) return;
 
-    SetN(CheckForNegative (static_cast<uint16_t>(src2 - src)));
-    SetZ(CheckForZero (static_cast<uint16_t>(src2 - src)));
-    SetV(CheckSubForOverflow (src2, src));
-    SetC(CheckSubForCarry (src2, src));
+    SetN(CheckForNegative(static_cast<uint16_t>(src2 - src)));
+    SetZ(CheckForZero(static_cast<uint16_t>(src2 - src)));
+    SetV(CheckSubForOverflow(src2, src));
+    SetC(CheckSubForCarry(src2, src));
 
     m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
 }
@@ -2096,7 +2087,7 @@ void CProcessor::LoadFromImage(const uint8_t* pImage)
     m_okStopped = (*pwImage++ != 0);
 }
 
-uint16_t CProcessor::GetWordAddr (uint8_t meth, uint8_t reg)
+uint16_t CProcessor::GetWordAddr(uint8_t meth, uint8_t reg)
 {
     switch (meth)
     {
@@ -2142,7 +2133,7 @@ uint16_t CProcessor::GetWordAddr (uint8_t meth, uint8_t reg)
     return 0;
 }
 
-uint16_t CProcessor::GetByteAddr (uint8_t meth, uint8_t reg)
+uint16_t CProcessor::GetByteAddr(uint8_t meth, uint8_t reg)
 {
     uint16_t addr = 0;
 

@@ -192,7 +192,7 @@ BEGIN
     LTEXT           "BKBTL Version 1.0.???",IDC_VERSION,10,10,139,8,SS_NOPREFIX
     LTEXT           "Build date: ????",IDC_BUILDDATE,10,20,139,8
     CONTROL         "<a>https://github.com/nzeemin/bkbtl</a>",IDC_SYSLINK1,"SysLink",WS_TABSTOP,10,32,193,10
-    LTEXT           "Copyright (C) 2009-2021",IDC_STATIC,10,44,139,8
+    LTEXT           "Copyright (C) 2009-2022",IDC_STATIC,10,44,139,8
     LTEXT           "Author:\r\nNikita Zimin (nzeemin@gmail.com)",IDC_STATIC,10,60,174,36
 END
 

@@ -92,7 +92,7 @@ void DisasmView_OnRButtonDown(int mousex, int mousey);
 void DisasmView_CopyToClipboard(WPARAM command);
 BOOL DisasmView_ParseSubtitles();
 void DisasmView_DoDraw(HDC hdc);
-int  DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t base, uint16_t previous, int x, int y);
+int  DisasmView_DrawDisassemble(HDC hdc, const CProcessor* pProc, uint16_t current, uint16_t previous, int x, int y);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -362,7 +362,7 @@ void DisasmView_AddSubtitle(uint16_t addr, int type, LPCTSTR pCommentText)
 {
     DisasmSubtitleItem item;
     item.address = addr;
-    item.type = (DisasmSubtitleType) type;
+    item.type = static_cast<DisasmSubtitleType>(type);
     item.comment = pCommentText;
     m_SubtitleItems.push_back(item);
 }
@@ -403,7 +403,7 @@ void DisasmView_LoadUnloadSubtitles()
         return;
     }
 
-    m_strDisasmSubtitles = (TCHAR*) ::calloc(dwSubFileSize + sizeof(TCHAR), 1);
+    m_strDisasmSubtitles = static_cast<TCHAR*>(::calloc(dwSubFileSize + sizeof(TCHAR), 1));
     DWORD dwBytesRead;
     ::ReadFile(hSubFile, m_strDisasmSubtitles, dwSubFileSize, &dwBytesRead, NULL);
     ASSERT(dwBytesRead == dwSubFileSize);
@@ -554,7 +554,7 @@ BOOL DisasmView_CheckForJump(const uint16_t* memory, int* pDelta)
     }
 
     // SOB
-    if ((instr & ~(uint16_t)0777) == PI_SOB)
+    if ((instr & ~static_cast<uint16_t>(0777)) == PI_SOB)
     {
         *pDelta = -(GetDigit(instr, 1) * 8 + GetDigit(instr, 0)) + 1;
         return TRUE;
@@ -563,7 +563,7 @@ BOOL DisasmView_CheckForJump(const uint16_t* memory, int* pDelta)
     // CALL, JMP
     if (instr == 0004767 || instr == 0000167)
     {
-        *pDelta = ((short)(memory[1]) + 4) / 2;
+        *pDelta = (static_cast<short>(memory[1]) + 4) / 2;
         return TRUE;
     }
 
@@ -994,7 +994,7 @@ void DisasmView_OnUpdate()
     for (int idx = 0; idx < nWindowSize; idx++)
     {
         memory[idx] = g_pBoard->GetWordView(
-                (uint16_t)(current + idx * 2 - 10), pProc->IsHaltMode(), TRUE, addrtype + idx);
+                static_cast<uint16_t>(current + idx * 2 - 10), pProc->IsHaltMode(), TRUE, addrtype + idx);
     }
 
     uint16_t address = current - 10;
@@ -1166,7 +1166,7 @@ void DisasmView_DrawBreakpoint(HDC hdc, int x, int y, int size)
     VERIFY(::DeleteObject(hBreakBrush));
 }
 
-int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t current, uint16_t previous, int x, int y)
+int DisasmView_DrawDisassemble(HDC hdc, const CProcessor* pProc, uint16_t current, uint16_t previous, int x, int y)
 {
     int result = -1;
     m_nDisasmCurrentLineIndex = -1;
@@ -1209,7 +1209,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t current, uin
             LPCTSTR strBlockSubtitle = pLineItem->pSubItem->comment;
 
             ::SetTextColor(hdc, colorSubtitle);
-            TextOut(hdc, x + 21 * cxChar, y, strBlockSubtitle, (int) _tcslen(strBlockSubtitle));
+            TextOut(hdc, x + 21 * cxChar, y, strBlockSubtitle, static_cast<int>(_tcslen(strBlockSubtitle)));
             ::SetTextColor(hdc, colorText);
 
             y += cyLine;
@@ -1250,8 +1250,8 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t current, uin
             LPCTSTR strInstr = pLineItem->strInstr;
             LPCTSTR strArg = pLineItem->strArg;
             ::SetTextColor(hdc, colorText);
-            TextOut(hdc, x + 21 * cxChar, y, strInstr, (int)_tcslen(strInstr));
-            TextOut(hdc, x + 29 * cxChar, y, strArg, (int)_tcslen(strArg));
+            TextOut(hdc, x + 21 * cxChar, y, strInstr, static_cast<int>(_tcslen(strInstr)));
+            TextOut(hdc, x + 29 * cxChar, y, strArg, static_cast<int>(_tcslen(strArg)));
             posAfterArgs += _tcslen(strArg);
         }
 
@@ -1262,7 +1262,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t current, uin
             if (strComment != nullptr)
             {
                 ::SetTextColor(hdc, colorSubtitle);
-                TextOut(hdc, x + 52 * cxChar, y, strComment, (int)_tcslen(strComment));
+                TextOut(hdc, x + 52 * cxChar, y, strComment, static_cast<int>(_tcslen(strComment)));
                 ::SetTextColor(hdc, colorText);
             }
         }
@@ -1287,9 +1287,9 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t current, uin
             {
                 COLORREF hintcolor = Settings_GetColor(isjump ? ColorDebugJumpHint : ColorDebugHint);
                 ::SetTextColor(hdc, hintcolor);
-                TextOut(hdc, x + 52 * cxChar, y, m_strDisasmHint, (int)_tcslen(m_strDisasmHint));
+                TextOut(hdc, x + 52 * cxChar, y, m_strDisasmHint, static_cast<int>(_tcslen(m_strDisasmHint)));
                 if (*m_strDisasmHint2 != 0)
-                    TextOut(hdc, x + 52 * cxChar, y + cyLine, m_strDisasmHint2, (int)_tcslen(m_strDisasmHint2));
+                    TextOut(hdc, x + 52 * cxChar, y + cyLine, m_strDisasmHint2, static_cast<int>(_tcslen(m_strDisasmHint2)));
                 ::SetTextColor(hdc, colorText);
             }
         }

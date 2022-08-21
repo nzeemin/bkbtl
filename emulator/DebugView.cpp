@@ -44,11 +44,6 @@ void DebugView_UpdateWindowText();
 
 //////////////////////////////////////////////////////////////////////
 
-BOOL DebugView_IsRegisterChanged(int regno)
-{
-    ASSERT(regno >= 0 && regno <= 8);
-    return m_okDebugCpuRChanged[regno];
-}
 
 void DebugView_RegisterClass()
 {
@@ -470,7 +465,7 @@ void DebugView_DrawPorts(HDC hdc, const CMotherboard* /*pBoard*/, int x, int y)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
 
-    TextOut(hdc, x, y, _T("Port"), 6);
+    TextOut(hdc, x, y, _T("Port"), 4);
 
     int portsCount = sizeof(m_DebugViewPorts) / sizeof(m_DebugViewPorts[0]);
     for (int i = 0; i < portsCount; i++)

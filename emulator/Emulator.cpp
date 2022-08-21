@@ -241,6 +241,21 @@ BKConfiguration Emulator_GetConfiguration()
     return (BKConfiguration)g_pBoard->GetConfiguration();
 }
 
+LPCTSTR Emulator_GetConfigurationName()
+{
+    BKConfiguration configuration = Emulator_GetConfiguration();
+
+    switch (configuration)
+    {
+    case BK_CONF_BK0010_BASIC:  return _T("BK-0010.01 BASIC");
+    case BK_CONF_BK0010_FOCAL:  return _T("BK-0010.01 FOCAL");
+    case BK_CONF_BK0010_FDD:    return _T("BK-0010.01 FDD");
+    case BK_CONF_BK0011:        return _T("BK 0011M");
+    case BK_CONF_BK0011_FDD:    return _T("BK 0011M FDD");
+    default:  return _T("UNKNOWN");
+    }
+}
+
 bool Emulator_InitConfiguration(BKConfiguration configuration)
 {
     g_pBoard->SetConfiguration((uint16_t)configuration);
