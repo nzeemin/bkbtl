@@ -1010,6 +1010,9 @@ bool MainWindow_DoCommand(int commandId)
         if (Settings_GetDebug())
             ConsoleView_DeleteAllBreakpoints();
         break;
+    case ID_DEBUG_SUBTITLES:
+        DisasmView_LoadUnloadSubtitles();
+        break;
     case ID_DEBUG_MEMORY_WORDBYTE:
         MemoryView_SwitchWordByte();
         break;

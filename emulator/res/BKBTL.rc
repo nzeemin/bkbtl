@@ -152,6 +152,7 @@ BEGIN
         MENUITEM "Memory Map",                  ID_VIEW_MEMORYMAP
         MENUITEM "Sprite Viewer",               ID_DEBUG_SPRITES
         MENUITEM "Teletype",                    ID_DEBUG_TELETYPE
+        MENUITEM "Disasm Subtitles",            ID_DEBUG_SUBTITLES
         MENUITEM SEPARATOR
         MENUITEM "Step Into\tF11",              ID_DEBUG_STEPINTO
         MENUITEM "Step Over\tShift+F11",        ID_DEBUG_STEPOVER
