@@ -21,7 +21,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #define COLOR_BK_BACKGROUND RGB(115,115,115)
 
 
-HWND g_hwndKeyboard = (HWND) INVALID_HANDLE_VALUE;  // Keyboard View window handle
+HWND g_hwndKeyboard = (HWND)INVALID_HANDLE_VALUE;  // Keyboard View window handle
 
 int m_nKeyboardBitmapLeft = 0;
 int m_nKeyboardBitmapTop = 0;

@@ -11,36 +11,27 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 // MemoryView.cpp
 
 #include "stdafx.h"
-#include <commctrl.h>
+#include <CommCtrl.h>
 #include <windowsx.h>
 #include "Main.h"
 #include "Views.h"
 #include "ToolWindow.h"
 #include "Dialogs.h"
 #include "Emulator.h"
-#include "emubase\Emubase.h"
+#include "emubase/Emubase.h"
 
 //////////////////////////////////////////////////////////////////////
 
 
-HWND g_hwndMemory = (HWND) INVALID_HANDLE_VALUE;  // Memory view window handler
+HWND g_hwndMemory = (HWND)INVALID_HANDLE_VALUE;  // Memory view window handler
 WNDPROC m_wndprocMemoryToolWindow = NULL;  // Old window proc address of the ToolWindow
 
-HWND m_hwndMemoryViewer = (HWND) INVALID_HANDLE_VALUE;
-HWND m_hwndMemoryToolbar = (HWND) INVALID_HANDLE_VALUE;
+HWND m_hwndMemoryViewer = (HWND)INVALID_HANDLE_VALUE;
+HWND m_hwndMemoryToolbar = (HWND)INVALID_HANDLE_VALUE;
 
 int m_cxChar = 0;
 int m_cyLineMemory = 0;  // Line height in pixels
 int m_nPageSize = 100;  // Page size in lines
-
-//enum MemoryViewMode {
-//    MEMMODE_RAM0 = 0,  // RAM plane 0
-//    MEMMODE_RAM1 = 1,  // RAM plane 1
-//    MEMMODE_RAM2 = 2,  // RAM plane 2
-//    MEMMODE_ROM  = 3,  // ROM
-//    MEMMODE_CPU  = 4,  // CPU memory
-//    MEMMODE_LAST = 5,  // Last mode number
-//};
 
 //int     m_Mode = MEMMODE_ROM;  // See MemoryViewMode enum
 WORD    m_wBaseAddress = 0xFFFF;
@@ -100,7 +91,7 @@ void MemoryView_Create(HWND hwndParent, int x, int y, int width, int height)
     MemoryView_UpdateWindowText();
 
     // ToolWindow subclassing
-    m_wndprocMemoryToolWindow = (WNDPROC) LongToPtr( SetWindowLongPtr(
+    m_wndprocMemoryToolWindow = (WNDPROC)LongToPtr( SetWindowLongPtr(
             g_hwndMemory, GWLP_WNDPROC, PtrToLong(MemoryViewWndProc)) );
 
     RECT rcClient;  GetClientRect(g_hwndMemory, &rcClient);
@@ -121,7 +112,7 @@ void MemoryView_Create(HWND hwndParent, int x, int y, int width, int height)
     TBADDBITMAP addbitmap;
     addbitmap.hInst = g_hInst;
     addbitmap.nID = IDB_TOOLBAR;
-    SendMessage(m_hwndMemoryToolbar, TB_ADDBITMAP, 2, (LPARAM) &addbitmap);
+    SendMessage(m_hwndMemoryToolbar, TB_ADDBITMAP, 2, (LPARAM)&addbitmap);
 
     SendMessage(m_hwndMemoryToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0);
     SendMessage(m_hwndMemoryToolbar, TB_SETBUTTONSIZE, 0, (LPARAM) MAKELONG (26, 26));
@@ -150,7 +141,7 @@ void MemoryView_AdjustWindowLayout()
 {
     RECT rc;  GetClientRect(g_hwndMemory, &rc);
 
-    if (m_hwndMemoryViewer != (HWND) INVALID_HANDLE_VALUE)
+    if (m_hwndMemoryViewer != (HWND)INVALID_HANDLE_VALUE)
         SetWindowPos(m_hwndMemoryViewer, NULL, 0, 0, rc.right, rc.bottom, SWP_NOZORDER);
 }
 
@@ -161,7 +152,7 @@ LRESULT CALLBACK MemoryViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
     switch (message)
     {
     case WM_DESTROY:
-        g_hwndMemory = (HWND) INVALID_HANDLE_VALUE;  // We are closed! Bye-bye!..
+        g_hwndMemory = (HWND)INVALID_HANDLE_VALUE;  // We are closed! Bye-bye!..
         return CallWindowProc(m_wndprocMemoryToolWindow, hWnd, message, wParam, lParam);
     case WM_SIZE:
         lResult = CallWindowProc(m_wndprocMemoryToolWindow, hWnd, message, wParam, lParam);
@@ -381,7 +372,7 @@ void MemoryView_CopyValueToClipboard(WPARAM command)
 
     // Prepare global memory object for the text
     HGLOBAL hglbCopy = ::GlobalAlloc(GMEM_MOVEABLE, sizeof(buffer));
-    LPTSTR lptstrCopy = (LPTSTR) ::GlobalLock(hglbCopy);
+    LPTSTR lptstrCopy = (LPTSTR)::GlobalLock(hglbCopy);
     memcpy(lptstrCopy, buffer, sizeof(buffer));
     ::GlobalUnlock(hglbCopy);
 

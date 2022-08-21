@@ -13,7 +13,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "stdafx.h"
 #include "Main.h"
 #include "ToolWindow.h"
-#include <Windowsx.h>
+#include <windowsx.h>
 
 //////////////////////////////////////////////////////////////////////
 
@@ -79,7 +79,7 @@ LRESULT CALLBACK ToolWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
             HGDIOBJ hOldFont = ::SelectObject(hdc, hfont);
             ::SetTextColor(hdc, ::GetSysColor(COLOR_CAPTIONTEXT));
             ::SetBkMode(hdc, TRANSPARENT);
-            ::DrawText(hdc, buffer, (int) wcslen(buffer), &rc, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+            ::DrawText(hdc, buffer, (int)wcslen(buffer), &rc, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
             ::SelectObject(hdc, hOldFont);
             VERIFY(::DeleteObject(hfont));
 

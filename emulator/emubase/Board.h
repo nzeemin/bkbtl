@@ -13,8 +13,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #pragma once
 
-#include "Defines.h"
-
 class CProcessor;
 
 

@@ -12,11 +12,12 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #include "stdafx.h"
 #include <commdlg.h>
-#include <commctrl.h>
+#include <CommCtrl.h>
 #include <shellapi.h>
 #include "Dialogs.h"
 #include "Emulator.h"
 #include "Main.h"
+#include "Views.h"
 
 //////////////////////////////////////////////////////////////////////
 

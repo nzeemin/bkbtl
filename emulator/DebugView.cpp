@@ -11,12 +11,12 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 // DebugView.cpp
 
 #include "stdafx.h"
-#include <commctrl.h>
+#include <CommCtrl.h>
 #include "Main.h"
 #include "Views.h"
 #include "ToolWindow.h"
 #include "Emulator.h"
-#include "emubase\Emubase.h"
+#include "emubase/Emubase.h"
 
 //////////////////////////////////////////////////////////////////////
 

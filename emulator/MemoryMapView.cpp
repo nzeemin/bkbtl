@@ -11,20 +11,19 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 // MemoryMapView.cpp
 
 #include "stdafx.h"
-#include <vfw.h>
+#include <Vfw.h>
 #include "Main.h"
 #include "Views.h"
 #include "ToolWindow.h"
-#include "Dialogs.h"
 #include "Emulator.h"
 
 //////////////////////////////////////////////////////////////////////
 
 
-HWND g_hwndMemoryMap = (HWND) INVALID_HANDLE_VALUE;  // MemoryMap view window handler
+HWND g_hwndMemoryMap = (HWND)INVALID_HANDLE_VALUE;  // MemoryMap view window handler
 WNDPROC m_wndprocMemoryMapToolWindow = NULL;  // Old window proc address of the ToolWindow
 
-HWND m_hwndMemoryMapViewer = (HWND) INVALID_HANDLE_VALUE;
+HWND m_hwndMemoryMapViewer = (HWND)INVALID_HANDLE_VALUE;
 HDRAWDIB m_hMemoryMapDrawDib = NULL;
 BITMAPINFO m_bmpinfoMemoryMap;
 HBITMAP m_hMemoryMapBitmap = NULL;
@@ -88,7 +87,7 @@ void MemoryMapView_Create(HWND hwndParent, int x, int y)
             hwndParent, NULL, g_hInst, NULL);
 
     // ToolWindow subclassing
-    m_wndprocMemoryMapToolWindow = (WNDPROC) LongToPtr( SetWindowLongPtr(
+    m_wndprocMemoryMapToolWindow = (WNDPROC)LongToPtr( SetWindowLongPtr(
             g_hwndMemoryMap, GWLP_WNDPROC, PtrToLong(MemoryMapViewWndProc)) );
 
     RECT rcClient;  GetClientRect(g_hwndMemoryMap, &rcClient);
@@ -120,7 +119,7 @@ void MemoryMapView_InitBitmap()
     m_bmpinfoMemoryMap.bmiHeader.biClrUsed = 0;
     m_bmpinfoMemoryMap.bmiHeader.biClrImportant = 0;
 
-    m_hMemoryMapBitmap = CreateDIBSection( hdc, &m_bmpinfoMemoryMap, DIB_RGB_COLORS, (void **) &m_pMemoryMap_bits, NULL, 0 );
+    m_hMemoryMapBitmap = CreateDIBSection( hdc, &m_bmpinfoMemoryMap, DIB_RGB_COLORS, (void **)&m_pMemoryMap_bits, NULL, 0 );
 
     VERIFY(::ReleaseDC(g_hwnd, hdc));
 }
@@ -291,6 +290,7 @@ BOOL MemoryMapView_OnHScroll(WPARAM wParam, LPARAM /*lParam*/)
 
     return FALSE;
 }
+
 BOOL MemoryMapView_OnVScroll(WPARAM wParam, LPARAM /*lParam*/)
 {
     WORD scrollpos = HIWORD(wParam);

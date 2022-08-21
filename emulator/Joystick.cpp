@@ -11,7 +11,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 // Joystick.cpp
 
 #include "stdafx.h"
-#include <Mmsystem.h>
+#include <mmsystem.h>
 #include "Joystick.h"
 
 //////////////////////////////////////////////////////////////////////

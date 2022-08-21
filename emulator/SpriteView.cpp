@@ -11,13 +11,13 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 // SpriteView.cpp
 
 #include "stdafx.h"
-#include <vfw.h>
+#include <Vfw.h>
 #include "Main.h"
 #include "Views.h"
 #include "ToolWindow.h"
 #include "Dialogs.h"
 #include "Emulator.h"
-#include "emubase\Emubase.h"
+#include "emubase/Emubase.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -44,7 +44,6 @@ int m_nSprite_PageSizeBytes = m_nSprite_ImageCY * (m_nSprite_ImageCX / (8 + 2));
 void SpriteView_OnDraw(HDC hdc);
 BOOL SpriteView_OnKeyDown(WPARAM vkey, LPARAM lParam);
 BOOL SpriteView_OnVScroll(WPARAM wParam, LPARAM lParam);
-BOOL SpriteView_OnHScroll(WPARAM wParam, LPARAM lParam);
 BOOL SpriteView_OnMouseWheel(WPARAM wParam, LPARAM lParam);
 void SpriteView_InitBitmap();
 void SpriteView_DoneBitmap();
@@ -187,8 +186,6 @@ LRESULT CALLBACK SpriteViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam,
         break;
     case WM_KEYDOWN:
         return (LRESULT)SpriteView_OnKeyDown(wParam, lParam);
-        //case WM_HSCROLL:
-        //    return (LRESULT)SpriteView_OnHScroll(wParam, lParam);
     case WM_VSCROLL:
         return (LRESULT)SpriteView_OnVScroll(wParam, lParam);
     case WM_MOUSEWHEEL:

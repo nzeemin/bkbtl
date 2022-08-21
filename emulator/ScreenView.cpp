@@ -13,7 +13,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "stdafx.h"
 #include <windowsx.h>
 #include <mmintrin.h>
-#include <vfw.h>
+#include <Vfw.h>
 #include "Main.h"
 #include "Views.h"
 #include "Emulator.h"
@@ -115,7 +115,7 @@ void ScreenView_CreateDisplay()
     m_bmpinfo.bmiHeader.biClrUsed = 0;
     m_bmpinfo.bmiHeader.biClrImportant = 0;
 
-    m_hbmp = CreateDIBSection( hdc, &m_bmpinfo, DIB_RGB_COLORS, (void **) &m_bits, NULL, 0 );
+    m_hbmp = CreateDIBSection( hdc, &m_bmpinfo, DIB_RGB_COLORS, (void **)&m_bits, NULL, 0 );
 
     VERIFY(::ReleaseDC(g_hwnd, hdc));
 }
@@ -367,7 +367,7 @@ void ScreenView_ScanKeyboard()
             BYTE oldstate = m_ScreenKeyState[scan];
             if ((newstate & 128) != (oldstate & 128))  // Key state changed - key pressed or released
             {
-                BYTE pcscan = (BYTE) scan;
+                BYTE pcscan = (BYTE)scan;
 
 //                DebugPrintFormat(_T("Key PC: 0x%0x 0x%0x 0x%0x\r\n"), scan, keys[VK_SHIFT], keys[VK_CONTROL]);
 
@@ -421,7 +421,7 @@ BOOL ScreenView_SaveScreenshot(LPCTSTR sFileName)
     ASSERT(sFileName != NULL);
     ASSERT(m_bits != NULL);
 
-    DWORD* pBits = (DWORD*) ::calloc(m_cxScreenWidth * m_cyScreenHeight, sizeof(uint32_t));
+    DWORD* pBits = (DWORD*)::calloc(m_cxScreenWidth * m_cyScreenHeight, sizeof(uint32_t));
     const uint32_t* colors = Emulator_GetPalette(m_ScreenMode);
     Emulator_PrepareScreenRGB32(pBits, m_ScreenMode);
 
@@ -463,7 +463,7 @@ HGLOBAL ScreenView_GetScreenshotAsDIB()
         return NULL;
     }
 
-    LPBYTE p = (LPBYTE) ::GlobalLock(hDIB);
+    LPBYTE p = (LPBYTE)::GlobalLock(hDIB);
     ::CopyMemory(p, &bi, sizeof(BITMAPINFOHEADER));
     p += sizeof(BITMAPINFOHEADER);
     for (int line = 0; line < m_cyScreenHeight; line++)

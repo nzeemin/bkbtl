@@ -14,13 +14,12 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include <commdlg.h>
 #include <crtdbg.h>
 #include <mmintrin.h>
-#include <vfw.h>
-#include <commctrl.h>
+#include <Vfw.h>
+#include <CommCtrl.h>
 #include <shellapi.h>
 
 #include "Main.h"
 #include "Emulator.h"
-#include "Dialogs.h"
 #include "Views.h"
 #include "Joystick.h"
 

@@ -15,29 +15,29 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Main.h"
 #include "Views.h"
 #include "ToolWindow.h"
-#include "util\\WavPcmFile.h"
+#include "util/WavPcmFile.h"
 #include "Emulator.h"
 #include "Dialogs.h"
 
 //////////////////////////////////////////////////////////////////////
 
 
-HWND g_hwndTape = (HWND) INVALID_HANDLE_VALUE;  // Tape View window handle
+HWND g_hwndTape = (HWND)INVALID_HANDLE_VALUE;  // Tape View window handle
 WNDPROC m_wndprocTapeToolWindow = NULL;  // Old window proc address of the ToolWindow
 
-HWND m_hwndTapeFile = (HWND) INVALID_HANDLE_VALUE;  // Tape file name - read-only edit control
-HWND m_hwndTapeTotal = (HWND) INVALID_HANDLE_VALUE;  // Tape total time - static control
-HWND m_hwndTapeCurrent = (HWND) INVALID_HANDLE_VALUE;  // Tape current time - static control
-HWND m_hwndTapePlay = (HWND) INVALID_HANDLE_VALUE;
-HWND m_hwndTapeRewind = (HWND) INVALID_HANDLE_VALUE;
-HWND m_hwndTapeOpen = (HWND) INVALID_HANDLE_VALUE;
-HWND m_hwndTapeSave = (HWND) INVALID_HANDLE_VALUE;
+HWND m_hwndTapeFile = (HWND)INVALID_HANDLE_VALUE;  // Tape file name - read-only edit control
+HWND m_hwndTapeTotal = (HWND)INVALID_HANDLE_VALUE;  // Tape total time - static control
+HWND m_hwndTapeCurrent = (HWND)INVALID_HANDLE_VALUE;  // Tape current time - static control
+HWND m_hwndTapePlay = (HWND)INVALID_HANDLE_VALUE;
+HWND m_hwndTapeRewind = (HWND)INVALID_HANDLE_VALUE;
+HWND m_hwndTapeOpen = (HWND)INVALID_HANDLE_VALUE;
+HWND m_hwndTapeSave = (HWND)INVALID_HANDLE_VALUE;
 
 HFONT m_hfontTape = NULL;
 BOOL m_okTapeInserted = FALSE;
 BOOL m_okTapeRecording = FALSE;
 TCHAR m_szTapeFile[MAX_PATH];
-HWAVPCMFILE m_hTapeWavPcmFile = (HWAVPCMFILE) INVALID_HANDLE_VALUE;
+HWAVPCMFILE m_hTapeWavPcmFile = (HWAVPCMFILE)INVALID_HANDLE_VALUE;
 BOOL m_okTapePlaying = FALSE;
 DWORD m_dwTapePositionShown = 0;  // What we show (in seconds) in the m_hwndTapeCurrent control
 
@@ -48,7 +48,6 @@ void TapeView_PlayTape();
 void TapeView_StopTape();
 void TapeView_UpdatePosition();
 
-void TapeView_OnDraw(HDC hdc);
 void TapeView_DoOpenWav();
 void TapeView_DoSaveWav();
 void TapeView_DoPlayStop();

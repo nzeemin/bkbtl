@@ -14,16 +14,14 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Main.h"
 #include "Views.h"
 #include "ToolWindow.h"
-//#include "Emulator.h"
-//#include "emubase\Emubase.h"
 
 //////////////////////////////////////////////////////////////////////
 
 
-HWND g_hwndTeletype = (HWND) INVALID_HANDLE_VALUE;  // Teletype view window handler
+HWND g_hwndTeletype = (HWND)INVALID_HANDLE_VALUE;  // Teletype view window handler
 WNDPROC m_wndprocTeletypeToolWindow = NULL;  // Old window proc address of the ToolWindow
 
-HWND m_hwndTeletypeLog = (HWND) INVALID_HANDLE_VALUE;  // Teletype log window - read-only edit control
+HWND m_hwndTeletypeLog = (HWND)INVALID_HANDLE_VALUE;  // Teletype log window - read-only edit control
 HFONT m_hfontTeletype = NULL;
 
 
@@ -46,7 +44,7 @@ void TeletypeView_Create(int x, int y, int width, int height)
             NULL, NULL, g_hInst, NULL);
 
     // ToolWindow subclassing
-    m_wndprocTeletypeToolWindow = (WNDPROC) LongToPtr( SetWindowLongPtr(
+    m_wndprocTeletypeToolWindow = (WNDPROC)LongToPtr( SetWindowLongPtr(
             g_hwndTeletype, GWLP_WNDPROC, PtrToLong(TeletypeViewWndProc)) );
 
     RECT rcClient;  ::GetClientRect(g_hwndTeletype, &rcClient);
@@ -60,7 +58,7 @@ void TeletypeView_Create(int x, int y, int width, int height)
             g_hwndTeletype, NULL, g_hInst, NULL);
 
     m_hfontTeletype = CreateMonospacedFont();
-    ::SendMessage(m_hwndTeletypeLog, WM_SETFONT, (WPARAM) m_hfontTeletype, 0);
+    ::SendMessage(m_hwndTeletypeLog, WM_SETFONT, (WPARAM)m_hfontTeletype, 0);
 
     ::ShowWindow(g_hwndTeletype, SW_SHOW);
 }
@@ -70,7 +68,7 @@ void TeletypeView_AdjustWindowLayout()
 {
     RECT rc;  GetClientRect(g_hwndTeletype, &rc);
 
-    if (m_hwndTeletypeLog != (HWND) INVALID_HANDLE_VALUE)
+    if (m_hwndTeletypeLog != (HWND)INVALID_HANDLE_VALUE)
         SetWindowPos(m_hwndTeletypeLog, NULL, 0, 0, rc.right, rc.bottom, SWP_NOZORDER);
 }
 
@@ -81,7 +79,7 @@ LRESULT CALLBACK TeletypeViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     switch (message)
     {
     case WM_DESTROY:
-        g_hwndTeletype = (HWND) INVALID_HANDLE_VALUE;  // We are closed! Bye-bye!..
+        g_hwndTeletype = (HWND)INVALID_HANDLE_VALUE;  // We are closed! Bye-bye!..
         return CallWindowProc(m_wndprocTeletypeToolWindow, hWnd, message, wParam, lParam);
     case WM_SIZE:
         lResult = CallWindowProc(m_wndprocTeletypeToolWindow, hWnd, message, wParam, lParam);
@@ -97,7 +95,7 @@ void TeletypeView_Output(LPCTSTR message)
     // Put selection to the end of text
     SendMessage(m_hwndTeletypeLog, EM_SETSEL, 0x100000, 0x100000);
     // Insert the message
-    SendMessage(m_hwndTeletypeLog, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) message);
+    SendMessage(m_hwndTeletypeLog, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)message);
     // Scroll to caret
     SendMessage(m_hwndTeletypeLog, EM_SCROLLCARET, 0, 0);
 }

@@ -11,13 +11,13 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 // Emulator.cpp
 
 #include "stdafx.h"
-#include <stdio.h>
-#include <Share.h>
+#include <cstdio>
+#include <share.h>
 #include "Main.h"
 #include "Emulator.h"
 #include "Views.h"
 #include "Dialogs.h"
-#include "emubase\Emubase.h"
+#include "emubase/Emubase.h"
 #include "SoundGen.h"
 #include "Joystick.h"
 
