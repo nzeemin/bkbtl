@@ -44,6 +44,7 @@ BOOL ConsoleView_SaveMemoryDump();
 
 const LPCTSTR MESSAGE_UNKNOWN_COMMAND = _T("  Unknown command.\r\n");
 const LPCTSTR MESSAGE_WRONG_VALUE = _T("  Wrong value.\r\n");
+const LPCTSTR MESSAGE_INVALID_REGNUM = _T("  Invalid register number, 0..7 expected.\r\n");
 
 
 //////////////////////////////////////////////////////////////////////
@@ -509,13 +510,7 @@ void ConsoleView_CmdClearConsoleLog(const ConsoleCommandParams& /*params*/)
     ConsoleView_ClearConsole();
 }
 
-void ConsoleView_CmdPrintRegister(const ConsoleCommandParams& /*params*/)
-{
-    const CProcessor* pProc = ConsoleView_GetCurrentProcessor();
-    WORD value = pProc->GetPSW();
-    ConsoleView_PrintRegister(_T("PS"), value);
-}
-void ConsoleView_CmdPrintRegisterPSW(const ConsoleCommandParams& params)
+void ConsoleView_CmdPrintRegister(const ConsoleCommandParams& params)
 {
     int r = params.paramReg1;
 
@@ -523,6 +518,12 @@ void ConsoleView_CmdPrintRegisterPSW(const ConsoleCommandParams& params)
     const CProcessor* pProc = ConsoleView_GetCurrentProcessor();
     uint16_t value = pProc->GetReg(r);
     ConsoleView_PrintRegister(name, value);
+}
+void ConsoleView_CmdPrintRegisterPSW(const ConsoleCommandParams& /*params*/)
+{
+    const CProcessor* pProc = ConsoleView_GetCurrentProcessor();
+    WORD value = pProc->GetPSW();
+    ConsoleView_PrintRegister(_T("PS"), value);
 }
 
 void ConsoleView_CmdSetRegisterValue(const ConsoleCommandParams& params)
@@ -829,7 +830,7 @@ void ConsoleView_DoConsoleCommand()
     params.paramOct2 = 0;
 
     // Find matching console command from the list, parse and execute the command
-    bool parsedOkay = false;
+    bool parsedOkay = false, parseError = false;
     for (size_t i = 0; i < ConsoleCommandsCount; i++)
     {
         ConsoleCommandStruct& cmd = ConsoleCommands[i];
@@ -843,6 +844,11 @@ void ConsoleView_DoConsoleCommand()
         case ARGINFO_REG:
             paramsParsed = _sntscanf_s(command, 32, cmd.pattern, &params.paramReg1);
             parsedOkay = (paramsParsed == 1);
+            if (parsedOkay && params.paramReg1 < 0 || params.paramReg1 > 7)
+            {
+                ConsoleView_Print(MESSAGE_INVALID_REGNUM);
+                parseError = true;
+            }
             break;
         case ARGINFO_OCT:
             paramsParsed = _sntscanf_s(command, 32, cmd.pattern, &params.paramOct1);
@@ -851,12 +857,20 @@ void ConsoleView_DoConsoleCommand()
         case ARGINFO_REG_OCT:
             paramsParsed = _sntscanf_s(command, 32, cmd.pattern, &params.paramReg1, &params.paramOct1);
             parsedOkay = (paramsParsed == 2);
+            if (parsedOkay && params.paramReg1 < 0 || params.paramReg1 > 7)
+            {
+                ConsoleView_Print(MESSAGE_INVALID_REGNUM);
+                parseError = true;
+            }
             break;
         case ARGINFO_OCT_OCT:
             paramsParsed = _sntscanf_s(command, 32, cmd.pattern, &params.paramOct1, &params.paramOct2);
             parsedOkay = (paramsParsed == 2);
             break;
         }
+
+        if (parseError)
+            break;  // Validation detected error and printed the message already
 
         if (parsedOkay)
         {
@@ -865,7 +879,7 @@ void ConsoleView_DoConsoleCommand()
         }
     }
 
-    if (!parsedOkay)
+    if (!parsedOkay && !parseError)
         ConsoleView_Print(MESSAGE_UNKNOWN_COMMAND);
 
     ConsoleView_PrintConsolePrompt();
