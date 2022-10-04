@@ -501,8 +501,10 @@ void MemoryView_OnDraw(HDC hdc)
     COLORREF colorMemoryRom = Settings_GetColor(ColorDebugMemoryRom);
     COLORREF colorMemoryIO = Settings_GetColor(ColorDebugMemoryIO);
     COLORREF colorMemoryNA = Settings_GetColor(ColorDebugMemoryNA);
-    COLORREF colorOld = SetTextColor(hdc, colorText);
-    COLORREF colorBkOld = SetBkColor(hdc, GetSysColor(COLOR_WINDOW));
+    COLORREF colorOld = ::SetTextColor(hdc, colorText);
+    COLORREF colorHighlight = Settings_GetColor(ColorDebugHighlight);
+    COLORREF colorBack = ::GetSysColor(COLOR_WINDOW);
+    COLORREF colorBkOld = SetBkColor(hdc, colorBack);
 
     m_cxChar = cxChar;
     m_cyLineMemory = cyLine;
@@ -534,6 +536,8 @@ void MemoryView_OnDraw(HDC hdc)
             bool okValid = (addrtype != ADDRTYPE_IO) && (addrtype != ADDRTYPE_DENY);
             WORD wChanged = Emulator_GetChangeRamStatus(address);
 
+            ::SetBkColor(hdc, (address == m_wCurrentAddress) ? colorHighlight : colorBack);
+
             if (okValid)
             {
                 if (addrtype == ADDRTYPE_ROM)
@@ -555,12 +559,12 @@ void MemoryView_OnDraw(HDC hdc)
                 if (addrtype == ADDRTYPE_IO)
                 {
                     ::SetTextColor(hdc, colorMemoryIO);
-                    TextOut(hdc, x, y, _T("  IO"), 4);
+                    TextOut(hdc, x, y, _T("  IO  "), 6);
                 }
                 else
                 {
                     ::SetTextColor(hdc, colorMemoryNA);
-                    TextOut(hdc, x, y, _T("  NA"), 4);
+                    TextOut(hdc, x, y, _T("  NA  "), 6);
                 }
             }
 
@@ -578,6 +582,7 @@ void MemoryView_OnDraw(HDC hdc)
             x += 7 * cxChar;
         }
         ::SetTextColor(hdc, colorText);
+        ::SetBkColor(hdc, colorBack);
 
         // Draw characters at right
         int xch = x + cxChar;
