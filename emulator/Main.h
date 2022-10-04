@@ -28,6 +28,8 @@ extern HINSTANCE g_hInst; // current instance
 
 extern HWND g_hwnd;  // Main window handle
 
+extern LPCTSTR g_CommandLineHelp;
+
 void MainWindow_RegisterClass();
 BOOL CreateMainWindow();
 void MainWindow_RestoreSettings();
@@ -180,6 +182,12 @@ LPCTSTR Settings_GetColorFriendlyName(ColorIndices colorIndex);
 COLORREF Settings_GetColor(ColorIndices colorIndex);
 COLORREF Settings_GetDefaultColor(ColorIndices colorIndex);
 void Settings_SetColor(ColorIndices colorIndex, COLORREF color);
+
+
+//////////////////////////////////////////////////////////////////////
+// Options
+
+extern bool Option_ShowHelp;
 
 
 //////////////////////////////////////////////////////////////////////

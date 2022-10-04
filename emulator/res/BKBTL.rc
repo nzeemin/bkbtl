@@ -163,6 +163,7 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "&About",                      IDM_ABOUT
+        MENUITEM "&Command Line Help",          ID_HELP_COMMAND_LINE_HELP
     END
 END
 
@@ -195,6 +196,15 @@ BEGIN
     CONTROL         "<a>https://github.com/nzeemin/bkbtl</a>",IDC_SYSLINK1,"SysLink",WS_TABSTOP,10,32,193,10
     LTEXT           "Copyright (C) 2009-2022",IDC_STATIC,10,44,139,8
     LTEXT           "Author:\r\nNikita Zimin (nzeemin@gmail.com)",IDC_STATIC,10,60,174,36
+END
+
+IDD_COMMANDLINEHELP DIALOGEX 82, 17, 360, 320
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CAPTION | WS_SYSMENU
+CAPTION "Command Line Help"
+FONT 8, "MS Shell Dlg", 400, 0, 0xCC
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,294,294,57,15,WS_GROUP
+    EDITTEXT        IDC_EDIT1,10,10,340,280,SS_NOPREFIX | ES_READONLY | ES_MULTILINE
 END
 
 IDD_INPUTBOX DIALOGEX 0, 0, 209, 48
