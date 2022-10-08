@@ -33,6 +33,20 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //   Return value: number of words in the instruction
 uint16_t DisassembleInstruction(const uint16_t* pMemory, uint16_t addr, TCHAR* sInstr, TCHAR* sArg);
 
+bool Disasm_CheckForJump(const uint16_t* memory, int* pDelta);
+
+// Prepare "Jump Hint" string, and also calculate condition for conditional jump
+// Returns: jump prediction flag: true = will jump, false = will not jump
+bool Disasm_GetJumpConditionHint(
+    const uint16_t* memory, const CProcessor * pProc, const CMotherboard * pBoard, LPTSTR buffer);
+
+// Prepare "Instruction Hint" for a regular instruction (not a branch/jump one)
+// buffer, buffer2 - buffers for 1st and 2nd lines of the instruction hint, min size 42
+// Returns: number of hint lines; 0 = no hints
+int Disasm_GetInstructionHint(
+    const uint16_t* memory, const CProcessor * pProc, const CMotherboard * pBoard,
+    LPTSTR buffer, LPTSTR buffer2);
+
 
 //////////////////////////////////////////////////////////////////////
 // CFloppy
