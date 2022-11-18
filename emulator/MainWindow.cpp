@@ -503,7 +503,7 @@ void MainWindow_AdjustWindowLayout()
     }
     if (Settings_GetDebug())  // Debug views shown -- keyboard/tape snapped to top
     {
-        cxScreen = 580;
+        cxScreen = 620;
         cyScreen = BK_SCREEN_HEIGHT + 8;
 
         int yKeyboard = yScreen + cyScreen + (Settings_GetKeyboard() ? 0 : 4);

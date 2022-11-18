@@ -7,6 +7,7 @@ Release
 *.suppress
 *.sdf
 *.opensdf
+*.VC.db
 .vs
 ipch
 *.rom
@@ -16,6 +17,7 @@ BKBTL.APS
 trace.log
 *.dsk
 *.img
+*.bkd
 *.lst
 *.txt
 *.bkst
