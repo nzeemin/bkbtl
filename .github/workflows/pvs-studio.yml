@@ -1,0 +1,38 @@
+name: PVS-Studio analysis
+
+on: workflow_dispatch
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  build-analyze:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download PVS Studio
+        uses: suisei-cn/actions-download-file@v1.3.0
+        with:
+          url: https://files.pvs-studio.com/PVS-Studio_setup.exe
+          target: .\Distrib
+      - name: Install PVS Studio
+        run: |
+          .\Distrib\PVS-Studio_setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /COMPONENTS=Core
+      - name: Configure PVS Studio
+        run: |
+          "C:\Program Files (x86)\PVS-Studio\PVS-Studio_Cmd.exe" credentials -u ${{ secrets.PVS_STUDIO_USERNAME }} -n ${{ secrets.PVS_STUDIO_KEY }}
+      - name: Run PVS Studio
+        run: |
+          mkdir Results
+          "C:\Program Files (x86)\PVS-Studio\PVS-Studio_Cmd.exe" -t .\emulator\BKBTL-VS2015.sln -e %GITHUB_WORKSPACE% -o .\Results\BKBTL.plog
+        continue-on-error: true
+      - name: Convert the report
+        run: |
+          "C:\Program Files (x86)\PVS-Studio\PlogConverter.exe" -t Html,Totals -o .\Results\ -r D:\Work\MyProjects\bkbtl -d V536,V1042 .\Results\BKBTL.plog
+      - name: Upload the report
+        uses: actions/upload-artifact@v3
+        with:
+          name: BKBTL-PVS
+          path: .\Results\
