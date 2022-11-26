@@ -14,6 +14,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Main.h"
 #include "Views.h"
 #include "Emulator.h"
+#include "util/BitmapFile.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -366,7 +367,7 @@ void KeyboardView_OnDraw(HDC hdc)
     ::SelectObject(hdc, hOldBrush);
     VERIFY(::DeleteObject(hBkBrush));
 
-    HBITMAP hBmp = ::LoadBitmap(g_hInst, MAKEINTRESOURCE(bitmapresourceid));
+    HBITMAP hBmp = BitmapFile_LoadPngFromResource(MAKEINTRESOURCE(bitmapresourceid));
     HDC hdcMem = ::CreateCompatibleDC(hdc);
     HGDIOBJ hOldBitmap = ::SelectObject(hdcMem, hBmp);
 

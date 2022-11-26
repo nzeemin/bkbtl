@@ -323,8 +323,8 @@ END
 // Bitmap
 //
 
-IDB_KEYBOARD            BITMAP                  "Keyboard.bmp"
-IDB_KEYBOARD11M         BITMAP                  "Keyboard11m.bmp"
+IDB_KEYBOARD            IMAGE                   "Keyboard.png"
+IDB_KEYBOARD11M         IMAGE                   "Keyboard11m.png"
 IDB_TOOLBAR             BITMAP                  "Toolbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////

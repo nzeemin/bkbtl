@@ -199,8 +199,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\BKBTL.ico" />
-    <Image Include="res\Keyboard.bmp" />
-    <Image Include="res\Keyboard11m.bmp" />
+    <Image Include="res\Keyboard.png" />
+    <Image Include="res\Keyboard11m.png" />
     <Image Include="res\small.ico" />
     <Image Include="res\Toolbar.bmp" />
   </ItemGroup>

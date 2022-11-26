@@ -84,10 +84,10 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\BKBTL.ico" />
-    <Image Include="res\Keyboard.bmp" />
-    <Image Include="res\Keyboard11m.bmp" />
     <Image Include="res\small.ico" />
     <Image Include="res\Toolbar.bmp" />
+    <Image Include="res\Keyboard11m.png" />
+    <Image Include="res\Keyboard.png" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res\BKBTL.rc" />
