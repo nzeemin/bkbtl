@@ -1217,7 +1217,7 @@ void MainWindow_DoFileScreenshotSaveAs()
     TCHAR bufFileName[MAX_PATH];
     BOOL okResult = ShowSaveDialog(g_hwnd,
             _T("Save screenshot as"),
-            _T("PNG bitmaps (*.png)\0*.png\0BMP bitmaps (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0\0"),
+            _T("PNG bitmaps (*.png)\0*.png\0BMP bitmaps (*.bmp)\0*.bmp\0TIFF bitmaps (*.tiff)\0*.tiff\0All Files (*.*)\0*.*\0\0"),
             _T("png"),
             bufFileName);
     if (! okResult) return;

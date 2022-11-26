@@ -22,6 +22,8 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Emulator.h"
 #include "Views.h"
 #include "Joystick.h"
+#include "util/BitmapFile.h"
+
 
 //////////////////////////////////////////////////////////////////////
 // Global Variables
@@ -184,6 +186,8 @@ BOOL InitInstance(HINSTANCE /*hInstance*/, int /*nCmdShow*/)
     ics.dwICC = ICC_WIN95_CLASSES;
     InitCommonControlsEx(&ics);
 
+    BitmapFile_Init();
+
 #if !defined(PRODUCT)
     DebugLogClear();
 #endif
@@ -221,6 +225,9 @@ void DoneInstance()
     Emulator_Done();
 
     Joystick_Done();
+
+    BitmapFile_Done();
+
     Settings_Done();
 }
 
