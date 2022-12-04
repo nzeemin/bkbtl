@@ -465,7 +465,13 @@ bool Emulator_AddCPUBreakpoint(uint16_t address)
     }
     for (int i = 0; i < MAX_BREAKPOINTCOUNT; i++)  // Put in the first empty cell
     {
-        if (m_EmulatorCPUBps[i] == 0177777)
+        if (m_EmulatorCPUBps[i] > address)  // found the place
+        {
+            memcpy(m_EmulatorCPUBps + i + 1, m_EmulatorCPUBps + i, sizeof(uint16_t) * (m_wEmulatorCPUBpsCount - i));
+            m_EmulatorCPUBps[i] = address;
+            break;
+        }
+        if (m_EmulatorCPUBps[i] == 0177777)  // found empty place
         {
             m_EmulatorCPUBps[i] = address;
             break;
@@ -486,7 +492,7 @@ bool Emulator_RemoveCPUBreakpoint(uint16_t address)
             m_wEmulatorCPUBpsCount--;
             if (m_wEmulatorCPUBpsCount > i)  // fill the hole
             {
-                m_EmulatorCPUBps[i] = m_EmulatorCPUBps[m_wEmulatorCPUBpsCount];
+                memcpy(m_EmulatorCPUBps + i, m_EmulatorCPUBps + i + 1, sizeof(uint16_t) * (m_wEmulatorCPUBpsCount - i));
                 m_EmulatorCPUBps[m_wEmulatorCPUBpsCount] = 0177777;
             }
             return true;

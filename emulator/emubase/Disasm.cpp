@@ -232,7 +232,7 @@ uint16_t DisassembleInstruction(const uint16_t* pMemory, uint16_t addr, TCHAR* s
     }
 
     length = 1;
-    _sntprintf(strDst, strDstSize - 1, _T("%06o"), addr + ((short)(char)static_cast<uint8_t>(instr & 0xff) * 2) + 2);
+    _sntprintf(strDst, strDstSize - 1, _T("%06ho"), (uint16_t)(addr + ((short)(char)(uint8_t)(instr & 0xff) * 2) + 2));
 
     // Branches & interrupts
     switch (instr & ~static_cast<uint16_t>(0377))
@@ -713,7 +713,8 @@ void Disasm_InstructionHint(const uint16_t* memory, const CProcessor * pProc, co
 // Prepare "Instruction Hint" for a regular instruction (not a branch/jump one)
 // buffer, buffer2 - buffers for 1st and 2nd lines of the instruction hint, min size 42
 // Returns: number of hint lines; 0 = no hints
-int Disasm_GetInstructionHint(const uint16_t* memory, const CProcessor * pProc, const CMotherboard * pBoard,
+int Disasm_GetInstructionHint(const uint16_t* memory, const CProcessor * pProc,
+        const CMotherboard * pBoard,
         LPTSTR buffer, LPTSTR buffer2)
 {
     const size_t buffersize = 42;

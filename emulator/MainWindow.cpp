@@ -654,7 +654,7 @@ void MainWindow_ShowHideKeyboard()
         RECT rc;  GetClientRect(g_hwnd, &rc);
         RECT rcScreen;  GetWindowRect(g_hwndScreen, &rcScreen);
         int yKeyboardTop = rcScreen.bottom - rcScreen.top + 8;
-        int cxKeyboardWidth = 600;
+        int cxKeyboardWidth = 640;
         int cyKeyboardHeight = 230;
 
         if (g_hwndKeyboard == INVALID_HANDLE_VALUE)
@@ -837,6 +837,7 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_VIEW_DEBUG, (okDebug ? MF_CHECKED : MF_UNCHECKED));
     EnableMenuItem(hMenu, ID_VIEW_MEMORYMAP, (okDebug ? MF_ENABLED : MF_DISABLED));
     EnableMenuItem(hMenu, ID_DEBUG_SPRITES, (okDebug ? MF_ENABLED : MF_DISABLED));
+    EnableMenuItem(hMenu, ID_DEBUG_SUBTITLES, (okDebug ? MF_ENABLED : MF_DISABLED));
     EnableMenuItem(hMenu, ID_DEBUG_STEPINTO, (okDebug ? MF_ENABLED : MF_DISABLED));
     EnableMenuItem(hMenu, ID_DEBUG_STEPOVER, (okDebug ? MF_ENABLED : MF_DISABLED));
     EnableMenuItem(hMenu, ID_DEBUG_TELETYPE, (okDebug ? MF_ENABLED : MF_DISABLED));

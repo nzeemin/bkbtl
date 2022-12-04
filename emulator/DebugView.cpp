@@ -41,6 +41,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
 int DebugView_DrawWatchpoints(HDC hdc, int x, int y);
 void DebugView_DrawPorts(HDC hdc, int x, int y);
 void DebugView_DrawBreakpoints(HDC hdc, int x, int y);
+void DebugView_DrawMemoryMap(HDC hdc, int x, int y);
 void DebugView_UpdateWindowText();
 
 
@@ -301,8 +302,8 @@ void DebugView_DoDraw(HDC hdc)
     int xBreaks = x;
     x += cxChar * 9;
     ::PatBlt(hdc, x, 0, 4, cyHeight, PATCOPY);
-    //x += 4;
-    //int xMemmap = x;
+    x += 4;
+    int xMemmap = x;
     ::SelectObject(hdc, hOldBrush);
 
     DebugView_DrawProcessor(hdc, pDebugPU, xProc + cxChar, cyLine / 2, arrR, arrRChanged, oldPsw);
@@ -315,8 +316,7 @@ void DebugView_DoDraw(HDC hdc)
 
     DebugView_DrawBreakpoints(hdc, xBreaks + cxChar / 2, cyLine / 2);
 
-    //int xMemoryMap = 30 + (83 + (okBreakpoints ? 10 : 0)) * cxChar;
-    //DebugView_DrawMemoryMap(hdc, xMemoryMap, 0 * cyLine);
+    DebugView_DrawMemoryMap(hdc, xMemmap + cxChar, 0);
 
     SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
@@ -543,6 +543,33 @@ void DebugView_DrawBreakpoints(HDC hdc, int x, int y)
         y += cyLine;
         pbps++;
     }
+}
+
+void DebugView_DrawMemoryMap(HDC hdc, int x, int y)
+{
+    int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
+
+    int x1 = x + cxChar * 7;
+    int y1 = y + cxChar / 2;
+    int x2 = x1 + cxChar * 14;
+    int y2 = y1 + cyLine * 16;
+    int xtype = x1 + cxChar * 3;
+
+    HGDIOBJ hOldBrush = ::SelectObject(hdc, ::GetSysColorBrush(COLOR_BTNSHADOW));
+    PatBlt(hdc, x1, y1, 1, y2 - y1, PATCOPY);
+    PatBlt(hdc, x2, y1, 1, y2 - y1 + 1, PATCOPY);
+    PatBlt(hdc, x1, y1, x2 - x1, 1, PATCOPY);
+
+    for (uint16_t window = 0; window < 8; window++)
+    {
+        int yp = y2 - window * cyLine * 2;
+        uint16_t address = window << 13;
+        DrawOctalValue(hdc, x, yp - cyLine / 2, address);
+        PatBlt(hdc, x1, yp, x2 - x1, 1, PATCOPY);
+    }
+
+    PatBlt(hdc, x1, y1 + cyLine / 4, x2 - x1, 1, PATCOPY);
+    ::SelectObject(hdc, hOldBrush);
 }
 
 
