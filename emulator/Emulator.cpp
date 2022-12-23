@@ -658,7 +658,13 @@ bool Emulator_SystemFrame()
     Emulator_ProcessJoystick();
 
     if (!g_pBoard->SystemFrame())
+    {
+        uint16_t pc = g_pBoard->GetCPU()->GetPC();
+        if (pc != m_wEmulatorTempCPUBreakpoint)
+            DebugPrintFormat(_T("Breakpoint hit at %06ho\r\n"), pc);
+
         return false;
+    }
 
     // Calculate frames per second
     m_nFrameCount++;
