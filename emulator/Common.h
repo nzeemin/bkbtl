@@ -85,6 +85,8 @@ BOOL ParseOctalValue(LPCTSTR text, WORD* pValue);
 TCHAR Translate_BK_Unicode(BYTE ch);
 TCHAR Translate_KOI7R_Unicode(BYTE ch);
 
+void CopyTextToClipboard(LPCTSTR text);
+
 LPCTSTR GetFileNameFromFilePath(LPCTSTR lpfilepath);
 
 
