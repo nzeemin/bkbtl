@@ -110,6 +110,8 @@ BEGIN
         MENUITEM "896 x 512 Color",             ID_VIEW_SCREENMODE5
         MENUITEM "1024 x 768 BW",               ID_VIEW_SCREENMODE6
         MENUITEM "1024 x 768 Color",            ID_VIEW_SCREENMODE7
+        MENUITEM "1536 x 1024 BW",              ID_VIEW_SCREENMODE8
+        MENUITEM "1536 x 1024 Color",           ID_VIEW_SCREENMODE9
     END
     POPUP "&Emulator"
     BEGIN
