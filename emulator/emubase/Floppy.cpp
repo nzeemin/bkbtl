@@ -33,7 +33,7 @@ static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest);
 
 CFloppyDrive::CFloppyDrive()
 {
-    fpFile = NULL;
+    fpFile = nullptr;
     okReadOnly = false;
     datatrack = dataside = 0;
     dataptr = 0;
@@ -54,7 +54,7 @@ void CFloppyDrive::Reset()
 CFloppyController::CFloppyController()
 {
     m_drive = m_side = m_track = 0;
-    m_pDrive = NULL;
+    m_pDrive = nullptr;
     m_datareg = m_writereg = m_shiftreg = 0;
     m_writing = m_searchsync = m_writemarker = m_crccalculus = false;
     m_writeflag = m_shiftflag = m_shiftmarker = false;
@@ -75,7 +75,7 @@ void CFloppyController::Reset()
     FlushChanges();
 
     m_drive = m_side = m_track = 0;
-    m_pDrive = NULL;
+    m_pDrive = nullptr;
     m_datareg = m_writereg = m_shiftreg = 0;
     m_writing = m_searchsync = m_writemarker = m_crccalculus = false;
     m_writeflag = m_shiftflag = false;
@@ -88,21 +88,21 @@ void CFloppyController::Reset()
 
 bool CFloppyController::AttachImage(int drive, LPCTSTR sFileName)
 {
-    ASSERT(sFileName != NULL);
+    ASSERT(sFileName != nullptr);
 
     // If image attached - detach one first
-    if (m_drivedata[drive].fpFile != NULL)
+    if (m_drivedata[drive].fpFile != nullptr)
         DetachImage(drive);
 
     // Open file
     m_drivedata[drive].okReadOnly = false;
     m_drivedata[drive].fpFile = ::_tfopen(sFileName, _T("r+b"));
-    if (m_drivedata[drive].fpFile == NULL)
+    if (m_drivedata[drive].fpFile == nullptr)
     {
         m_drivedata[drive].okReadOnly = true;
         m_drivedata[drive].fpFile = ::_tfopen(sFileName, _T("rb"));
     }
-    if (m_drivedata[drive].fpFile == NULL)
+    if (m_drivedata[drive].fpFile == nullptr)
         return false;
 
     m_side = m_track = m_drivedata[drive].datatrack = m_drivedata[drive].dataside = 0;
@@ -121,12 +121,12 @@ bool CFloppyController::AttachImage(int drive, LPCTSTR sFileName)
 
 void CFloppyController::DetachImage(int drive)
 {
-    if (m_drivedata[drive].fpFile == NULL) return;
+    if (m_drivedata[drive].fpFile == nullptr) return;
 
     FlushChanges();
 
     ::fclose(m_drivedata[drive].fpFile);
-    m_drivedata[drive].fpFile = NULL;
+    m_drivedata[drive].fpFile = nullptr;
     m_drivedata[drive].okReadOnly = false;
     m_drivedata[drive].Reset();
 }
@@ -136,9 +136,9 @@ void CFloppyController::DetachImage(int drive)
 
 uint16_t CFloppyController::GetState(void)
 {
-    if (m_pDrive == NULL)
+    if (m_pDrive == nullptr)
         return 0;
-    if (m_pDrive->fpFile == NULL)
+    if (m_pDrive->fpFile == nullptr)
         return FLOPPY_STATUS_INDEXMARK | (m_track == 0 ? FLOPPY_STATUS_TRACK0 : 0);
 
     if (m_track == 0)
@@ -247,7 +247,7 @@ case 1: default:                    newdrive = 0;  break;
 
 uint16_t CFloppyController::GetData(void)
 {
-    if (m_okTrace && m_pDrive != NULL)
+    if (m_okTrace && m_pDrive != nullptr)
     {
         uint16_t offset = m_pDrive->dataptr;
         if (offset >= 102 && (offset - 102) % 610 == 0)
@@ -258,7 +258,7 @@ uint16_t CFloppyController::GetData(void)
     m_writing = m_searchsync = false;
     m_writeflag = m_shiftflag = false;
 
-    if (m_pDrive == NULL || m_pDrive->fpFile == NULL)
+    if (m_pDrive == nullptr || m_pDrive->fpFile == nullptr)
         return 0;
 
     return m_datareg;
@@ -310,11 +310,11 @@ void CFloppyController::Periodic()
             m_drivedata[drive].dataptr = 0;
     }
 
-    if (m_okTrace && m_pDrive != NULL && m_pDrive->dataptr == 0)
+    if (m_okTrace && m_pDrive != nullptr && m_pDrive->dataptr == 0)
         DebugLogFormat(_T("Floppy Index\n"));
 
     // Далее обрабатываем чтение/запись на текущем драйве
-    if (m_pDrive == NULL) return;
+    if (m_pDrive == nullptr) return;
     if (!IsAttached(m_drive)) return;
 
     if (!m_writing)  // Read mode
@@ -399,7 +399,7 @@ void CFloppyController::PrepareTrack()
 {
     FlushChanges();
 
-    if (m_pDrive == NULL) return;
+    if (m_pDrive == nullptr) return;
 
     if (m_okTrace)
         DebugLogFormat(_T("Floppy Prepare Track\tTRACK %d SIDE %d\r\n"), m_track, m_side);
@@ -418,7 +418,7 @@ void CFloppyController::PrepareTrack()
     uint8_t data[5120];
     memset(data, 0, 5120);
 
-    if (m_pDrive->fpFile != NULL)
+    if (m_pDrive->fpFile != nullptr)
     {
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
         count = (uint32_t) ::fread(data, 1, 5120, m_pDrive->fpFile);

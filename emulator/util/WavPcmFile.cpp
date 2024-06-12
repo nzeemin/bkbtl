@@ -146,13 +146,12 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
         return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Failed to open file
 
     uint32_t offset = 0;
-    size_t bytesRead;
     ::fseek(fpFileOpen, 0, SEEK_END);
     uint32_t fileSize = ::ftell(fpFileOpen);
     ::fseek(fpFileOpen, 0, SEEK_SET);
 
     uint8_t fileHeader[12];
-    bytesRead = ::fread(fileHeader, 1, sizeof(fileHeader), fpFileOpen);
+    size_t bytesRead = ::fread(fileHeader, 1, sizeof(fileHeader), fpFileOpen);
     if (bytesRead != sizeof(fileHeader) ||
         memcmp(&fileHeader[0], magic1, 4) != 0 ||
         memcmp(&fileHeader[8], magic2, 4) != 0)
@@ -162,7 +161,7 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
     }
     offset += bytesRead;
 
-    uint32_t statedSize = *((uint32_t*)(fileHeader + 4)) + 8;
+    uint32_t statedSize = *reinterpret_cast<uint32_t*>(fileHeader + 4) + 8;
     if (statedSize > fileSize)
         statedSize = fileSize;
 

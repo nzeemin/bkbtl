@@ -61,17 +61,17 @@ void SoundGen_Initialize(WORD volume)
             GetProcessHeap(),
             HEAP_ZERO_MEMORY,
             totalBufferSize));
-    if (mbuffer == NULL)
+    if (mbuffer == nullptr)
     {
         return;
     }
 
-    waveBlocks = (WAVEHDR*)mbuffer;
+    waveBlocks = reinterpret_cast<WAVEHDR*>(mbuffer);
     mbuffer += sizeof(WAVEHDR) * BLOCK_COUNT;
     for (int i = 0; i < BLOCK_COUNT; i++)
     {
         waveBlocks[i].dwBufferLength = BLOCK_SIZE;
-        waveBlocks[i].lpData = (LPSTR)mbuffer;
+        waveBlocks[i].lpData = reinterpret_cast<LPSTR>(mbuffer);
         mbuffer += BLOCK_SIZE;
     }
 
@@ -119,7 +119,7 @@ void SoundGen_Finalize()
     waveOutClose(hWaveOut);
 
     HeapFree(GetProcessHeap(), 0, waveBlocks);
-    waveBlocks = NULL;
+    waveBlocks = nullptr;
 
     m_SoundGenInitialized = false;
 }
