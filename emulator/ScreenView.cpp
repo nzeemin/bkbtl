@@ -381,6 +381,7 @@ void ScreenView_ScanKeyboard()
                     BYTE pressed = (newstate & 128) | (okCtrl ? 64 : 0);
                     WORD keyevent = MAKEWORD(bkscan, pressed);
                     ScreenView_PutKeyEventToQueue(keyevent);
+                    KeyboardView_KeyEvent(bkscan, pressed);
                 }
             }
         }

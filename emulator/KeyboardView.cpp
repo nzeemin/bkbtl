@@ -422,13 +422,20 @@ void Keyboard_DrawKey(HDC hdc, BYTE keyscan)
     for (int i = 0; i < m_nKeyboardKeysCount; i++)
         if (keyscan == m_arrKeyboardKeys[i].code)
         {
-            RECT rcKey;
-            rcKey.left = m_nKeyboardBitmapLeft + m_arrKeyboardKeys[i].x;
-            rcKey.top = m_nKeyboardBitmapTop + m_arrKeyboardKeys[i].y;
-            rcKey.right = rcKey.left + m_arrKeyboardKeys[i].w;
-            rcKey.bottom = rcKey.top + m_arrKeyboardKeys[i].h;
-            ::DrawFocusRect(hdc, &rcKey);
+            int x = m_nKeyboardBitmapLeft + m_arrKeyboardKeys[i].x;
+            int y = m_nKeyboardBitmapTop + m_arrKeyboardKeys[i].y;
+            int w = m_arrKeyboardKeys[i].w;
+            int h = m_arrKeyboardKeys[i].h;
+            ::PatBlt(hdc, x, y, w, h, PATINVERT);
         }
+}
+
+// Display key pressed, to call from ScreenView
+void KeyboardView_KeyEvent(BYTE keyscan, BOOL /*pressed*/)
+{
+    HDC hdc = ::GetDC(g_hwndKeyboard);
+    Keyboard_DrawKey(hdc, keyscan);
+    ::ReleaseDC(g_hwndKeyboard, hdc);
 }
 
 

@@ -67,21 +67,25 @@ void DebugLogFormat(LPCTSTR pszFormat, ...);
 // Processor register names
 const TCHAR* REGISTER_NAME[];
 
-const int BK_SCREEN_WIDTH = 512;
+const int BK_SCREEN_WIDTH  = 512;
 const int BK_SCREEN_HEIGHT = 256;
 
 
 HFONT CreateMonospacedFont();
 HFONT CreateDialogFont();
+
 void GetFontWidthAndHeight(HDC hdc, int* pWidth, int* pHeight);
+
 void PrintOctalValue(TCHAR* buffer, WORD value);
 void PrintHexValue(TCHAR* buffer, WORD value);
 void PrintBinaryValue(TCHAR* buffer, WORD value);
+
 BOOL ParseOctalValue(LPCTSTR text, WORD* pValue);
+
 void DrawOctalValue(HDC hdc, int x, int y, WORD value);
 void DrawHexValue(HDC hdc, int x, int y, WORD value);
 void DrawBinaryValue(HDC hdc, int x, int y, WORD value);
-BOOL ParseOctalValue(LPCTSTR text, WORD* pValue);
+
 TCHAR Translate_BK_Unicode(BYTE ch);
 TCHAR Translate_KOI7R_Unicode(BYTE ch);
 
