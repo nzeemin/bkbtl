@@ -238,7 +238,6 @@ case 1: default:                    newdrive = 0;  break;
 
     if (m_writing && (cmd & FLOPPY_CMD_SKIPSYNC))  // Запись маркера
     {
-
 //        DebugLog(_T("Floppy MARKER\r\n"));  //DEBUG
 
         m_writemarker = true;

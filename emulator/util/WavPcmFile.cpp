@@ -90,8 +90,8 @@ HWAVPCMFILE WavPcmFile_Create(LPCTSTR filename, int sampleRate)
     const int blockAlign = channels * bitsPerSample / 8;
 
     FILE* fpFileNew = ::_tfsopen(filename, _T("w+b"), _SH_DENYWR);
-    if (fpFileNew == NULL)
-        return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to create file
+    if (fpFileNew == nullptr)
+        return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Failed to create file
 
     // Prepare and write file header
     uint8_t consolidated_header[12 + 8 + 16 + 8];
@@ -101,13 +101,13 @@ HWAVPCMFILE WavPcmFile_Create(LPCTSTR filename, int sampleRate)
     memcpy(&consolidated_header[8], magic2, 4);  // WAVE
 
     memcpy(&consolidated_header[12], format_tag_id, 4);  // fmt
-    *((uint32_t*)(consolidated_header + 16)) = 16;  // Size of "fmt" chunk
-    *((uint16_t*)(consolidated_header + 20)) = WAV_FORMAT_PCM;  // AudioFormat = PCM
-    *((uint16_t*)(consolidated_header + 22)) = channels;  // NumChannels = mono
-    *((uint32_t*)(consolidated_header + 24)) = sampleRate;  // SampleRate
-    *((uint32_t*)(consolidated_header + 28)) = sampleRate * channels * bitsPerSample / 8;  // ByteRate
-    *((uint16_t*)(consolidated_header + 32)) = blockAlign;
-    *((uint16_t*)(consolidated_header + 34)) = bitsPerSample;
+    *reinterpret_cast<uint32_t*>(consolidated_header + 16) = 16;  // Size of "fmt" chunk
+    *reinterpret_cast<uint16_t*>(consolidated_header + 20) = WAV_FORMAT_PCM;  // AudioFormat = PCM
+    *reinterpret_cast<uint16_t*>(consolidated_header + 22) = channels;  // NumChannels = mono
+    *reinterpret_cast<uint32_t*>(consolidated_header + 24) = sampleRate;  // SampleRate
+    *reinterpret_cast<uint32_t*>(consolidated_header + 28) = sampleRate * channels * bitsPerSample / 8;  // ByteRate
+    *reinterpret_cast<uint16_t*>(consolidated_header + 32) = blockAlign;
+    *reinterpret_cast<uint16_t*>(consolidated_header + 34) = bitsPerSample;
 
     memcpy(&consolidated_header[36], data_tag_id, 4);  // data
 
@@ -120,7 +120,7 @@ HWAVPCMFILE WavPcmFile_Create(LPCTSTR filename, int sampleRate)
     }
 
     WAVPCMFILE* pWavPcm = static_cast<WAVPCMFILE*>(::calloc(1, sizeof(WAVPCMFILE)));
-    if (pWavPcm == NULL)
+    if (pWavPcm == nullptr)
     {
         ::fclose(fpFileNew);
         return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Failed to allocate memory
@@ -142,8 +142,8 @@ HWAVPCMFILE WavPcmFile_Create(LPCTSTR filename, int sampleRate)
 HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
 {
     FILE* fpFileOpen = ::_tfsopen(filename, _T("rb"), _SH_DENYWR);
-    if (fpFileOpen == NULL)
-        return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to open file
+    if (fpFileOpen == nullptr)
+        return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Failed to open file
 
     uint32_t offset = 0;
     size_t bytesRead;
@@ -158,7 +158,7 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
         memcmp(&fileHeader[8], magic2, 4) != 0)
     {
         ::fclose(fpFileOpen);
-        return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to read file header OR invalid 'RIFF' tag OR invalid 'WAVE' tag
+        return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Failed to read file header OR invalid 'RIFF' tag OR invalid 'WAVE' tag
     }
     offset += bytesRead;
 
@@ -181,7 +181,7 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
         }
         offset += bytesRead;
 
-        uint32_t tagSize = *(uint32_t*)(tagHeader + 4);
+        uint32_t tagSize = *reinterpret_cast<uint32_t*>(tagHeader + 4);
         if (!memcmp(tagHeader, format_tag_id, 4))
         {
             if (formatSpecified || tagSize < sizeof(formatTag))
@@ -208,13 +208,13 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
             if (formatType != WAV_FORMAT_PCM)
             {
                 ::fclose(fpFileOpen);
-                return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Unsupported format
+                return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Unsupported format
             }
             if (sampleFrequency * bitsPerSample * channels / 8 != bytesPerSecond ||
                 (bitsPerSample != 8 && bitsPerSample != 16 && bitsPerSample != 32))
             {
                 ::fclose(fpFileOpen);
-                return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Wrong format tag
+                return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Wrong format tag
             }
         }
         else if (!memcmp(tagHeader, data_tag_id, 4))
@@ -237,10 +237,10 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
     }
 
     WAVPCMFILE* pWavPcm = static_cast<WAVPCMFILE*>(::calloc(1, sizeof(WAVPCMFILE)));
-    if (pWavPcm == NULL)
+    if (pWavPcm == nullptr)
     {
         ::fclose(fpFileOpen);
-        return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to allocate memory
+        return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Failed to allocate memory
     }
     pWavPcm->fpFile = fpFileOpen;
     pWavPcm->nChannels = channels;
@@ -251,9 +251,9 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
     pWavPcm->dwDataSize = dataSize;
     pWavPcm->okWriting = false;
 
-    WavPcmFile_SetPosition((HWAVPCMFILE) pWavPcm, 0);
+    WavPcmFile_SetPosition(reinterpret_cast<HWAVPCMFILE>(pWavPcm), 0);
 
-    return (HWAVPCMFILE) pWavPcm;
+    return reinterpret_cast<HWAVPCMFILE>(pWavPcm);
 }
 
 void WavPcmFile_Close(HWAVPCMFILE wavpcmfile)
@@ -265,18 +265,17 @@ void WavPcmFile_Close(HWAVPCMFILE wavpcmfile)
 
     if (pWavPcm->okWriting)
     {
-        uint32_t bytesWritten;
         // Write data chunk size
         ::fseek(pWavPcm->fpFile, 4, SEEK_SET);
         uint32_t chunkSize = 36 + pWavPcm->dwDataSize;
-        bytesWritten = ::fwrite(&chunkSize, 1, 4, pWavPcm->fpFile);
+        uint32_t bytesWritten = ::fwrite(&chunkSize, 1, 4, pWavPcm->fpFile);
         // Write data subchunk size
         ::fseek(pWavPcm->fpFile, 40, SEEK_SET);
         bytesWritten = ::fwrite(&(pWavPcm->dwDataSize), 1, 4, pWavPcm->fpFile);
     }
 
     ::fclose(pWavPcm->fpFile);
-    pWavPcm->fpFile = NULL;
+    pWavPcm->fpFile = nullptr;
     ::free(pWavPcm);
 }
 
@@ -330,11 +329,11 @@ unsigned int WavPcmFile_ReadOne(HWAVPCMFILE wavpcmfile)
         value = value << 24;
         break;
     case 16:
-        value = *((uint16_t*)data);
+        value = *reinterpret_cast<uint16_t*>(data);
         value = value << 16;
         break;
     case 32:
-        value = *((uint32_t*)data);
+        value = *reinterpret_cast<uint32_t*>(data);
         break;
     }
 

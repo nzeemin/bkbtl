@@ -213,7 +213,7 @@ bool BitmapFile_SaveImageFile(
     BYTE *pbBuffer = new BYTE[cbBufferSize];
     for (int line = 0; line < height; line++)
     {
-        const BYTE* pSrc = ((const BYTE*)pBits) + (height - line - 1) * width * 4;
+        const BYTE* pSrc = reinterpret_cast<const BYTE*>(pBits) + (height - line - 1) * width * 4;
         BYTE* pDst = pbBuffer + line * width * 3;
         for (int x = 0; x < width; x++)
         {
