@@ -112,7 +112,7 @@ BOOL Settings_SaveBinaryValue(LPCTSTR sName, const void * pData, int size)
     TCHAR* buffer = static_cast<TCHAR*>(::calloc(size * 2 + 1, sizeof(TCHAR)));
     if (buffer == NULL)
         return FALSE;
-    const BYTE* p = (const BYTE*)pData;
+    const BYTE* p = static_cast<const BYTE*>(pData);
     TCHAR* buf = buffer;
     for (int i = 0; i < size; i++)
     {
@@ -141,7 +141,7 @@ BOOL Settings_LoadBinaryValue(LPCTSTR sName, void * pData, int size)
         return FALSE;
     }
 
-    BYTE* p = (BYTE*) pData;
+    BYTE* p = static_cast<BYTE*>(pData);
     TCHAR* buf = buffer;
     for (int i = 0; i < size; i++)
     {
@@ -218,7 +218,7 @@ BOOL Settings_GetWindowRect(RECT * pRect)
 }
 void Settings_SetWindowRect(const RECT * pRect)
 {
-    Settings_SaveBinaryValue(_T("WindowRect"), (const void *)pRect, sizeof(RECT));
+    Settings_SaveBinaryValue(_T("WindowRect"), pRect, sizeof(RECT));
 }
 
 SETTINGS_GETSET_DWORD(WindowMaximized, _T("WindowMaximized"), BOOL, FALSE);

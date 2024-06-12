@@ -96,7 +96,6 @@ HWAVPCMFILE WavPcmFile_Create(LPCTSTR filename, int sampleRate)
     // Prepare and write file header
     uint8_t consolidated_header[12 + 8 + 16 + 8];
     ::memset(consolidated_header, 0, sizeof(consolidated_header));
-    uint32_t bytesWritten;
 
     memcpy(&consolidated_header[0], magic1, 4);  // RIFF
     memcpy(&consolidated_header[8], magic2, 4);  // WAVE
@@ -113,18 +112,18 @@ HWAVPCMFILE WavPcmFile_Create(LPCTSTR filename, int sampleRate)
     memcpy(&consolidated_header[36], data_tag_id, 4);  // data
 
     // Write consolidated header
-    bytesWritten = ::fwrite(consolidated_header, 1, sizeof(consolidated_header), fpFileNew);
+    uint32_t bytesWritten = ::fwrite(consolidated_header, 1, sizeof(consolidated_header), fpFileNew);
     if (bytesWritten != sizeof(consolidated_header))
     {
         ::fclose(fpFileNew);
-        return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to write consolidated header
+        return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Failed to write consolidated header
     }
 
     WAVPCMFILE* pWavPcm = static_cast<WAVPCMFILE*>(::calloc(1, sizeof(WAVPCMFILE)));
     if (pWavPcm == NULL)
     {
         ::fclose(fpFileNew);
-        return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to allocate memory
+        return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Failed to allocate memory
     }
     pWavPcm->fpFile = fpFileNew;
     pWavPcm->nChannels = channels;
@@ -135,9 +134,9 @@ HWAVPCMFILE WavPcmFile_Create(LPCTSTR filename, int sampleRate)
     pWavPcm->dwDataSize = 0;
     pWavPcm->okWriting = true;
 
-    WavPcmFile_SetPosition((HWAVPCMFILE) pWavPcm, 0);
+    WavPcmFile_SetPosition(reinterpret_cast<HWAVPCMFILE>(pWavPcm), 0);
 
-    return (HWAVPCMFILE) pWavPcm;
+    return reinterpret_cast<HWAVPCMFILE>(pWavPcm);
 }
 
 HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
@@ -178,7 +177,7 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
         if (bytesRead != sizeof(tagHeader))
         {
             ::fclose(fpFileOpen);
-            return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to read tag header
+            return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Failed to read tag header
         }
         offset += bytesRead;
 
@@ -188,7 +187,7 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
             if (formatSpecified || tagSize < sizeof(formatTag))
             {
                 ::fclose(fpFileOpen);
-                return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Wrong tag header
+                return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Wrong tag header
             }
             formatSpecified = true;
 
@@ -196,7 +195,7 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
             if (bytesRead != sizeof(formatTag))
             {
                 ::fclose(fpFileOpen);
-                return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Failed to read format tag
+                return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Failed to read format tag
             }
 
             formatType = formatTag[0];
@@ -223,7 +222,7 @@ HWAVPCMFILE WavPcmFile_Open(LPCTSTR filename)
             if (!formatSpecified)
             {
                 ::fclose(fpFileOpen);
-                return (HWAVPCMFILE) INVALID_HANDLE_VALUE;  // Wrong tag
+                return static_cast<HWAVPCMFILE>(INVALID_HANDLE_VALUE);  // Wrong tag
             }
 
             dataOffset = offset;

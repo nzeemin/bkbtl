@@ -40,7 +40,7 @@ int bufcurpos;
 
 static void CALLBACK WaveCallback(HWAVEOUT /*hwo*/, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR /*dwParam1*/, DWORD_PTR /*dwParam2*/)
 {
-    int* freeBlockCounter = (int*)dwInstance;
+    int* freeBlockCounter = reinterpret_cast<int*>(dwInstance);
     if (uMsg != WOM_DONE)
         return;
 
@@ -57,10 +57,10 @@ void SoundGen_Initialize(WORD volume)
 
     size_t totalBufferSize = (BLOCK_SIZE + sizeof(WAVEHDR)) * BLOCK_COUNT;
 
-    unsigned char* mbuffer = (unsigned char*)HeapAlloc(
+    unsigned char* mbuffer = static_cast<unsigned char*>(HeapAlloc(
             GetProcessHeap(),
             HEAP_ZERO_MEMORY,
-            totalBufferSize);
+            totalBufferSize));
     if (mbuffer == NULL)
     {
         return;
