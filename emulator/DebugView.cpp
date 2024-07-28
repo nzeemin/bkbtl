@@ -470,7 +470,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
 
 int DebugView_DrawWatchpoints(HDC hdc, int x, int y)
 {
-    const uint16_t* pws = Emulator_GetWatchpointList();
+    const uint16_t* pws = Emulator_GetWatchList();
     if (*pws == 0177777)
         return 0;
 

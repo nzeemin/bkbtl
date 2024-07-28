@@ -257,13 +257,15 @@ void ConsoleView_PrintConsolePrompt()
 // Print register name, octal value and binary value
 void ConsoleView_PrintRegister(LPCTSTR strName, WORD value)
 {
-    TCHAR buffer[31];
+    TCHAR buffer[36];
     TCHAR* p = buffer;
     *p++ = _T(' ');
     *p++ = _T(' ');
     lstrcpy(p, strName);  p += 2;
     *p++ = _T(' ');
     PrintOctalValue(p, value);  p += 6;
+    *p++ = _T(' ');
+    PrintHexValue(p, value);  p += 4;
     *p++ = _T(' ');
     PrintBinaryValue(p, value);  p += 16;
     *p++ = _T('\r');
@@ -702,7 +704,7 @@ void ConsoleView_CmdPrintAllWatches(const ConsoleCommandParams& /*params*/)
     CProcessor* pProc = ConsoleView_GetCurrentProcessor();
     bool okHaltMode = pProc->IsHaltMode();
 
-    const uint16_t* pws = Emulator_GetWatchpointList();
+    const uint16_t* pws = Emulator_GetWatchList();
     if (pws == nullptr || *pws == 0177777)
     {
         ConsoleView_Print(_T("  No watches defined.\r\n"));
@@ -723,7 +725,7 @@ void ConsoleView_CmdSetWatchAtAddress(const ConsoleCommandParams& params)
 {
     uint16_t address = params.paramOct1;
 
-    bool result = Emulator_AddWatchpoint(address);
+    bool result = Emulator_AddWatch(address);
     if (!result)
         ConsoleView_Print(_T("  Failed to add the watch.\r\n"));
     DebugView_Redraw();
@@ -732,14 +734,14 @@ void ConsoleView_CmdRemoveWatchAtAddress(const ConsoleCommandParams& params)
 {
     uint16_t address = params.paramOct1;
 
-    bool result = Emulator_RemoveWatchpoint(address);
+    bool result = Emulator_RemoveWatch(address);
     if (!result)
         ConsoleView_Print(_T("  Failed to remove the watch.\r\n"));
     DebugView_Redraw();
 }
 void ConsoleView_CmdRemoveAllWatches(const ConsoleCommandParams& /*params*/)
 {
-    Emulator_RemoveAllWatchpoints();
+    Emulator_RemoveAllWatches();
     DebugView_Redraw();
 }
 
