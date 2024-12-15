@@ -260,6 +260,26 @@ void Settings_SetDebugFontName(LPCTSTR sFontName)
     Settings_SaveStringValue(_T("DebugFontName"), sFontName);
 }
 
+void Settings_SetDebugBreakpoint(int bpno, WORD address)
+{
+    TCHAR bufValueName[14];
+    lstrcpy(bufValueName, _T("DebugBreakpt0"));
+    bufValueName[12] = bpno < 10 ? _T('0') + (TCHAR)bpno : _T('A') + (TCHAR)(bpno - 10);
+    if (address == 0177777)
+        Settings_SaveStringValue(bufValueName, NULL);  // delete value
+    else
+        Settings_SaveDwordValue(bufValueName, address);
+}
+WORD Settings_GetDebugBreakpoint(int bpno)
+{
+    TCHAR bufValueName[14];
+    lstrcpy(bufValueName, _T("DebugBreakpt0"));
+    bufValueName[12] = bpno < 10 ? _T('0') + (TCHAR)bpno : _T('A') + (TCHAR)(bpno - 10);
+    DWORD dwValue = 0xFFFFFFFF;
+    Settings_LoadDwordValue(bufValueName, &dwValue);
+    return (WORD)dwValue;
+}
+
 SETTINGS_GETSET_DWORD(DebugMemoryAddress, _T("DebugMemoryAddress"), WORD, 0);
 SETTINGS_GETSET_DWORD(DebugMemoryBase, _T("DebugMemoryBase"), WORD, 0);
 SETTINGS_GETSET_DWORD(DebugMemoryByte, _T("DebugMemoryByte"), BOOL, FALSE);
