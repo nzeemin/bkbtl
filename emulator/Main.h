@@ -15,6 +15,8 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 
 
+#define FRAMERATE 25  // Количество фремов в секунду
+
 #define MAX_LOADSTRING 100
 
 extern TCHAR g_szTitle[MAX_LOADSTRING];            // The title bar text

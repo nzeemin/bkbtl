@@ -17,6 +17,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include <Vfw.h>
 #include <CommCtrl.h>
 #include <shellapi.h>
+#include <timeapi.h>
 
 #include "Main.h"
 #include "Emulator.h"
@@ -93,6 +94,10 @@ int APIENTRY _tWinMain(
     LARGE_INTEGER nPerformanceFrequency;
     ::QueryPerformanceFrequency(&nPerformanceFrequency);
 
+    TIMECAPS caps;
+    VERIFY(!::timeGetDevCaps(&caps, sizeof(caps)));
+    VERIFY(!::timeBeginPeriod(caps.wPeriodMin));
+
     // Main message loop
     MSG msg;
     for (;;)
@@ -109,6 +114,8 @@ int APIENTRY _tWinMain(
                 // Turn on degugger if not yet
                 if (!Settings_GetDebug())
                     ::PostMessage(g_hwnd, WM_COMMAND, ID_VIEW_DEBUG, 0);
+                else
+                    ::FlashWindow(g_hwnd, TRUE);
             }
 
             ScreenView_RedrawScreen();
@@ -129,26 +136,34 @@ int APIENTRY _tWinMain(
 
         if (g_okEmulatorRunning && !Settings_GetSound())
         {
-            if (Settings_GetRealSpeed() == 0)
-                ::Sleep(1);  // We should not consume 100% of CPU
+            WORD speed = Settings_GetRealSpeed();
+            if (speed == 0)
+                ::Sleep(0);  // Speed MAX, consume 100% of one CPU core
             else
             {
-                // Slow down to 25 frames per second
-                LARGE_INTEGER nFrameFinishTime;  // Frame start time
-                ::QueryPerformanceCounter(&nFrameFinishTime);
-                LONGLONG nTimeElapsed = (nFrameFinishTime.QuadPart - nFrameStartTime.QuadPart)
-                        * 1000 / nPerformanceFrequency.QuadPart;
-                LONGLONG nFrameDelay = 1000 / 25 - 1;  // 1000 millisec / 25 = 40 millisec
-                if (Settings_GetRealSpeed() == 0x7ffe)  // Speed 25%
-                    nFrameDelay = 1000 / 25 * 4 - 1;
-                else if (Settings_GetRealSpeed() == 0x7fff)  // Speed 50%
-                    nFrameDelay = 1000 / 25 * 2 - 1;
-                else if (Settings_GetRealSpeed() == 2)  // Speed 200%
-                    nFrameDelay = 1000 / 25 / 2 - 1;
-                if (nTimeElapsed > 0 && nTimeElapsed < nFrameDelay)
+                LONGLONG nFrameDelay;
+                switch (speed)
                 {
-                    LONG nTimeToSleep = (LONG)(nFrameDelay - nTimeElapsed);
-                    ::Sleep((DWORD)nTimeToSleep);
+                case 0x7ffd: nFrameDelay = 1000ll / FRAMERATE * 10; break;  // Speed 10%
+                case 0x7ffe: nFrameDelay = 1000ll / FRAMERATE * 4;  break;  // Speed 25%
+                case 0x7fff: nFrameDelay = 1000ll / FRAMERATE * 2;  break;  // Speed 50%
+                case 2:      nFrameDelay = 1000ll / FRAMERATE / 2;  break;  // Speed 200%
+                case 3:      nFrameDelay = 1000ll / FRAMERATE / 4;  break;  // Speed 400%
+                default:  // Speed 100%
+                    nFrameDelay = 1000ll / FRAMERATE;  // 1000 millisec / 50 = 20 millisec
+                    break;
+                }
+
+                for (;;)
+                {
+                    LARGE_INTEGER nFrameFinishTime;  // Frame start time
+                    ::QueryPerformanceCounter(&nFrameFinishTime);
+                    LONGLONG nTimeElapsed = (nFrameFinishTime.QuadPart - nFrameStartTime.QuadPart)
+                            * 1000ll / nPerformanceFrequency.QuadPart;
+                    if (nTimeElapsed <= 0 || nTimeElapsed >= nFrameDelay)
+                        break;
+                    LONGLONG nDelayRemaining = nFrameDelay - nTimeElapsed;
+                    ::Sleep((DWORD)(nDelayRemaining / 2));
                 }
             }
         }
@@ -159,6 +174,7 @@ int APIENTRY _tWinMain(
     }
 endprog:
 
+    ::timeEndPeriod(caps.wPeriodMin);
     DoneInstance();
 
 #ifdef _DEBUG
