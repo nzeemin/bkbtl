@@ -53,14 +53,14 @@ int Disasm_GetInstructionHint(
 
 #define FLOPPY_FSM_IDLE         0
 
-#define FLOPPY_CMD_CORRECTION250             04
-#define FLOPPY_CMD_CORRECTION500            010
 #define FLOPPY_CMD_ENGINESTART              020
 #define FLOPPY_CMD_SIDEUP                   040
 #define FLOPPY_CMD_DIR                     0100
 #define FLOPPY_CMD_STEP                    0200
-#define FLOPPY_CMD_SEARCHSYNC              0400
-#define FLOPPY_CMD_SKIPSYNC               01000
+#define FLOPPY_CMD_READDATA                0400
+#define FLOPPY_CMD_WRITEMARKER            01000
+#define FLOPPY_CMD_PRECORRECTION          02000
+
 //dir == 0 to center (towards trk0)
 //dir == 1 from center (towards trk80)
 
@@ -108,6 +108,7 @@ protected:
     bool m_shiftflag;       // Write mode shift register has data
     bool m_shiftmarker;     // Write marker in m_marker
     bool m_writing;         // TRUE = write mode, false = read mode
+    bool m_searchsynctrig;  // Search for sync trigger
     bool m_searchsync;      // Read sub-mode: TRUE = search for sync, false = just read
     bool m_crccalculus;     // TRUE = CRC is calculated now
     bool m_trackchanged;    // TRUE = m_data was changed - need to save it into the file
@@ -124,8 +125,8 @@ public:
     bool IsAttached(int drive) const { return (m_drivedata[drive].fpFile != nullptr); }
     bool IsReadOnly(int drive) const { return m_drivedata[drive].okReadOnly; } // return (m_status & FLOPPY_STATUS_WRITEPROTECT) != 0; }
     bool IsEngineOn() { return (m_flags & FLOPPY_CMD_ENGINESTART) != 0; }
-    uint16_t GetData(void);         // Reading port 177132 - data
-    uint16_t GetState(void);        // Reading port 177130 - device status
+    uint16_t GetData();         // Reading port 177132 - data
+    uint16_t GetState();        // Reading port 177130 - device status
     uint16_t GetDataView() const { return m_datareg; }  // Get port 177132 value for debugger
     uint16_t GetStateView() const { return m_status; }  // Get port 177130 value for debugger
     void SetCommand(uint16_t cmd);  // Writing to port 177130 - commands

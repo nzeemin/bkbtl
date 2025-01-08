@@ -364,7 +364,7 @@ bool CMotherboard::SystemFrame()
     const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
     m_SoundChanges = 0;
     const int teletypeTicks = 20000 / (9600 / 25);
-    int floppyTicks = (m_Configuration & BK_COPT_BK0011) ? 38 : 44;
+    int floppyTicks = (m_Configuration & BK_COPT_BK0011) ? 38 : 32;
     int teletypeTxCount = 0;
 
     int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
