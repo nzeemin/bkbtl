@@ -566,6 +566,21 @@ void DebugView_DrawMemoryMap(HDC hdc, int x, int y, const CProcessor* pProc)
         uint16_t address = window << 13;
         DrawOctalValue(hdc, x, yp - cyLine / 2, address);
         PatBlt(hdc, x1, yp, x2 - x1, 1, PATCOPY);
+
+        int addrtype;
+        g_pBoard->GetWordView(address, pProc->GetHALT(), FALSE, &addrtype);
+        LPCTSTR addrtypestr;
+        switch (addrtype & (ADDRTYPE_RAM | ADDRTYPE_ROM | ADDRTYPE_IO | ADDRTYPE_DENY))
+        {
+        case ADDRTYPE_ROM:  addrtypestr = _T("ROM"); break;
+        case ADDRTYPE_RAM:  addrtypestr = _T("RAM"); break;
+        case ADDRTYPE_IO:   addrtypestr = _T("I/O"); break;
+        case ADDRTYPE_DENY: addrtypestr = _T("N/A"); break;
+        default:
+            addrtypestr = nullptr;
+        }
+        if (addrtypestr != nullptr)
+            TextOut(hdc, x1 + cxChar * 2, yp - (cyLine * 4) / 3, addrtypestr, 3);
     }
 
     PatBlt(hdc, x1, y1 + cyLine / 4, x2 - x1, 1, PATCOPY);

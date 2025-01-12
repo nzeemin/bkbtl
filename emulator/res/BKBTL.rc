@@ -82,14 +82,13 @@ IDC_APPLICATION MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "Load BIN...",                 ID_FILE_LOADBIN
-        MENUITEM SEPARATOR
         MENUITEM "Load State…",                 ID_FILE_LOADSTATE
         MENUITEM "Save State…",                 ID_FILE_SAVESTATE
+        MENUITEM "Load BIN…",                   ID_FILE_LOADBIN
         MENUITEM SEPARATOR
         MENUITEM "Screenshot",                  ID_FILE_SCREENSHOT
         MENUITEM "Screenshot to Clipboard",     ID_FILE_SCREENSHOTTOCLIPBOARD
-        MENUITEM "Save Screenshot as...",       ID_FILE_SAVESCREENSHOTAS
+        MENUITEM "Save Screenshot as…",         ID_FILE_SAVESCREENSHOTAS
         MENUITEM SEPARATOR
         MENUITEM "Settings General",            ID_FILE_SETTINGS
         MENUITEM "Settings Fonts and Colors",   ID_FILE_SETTINGS_COLORS
@@ -198,7 +197,7 @@ BEGIN
     LTEXT           "BKBTL Version 1.0.???",IDC_VERSION,10,10,139,8,SS_NOPREFIX
     LTEXT           "Build date: ????",IDC_BUILDDATE,10,20,139,8
     CONTROL         "<a>https://github.com/nzeemin/bkbtl</a>",IDC_SYSLINK1,"SysLink",WS_TABSTOP,10,32,193,10
-    LTEXT           "Copyright (C) 2009-2024",IDC_STATIC,10,44,139,8
+    LTEXT           "Copyright (C) 2009-2025",IDC_STATIC,10,44,139,8
     LTEXT           "Author:\r\nNikita Zimin (nzeemin@gmail.com)",IDC_STATIC,10,60,174,36
 END
 

@@ -722,7 +722,7 @@ int CMotherboard::TranslateAddress(uint16_t address, bool /*okHaltMode*/, bool /
             addrType = ADDRTYPE_RAM;
             break;
         case 1:  // 040000-077777, окно 0, страница ОЗУ 0..7
-            memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 12) & 7];  // 8 chanks #0..7
+            memoryRamChunk = memoryBlockMap[(m_Port177716mem >> 12) & 7];  // 8 chunks #0..7
             addrType = ADDRTYPE_RAM | memoryRamChunk;
             address &= 037777;
             break;
@@ -799,10 +799,13 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
         return 0177440;
 
     case 0177706:  // System Timer counter start value -- регистр установки таймера
+    case 0177707:
         return m_timerreload;
     case 0177710:  // System Timer Counter -- регистр счетчика таймера
+    case 0177711:
         return m_timer;
     case 0177712:  // System Timer Manage -- регистр управления таймера
+    case 0177713:
         return m_timerflags;
 
     case 0177660:  // Keyboard status register
@@ -827,6 +830,7 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
     case 0177130:
         if ((m_Configuration & BK_COPT_FDD) == 0)
         {
+            DebugLogFormat(_T("GetPortWord unknown port %06o CPU %06o\r\n"), address, m_pCPU->GetInstructionPC());
             m_pCPU->MemoryError();
             return 0;
         }
@@ -843,6 +847,7 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
     case 0177132:
         if ((m_Configuration & BK_COPT_FDD) == 0)
         {
+            DebugLogFormat(_T("GetPortWord unknown port %06o CPU %06o\r\n"), address, m_pCPU->GetInstructionPC());
             m_pCPU->MemoryError();
             return 0;
         }
@@ -857,6 +862,7 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
         return 0;
 
     default:
+        DebugLogFormat(_T("GetPortWord unknown port %06o CPU %06o\r\n"), address, m_pCPU->GetInstructionPC());
         m_pCPU->MemoryError();
         return 0;
     }
@@ -962,12 +968,15 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         break;
 
     case 0177706:  // System Timer reload value -- регистр установки таймера
+    case 0177707:
         SetTimerReload(word);
         break;
     case 0177710:  // System Timer Counter -- регистр реверсивного счетчика таймера
+    case 0177711:
         //Do nothing: the register is read-only
         break;
     case 0177712:  // System Timer Manage -- регистр управления таймера
+    case 0177713:
         SetTimerState(word);
         break;
 
@@ -1039,6 +1048,7 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         break;
 
     default:
+        DebugLogFormat(_T("SetPortWord unknown port %06o CPU %06o\r\n"), address, m_pCPU->GetInstructionPC());
         m_pCPU->MemoryError();
         break;
     }
