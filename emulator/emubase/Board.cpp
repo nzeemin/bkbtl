@@ -364,7 +364,7 @@ bool CMotherboard::SystemFrame()
     const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
     m_SoundChanges = 0;
     const int teletypeTicks = 20000 / (9600 / 25);
-    int floppyTicks = (m_Configuration & BK_COPT_BK0011) ? 38 : 32;
+    int floppyTicks = 32;  // FDD rotation is a fixed real-time rate (300 RPM), independent of CPU config
     int teletypeTxCount = 0;
 
     int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
@@ -794,6 +794,7 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
     case 0177700:  // Регистр режима (РР) ВМ1
         return 0177740;
     case 0177702:  // Регистр адреса прерывания (РАП) ВМ1
+        //TODO: Тут всё сложнее, см. описание к эмулятору gid
         return 0177777;
     case 0177704:  // Регистр ошибки (РОШ) ВМ1
         return 0177440;
@@ -884,35 +885,56 @@ uint16_t CMotherboard::GetPortView(uint16_t address) const
     case 0177566:  // Serial port interrupt vector
         return 060;
 
-    case 0177706:  // System Timer counter start value -- регистр установки таймера
+    case PORTVIEW_TIMERREL:  // System Timer counter start value -- регистр установки таймера
         return m_timerreload;
-    case 0177710:  // System Timer Counter -- регистр счетчика таймера
+    case PORTVIEW_TIMERVAL:  // System Timer Counter -- регистр счетчика таймера
         return m_timer;
-    case 0177712:  // System Timer Manage -- регистр управления таймера
+    case PORTVIEW_TIMERCTL:  // System Timer Manage -- регистр управления таймера
         return m_timerflags;
 
-    case 0177660:  // Keyboard status register
+    case PORTVIEW_KEYBSTATUS:  // Keyboard status register
         return m_Port177660;
-    case 0177662:  // Keyboard data register
+    case PORTVIEW_KEYBDATA:  // Keyboard data register
         return m_Port177662rd;
 
-    case 0177664:  // Scroll register
+    case PORTVIEW_PALETTE:
+        return m_Port177662wr;
+
+    case PORTVIEW_SCROLL:  // Scroll register
         return m_Port177664;
 
-    case 0177714:  // Parallel port register
+    case PORTVIEW_PARALLELIN:  // Parallel port register
         return m_Port177714in;
+    case PORTVIEW_PARALLELOUT:  // Parallel port register
+        return m_Port177714out;
 
-    case 0177716:  // System register
+    case PORTVIEW_SYSTEM:  // System register
         return m_Port177716;
+    case PORTVIEW_SYSTEMMEM:  // System register (memory)
+        return m_Port177716mem;
+    case PORTVIEW_SYSTEMTAP:  // System register (tape)
+        return m_Port177716tap;
 
-    case 0177130:  // Floppy state
+    case PORTVIEW_FDDSTATE:  // Floppy state
         if (m_pFloppyCtl != nullptr)
             return m_pFloppyCtl->GetStateView();
         return 0;
-    case 0177132:  // Floppy data
+    case PORTVIEW_FDDDATA:  // Floppy data
         if (m_pFloppyCtl != nullptr)
             return m_pFloppyCtl->GetDataView();
         return 0;
+    case PORTVIEW_FDDDRIVE:
+        if (m_pFloppyCtl != nullptr)
+            return m_pFloppyCtl->GetDriveView();
+        return 0xFFFF;
+    case PORTVIEW_FDDTRACK:
+        if (m_pFloppyCtl != nullptr)
+            return m_pFloppyCtl->GetTrackView();
+        return 0xFFFF;
+    case PORTVIEW_FDDSIDE:
+        if (m_pFloppyCtl != nullptr)
+            return m_pFloppyCtl->GetSideView();
+        return 0xFFFF;
 
     default:
         return 0;
@@ -1060,8 +1082,8 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
 //  Offset Length
 //       0     32 bytes  - Header
 //      32    128 bytes  - Board status
-//     160     32 bytes  - CPU status
-//     192   3904 bytes  - RESERVED
+//     160     64 bytes  - CPU status
+//     224   3872 bytes  - RESERVED
 //    4096  65536 bytes  - ROM image 64K
 //   69632 131072 bytes  - RAM image 128K
 //  200704     --        - END
@@ -1105,7 +1127,7 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
 {
     // Board data
     const uint16_t* pwImage = reinterpret_cast<const uint16_t*>(pImage + 32);
-    m_Configuration = *pwImage++;
+    m_Configuration = *pwImage++; //TODO: call SetConfiguration() instead
     pwImage += 6;  // RESERVED
     m_Port177560 = *pwImage++;
     m_Port177562 = *pwImage++;
@@ -1235,6 +1257,7 @@ void CMotherboard::SetTeletypeCallback(TELETYPECALLBACK callback)
 void TraceInstruction(const CProcessor* pProc, const CMotherboard* pBoard, uint16_t address, uint32_t dwTrace)
 {
     bool okHaltMode = pProc->IsHaltMode();
+    bool okBk11 = (pBoard->GetConfiguration() & BK_COPT_BK0011) != 0;
 
     uint16_t memory[4];
     int addrtype = ADDRTYPE_RAM;
@@ -1253,7 +1276,13 @@ void TraceInstruction(const CProcessor* pProc, const CMotherboard* pBoard, uint1
     TCHAR args[32];
     DisassembleInstruction(memory, address, instr, args);
     TCHAR buffer[64];
-    _sntprintf(buffer, 64, _T("%s\t%s\t%s\r\n"), bufaddr, instr, args);
+    if (okBk11 && (addrtype & ADDRTYPE_MASK) == ADDRTYPE_RAM)
+    {
+        int nRamPage = addrtype & 7;
+        _sntprintf(buffer, 64, _T("%d:%s\t%s\t%s\r\n"), nRamPage, bufaddr, instr, args);
+    }
+    else
+        _sntprintf(buffer, 64, _T("%s\t%s\t%s\r\n"), bufaddr, instr, args);
 
     DebugLog(buffer);
 }

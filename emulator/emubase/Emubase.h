@@ -129,6 +129,9 @@ public:
     uint16_t GetState();        // Reading port 177130 - device status
     uint16_t GetDataView() const { return m_datareg; }  // Get port 177132 value for debugger
     uint16_t GetStateView() const { return m_status; }  // Get port 177130 value for debugger
+    int GetDriveView() const { return m_drive; }
+    uint16_t GetTrackView() const { return m_track; }
+    uint16_t GetSideView() const { return m_side; }
     void SetCommand(uint16_t cmd);  // Writing to port 177130 - commands
     void WriteData(uint16_t Data);  // Writing to port 177132 - data
     void Periodic();            // Rotate disk; call it each 64 us - 15625 times per second

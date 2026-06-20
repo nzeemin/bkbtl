@@ -36,7 +36,7 @@ CFloppyDrive::CFloppyDrive()
 {
     fpFile = nullptr;
     okReadOnly = false;
-    datatrack = dataside = 0;
+    datatrack = dataside = 0xffff;  // Invalid sentinel: forces the first PrepareTrack() to actually load
     dataptr = 0;
     memset(data, 0, sizeof(data));
     memset(marker, 0, sizeof(marker));
@@ -44,7 +44,7 @@ CFloppyDrive::CFloppyDrive()
 
 void CFloppyDrive::Reset()
 {
-    datatrack = dataside = 0;
+    datatrack = dataside = 0xffff;  // Invalid sentinel: forces the next PrepareTrack() to actually load
     dataptr = 0;
 }
 
@@ -112,7 +112,8 @@ bool CFloppyController::AttachImage(int drive, LPCTSTR sFileName)
     if (m_drivedata[drive].fpFile == nullptr)
         return false;
 
-    m_side = m_track = m_drivedata[drive].datatrack = m_drivedata[drive].dataside = 0;
+    m_side = m_track = 0;
+    m_drivedata[drive].datatrack = m_drivedata[drive].dataside = 0xffff;  // Invalid sentinel: forces PrepareTrack() below to actually load
     m_drivedata[drive].dataptr = 0;
     m_datareg = m_writereg = m_shiftreg = 0;
     m_writing = m_searchsync = m_writemarker = m_crccalculus = false;
@@ -402,9 +403,13 @@ void CFloppyController::Periodic()
 // Read track data from file and fill m_data
 void CFloppyController::PrepareTrack()
 {
-    FlushChanges();
-
     if (m_pDrive == nullptr) return;
+
+    // No-op if this track/side is already loaded (matches reference implementation):
+    // avoids a needless file re-read/re-encode, and avoids re-touching m_status below.
+    if (m_pDrive->datatrack == m_track && m_pDrive->dataside == m_side) return;
+
+    FlushChanges();
 
     if (m_okTrace)
         DebugLogFormat(_T("Floppy Prepare Track\tTRACK %d SIDE %d\r\n"), m_track, m_side);
@@ -412,8 +417,12 @@ void CFloppyController::PrepareTrack()
     uint32_t count;
 
     m_trackchanged = false;
-    m_status |= FLOPPY_STATUS_MOREDATA;
     //NOTE: Not changing m_pDrive->dataptr
+    //NOTE: Not touching FLOPPY_STATUS_MOREDATA here -- loading a track does not mean a
+    //sync marker has been found under the head; only Periodic()'s marker-found event
+    //(or write-mode byte completion) should ever set MOREDATA. The previous
+    //"m_status |= FLOPPY_STATUS_MOREDATA;" here could make the driver see a false
+    //"data ready" signal before any real search had completed.
     m_pDrive->datatrack = m_track;
     m_pDrive->dataside = m_side;
 
