@@ -118,6 +118,8 @@ public:  // Processor control
     void        TickIRQ2();  // IRQ2 signal
     void        PowerFail();
     void        InterruptVIRQ(int que, uint16_t interrupt);  // External interrupt via VIRQ signal
+    void        ClearVIRQ();  // Cancel all pending VIRQ interrupts (called on RESET/INIT signal)
+    void        ClearVIRQByIndex(int que);  // Cancel one VIRQ slot (interrupt-enable bit cleared)
     void        Execute();   // Execute one instruction - for debugger only
 
 public:  // Saving/loading emulator status (pImage addresses up to 32 bytes)

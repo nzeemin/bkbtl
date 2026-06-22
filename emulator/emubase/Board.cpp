@@ -258,6 +258,12 @@ void CMotherboard::ResetDevices()
     m_timerflags = 0177400;
     m_timer = 0177777;
     m_timerreload = 011000;
+
+    // RESET/INIT signal cancels all pending device interrupt requests (VIRQs).
+    // On real PDP-11 hardware the INIT line causes every bus device to withdraw
+    // its interrupt request, so none of those requests should survive into the
+    // instruction that follows RESET.
+    m_pCPU->ClearVIRQ();
 }
 
 void CMotherboard::Tick50()  // 50 Hz timer
@@ -451,7 +457,7 @@ bool CMotherboard::SystemFrame()
             }
         }
 
-        if (frameticks % teletypeTicks)
+        if (frameticks % teletypeTicks == 0)  // One teletype baud-rate tick every teletypeTicks frame-ticks
         {
             if (teletypeTxCount > 0)
             {
@@ -991,11 +997,25 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         //TODO
         break;
     case 0177564:  // Serial port output status register
-        DebugPrintFormat(_T("177564 write '%06o'\r\n"), word);
-        m_Port177564 = word;
+        //DebugPrintFormat(_T("177564 write '%06o'\r\n"), word);
+        {
+            uint16_t old177564 = m_Port177564;
+            // Bit 7 (TX ready) is read-only / hardware-set: it is asserted by the UART
+            // when a byte finishes transmitting, and cleared by writing to 177566.
+            // Software writes to 177564 must not affect bit 7.
+            m_Port177564 = (m_Port177564 & 0200) | (word & ~0200u);
+
+            // Level-sensitive interrupt: if interrupt enable (bit 6) transitions to set
+            // while TX ready (bit 7) is already asserted, immediately fire the VIRQ.
+            if ((m_Port177564 & 0300) == 0300 && !(old177564 & 0100))
+                m_pCPU->InterruptVIRQ(1, 064);
+            // Conversely, if interrupt enable (bit 6) is cleared, withdraw any pending VIRQ.
+            else if (!(m_Port177564 & 0100) && (old177564 & 0100))
+                m_pCPU->ClearVIRQByIndex(1);
+        }
         break;
     case 0177566:  // Serial port output data
-        DebugPrintFormat(_T("177566 write '%c'\r\n"), (uint8_t)word);
+        //DebugPrintFormat(_T("177566 write '%c'\r\n"), (uint8_t)word);
         m_Port177566 = word;
         m_Port177564 &= ~0200;
         break;

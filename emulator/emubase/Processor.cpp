@@ -404,6 +404,25 @@ void CProcessor::InterruptVIRQ(int que, uint16_t interrupt)
     m_virqrq += 1;
     m_virq[que] = interrupt;
 }
+void CProcessor::ClearVIRQ()
+{
+    // Cancel all pending device (VIRQ) interrupts.
+    // Called when the RESET/INIT signal is asserted: all bus-attached devices are reset
+    // and any interrupt requests they had raised must be withdrawn.
+    m_virqrq = 0;
+    memset(m_virq, 0, sizeof(m_virq));
+}
+void CProcessor::ClearVIRQByIndex(int que)
+{
+    // Cancel a pending VIRQ from a specific device queue slot.
+    // Called when a device's interrupt-enable bit is cleared: the device withdraws
+    // its interrupt request from the bus (level-sensitive interrupt behaviour).
+    if (que >= 0 && que < 16 && m_virq[que] != 0)
+    {
+        m_virq[que] = 0;
+        if (m_virqrq > 0) m_virqrq--;
+    }
+}
 void CProcessor::AssertHALT()
 {
     m_haltpin = true;
