@@ -252,6 +252,9 @@ private:  // Ports: implementation
     uint16_t    m_Port177566;       // Serial port output data register
     uint16_t    m_Port177660;       // Keyboard status register
     uint16_t    m_Port177662rd;     // Keyboard register
+    uint16_t    m_nKbdIrqPending;   // Nonzero if a keyboard interrupt was
+    // deferred because bit 6 (interrupt mask) of m_Port177660 was set when the
+    // key was pressed; holds the vector to fire once software unmasks it. 0 = none pending.
     uint16_t    m_Port177662wr;     // Palette register
     uint16_t    m_Port177664;       // Scroll register
     uint16_t    m_Port177714in;     // Parallel port, input register
