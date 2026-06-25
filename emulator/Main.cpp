@@ -51,7 +51,25 @@ LPCTSTR g_CommandLineHelp =
     _T("/nodebug /debugoff\r\n\tSwitch off the debug mode\r\n")
     _T("/sound /soundon\r\n\tTurn sound on\r\n")
     _T("/nosound /soundoff\r\n\tTurn sound off\r\n")
-    _T("/diskN:filePath\r\n\tAttach disk image, N=0..3\r\n");
+    _T("/diskN:filePath\r\n\tAttach disk image, N=0..3\r\n")
+    _T("/conf:confname\r\n\tSelect configuration:\r\n\tBK-0010-BASIC, BK-0010-FOCAL, BK-0010-FDD, BK-0011M, BK-0011M-FDD\r\n")
+    _T("/state:filepath\r\n\tLoad emulator state from the given image file\r\n");
+
+struct ConfigurationNameStruct
+{
+    LPCTSTR name;
+    BKConfiguration configuration;
+};
+
+const ConfigurationNameStruct ConfigurationNames[] =
+{
+    { _T("BK-0010-BASIC"), BK_CONF_BK0010_BASIC },
+    { _T("BK-0010-FOCAL"), BK_CONF_BK0010_FOCAL },
+    { _T("BK-0010-FDD"),   BK_CONF_BK0010_FDD },
+    { _T("BK-0011M"),      BK_CONF_BK0011 },
+    { _T("BK-0011M-FDD"),  BK_CONF_BK0011_FDD },
+};
+const size_t ConfigurationNamesCount = sizeof(ConfigurationNames) / sizeof(ConfigurationNames[0]);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -87,6 +105,13 @@ int APIENTRY _tWinMain(
         return FALSE;
 
     HACCEL hAccelTable = ::LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_APPLICATION));
+
+    // Load emulator state from command-line option /state:filePath
+    if (Option_StateFilePath[0] != 0)
+    {
+        if (!Emulator_LoadImage(Option_StateFilePath))
+            AlertWarningFormat(_T("Failed to load state image from command line: \"%s\"."), Option_StateFilePath);
+    }
 
     if (Option_ShowHelp)
         ::PostMessage(g_hwnd, WM_COMMAND, ID_HELP_COMMAND_LINE_HELP, NULL);
@@ -216,8 +241,10 @@ BOOL InitInstance(HINSTANCE /*hInstance*/, int /*nCmdShow*/)
     if (!Emulator_Init())
         return FALSE;
 
-    int conf = Settings_GetConfiguration();
+    int conf = (Option_Configuration != 0) ? Option_Configuration : Settings_GetConfiguration();
     if (conf == 0) conf = BK_CONF_BK0010_BASIC;
+    if (Option_Configuration != 0)
+        Settings_SetConfiguration(Option_Configuration);  // Save command-line configuration to settings
     if (!Emulator_InitConfiguration((BKConfiguration)conf))
         return FALSE;
 
@@ -295,7 +322,30 @@ void ParseCommandLine()
                 Settings_SetFloppyFilePath(slot, filePath);
             }
         }
-        //TODO: "/state:filepath"
+        else if (_tcsncmp(arg, _T("/conf:"), 6) == 0)  // "/conf:confName"
+        {
+            LPCTSTR confname = arg + 6;
+            bool found = false;
+            for (size_t i = 0; i < ConfigurationNamesCount; i++)
+            {
+                if (_tcsicmp(confname, ConfigurationNames[i].name) == 0)
+                {
+                    Option_Configuration = ConfigurationNames[i].configuration;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                AlertWarningFormat(_T("Unknown configuration name in command line: \"%s\"."), confname);
+            }
+        }
+        else if (_tcsncmp(arg, _T("/state:"), 7) == 0)  // "/state:filePath"
+        {
+            LPCTSTR filePath = arg + 7;
+            _tcsncpy(Option_StateFilePath, filePath, MAX_PATH - 1);
+            Option_StateFilePath[MAX_PATH - 1] = 0;
+        }
     }
 
     ::LocalFree(args);

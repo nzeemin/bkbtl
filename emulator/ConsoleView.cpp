@@ -40,6 +40,7 @@ void ConsoleView_DoConsoleCommand();
 void ConsoleView_PrintConsolePrompt();
 void ConsoleView_PrintRegister(LPCTSTR strName, WORD value);
 void ConsoleView_PrintMemoryDump(const CProcessor* pProc, WORD address, int lines);
+void ConsoleView_PrintMemoryDumpBytes(const CProcessor* pProc, WORD address, int lines = 8);
 BOOL ConsoleView_SaveMemoryDump();
 
 const LPCTSTR MESSAGE_UNKNOWN_COMMAND = _T("  Unknown command.\r\n");
@@ -342,6 +343,65 @@ void ConsoleView_PrintMemoryDump(const CProcessor* pProc, WORD address, int line
         for (int i = 0; i < 8; i++)
         {
             PrintOctalValue(pBuf, dump[i]);  pBuf += 6;
+            *pBuf = _T(' ');  pBuf++;
+        }
+        *pBuf = _T(' ');  pBuf++;
+        for (int i = 0; i < 8; i++)
+        {
+            WORD word = dump[i];
+            BYTE ch1 = LOBYTE(word);
+            TCHAR wch1 = Translate_BK_Unicode(ch1);
+            if (ch1 < 32) wch1 = _T('·');
+            *pBuf = wch1;  pBuf++;
+            BYTE ch2 = HIBYTE(word);
+            TCHAR wch2 = Translate_BK_Unicode(ch2);
+            if (ch2 < 32) wch2 = _T('·');
+            *pBuf = wch2;  pBuf++;
+        }
+        *pBuf++ = _T('\r');
+        *pBuf++ = _T('\n');
+        *pBuf = 0;
+
+        ConsoleView_Print(buffer);
+
+        address += 16;
+    }
+}
+void ConsoleView_PrintMemoryDumpBytes(const CProcessor* pProc, WORD address, int lines)
+{
+    address &= ~1;  // Line up to even address
+
+    bool okHaltMode = pProc->IsHaltMode();
+
+    for (int line = 0; line < lines; line++)
+    {
+        WORD dump[8];
+        int addrtype;
+        for (int i = 0; i < 8; i++)
+            dump[i] = g_pBoard->GetWordView((uint16_t)(address + i * 2), okHaltMode, false, &addrtype);
+
+        TCHAR buffer[2 + 6 + 2 + 4 * 16 + 1 + 16 + 1 + 2];
+        TCHAR buffer2[7];
+        TCHAR* pBuf = buffer;
+        *pBuf = _T(' ');  pBuf++;
+        *pBuf = _T(' ');  pBuf++;
+        PrintOctalValue(pBuf, address);  pBuf += 6;
+        *pBuf = _T(' ');  pBuf++;
+        *pBuf = _T(' ');  pBuf++;
+        for (int i = 0; i < 8; i++)
+        {
+            WORD word = dump[i];
+            WORD w1 = LOBYTE(word);
+            PrintOctalValue(buffer2, w1);
+            *pBuf = buffer2[3];  pBuf++;
+            *pBuf = buffer2[4];  pBuf++;
+            *pBuf = buffer2[5];  pBuf++;
+            *pBuf = _T(' ');  pBuf++;
+            WORD w2 = HIBYTE(word);
+            PrintOctalValue(buffer2, w2);
+            *pBuf = buffer2[3];  pBuf++;
+            *pBuf = buffer2[4];  pBuf++;
+            *pBuf = buffer2[5];  pBuf++;
             *pBuf = _T(' ');  pBuf++;
         }
         *pBuf = _T(' ');  pBuf++;

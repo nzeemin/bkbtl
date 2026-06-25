@@ -380,7 +380,7 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
         int bit = 4 - i;  // T=4, N=3, Z=2, V=1, C=0
         WORD bitpos = 1 << bit;
         buffera[0] = (psw & bitpos) ? flagchars[i] : '-';
-        TextOut(hdc, x + cxChar * (15 + 15 - bit), y + 11 * cyLine, buffera, 1);
+        TextOut(hdc, x + cxChar * (15 + 15 - bit), y + 12 * cyLine, buffera, 1);
     }
 
     ::SetTextColor(hdc, colorText);
@@ -599,7 +599,7 @@ void DebugView_DrawMemoryMap(HDC hdc, int x, int y, const CProcessor* pProc)
         PatBlt(hdc, x1, yp, x2 - x1, 1, PATCOPY);
 
         int addrtype;
-        g_pBoard->GetWordView(address, pProc->GetHALT(), FALSE, &addrtype);
+        g_pBoard->GetWordView(address, pProc->GetHALT(), false, &addrtype);
         LPCTSTR addrtypestr;
         switch (addrtype & (ADDRTYPE_RAM | ADDRTYPE_ROM | ADDRTYPE_IO | ADDRTYPE_DENY))
         {

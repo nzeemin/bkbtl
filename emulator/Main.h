@@ -195,6 +195,8 @@ void Settings_SetColor(ColorIndices colorIndex, COLORREF color);
 // Options
 
 extern bool Option_ShowHelp;
+extern int Option_Configuration;
+extern TCHAR Option_StateFilePath[MAX_PATH];
 
 
 //////////////////////////////////////////////////////////////////////

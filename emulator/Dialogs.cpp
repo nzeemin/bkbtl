@@ -93,7 +93,6 @@ void ShowCommandLineHelpBox()
     DialogBox(g_hInst, MAKEINTRESOURCE(IDD_COMMANDLINEHELP), g_hwnd, CommandLineHelpBoxProc);
 }
 
-
 INT_PTR CALLBACK CommandLineHelpBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);

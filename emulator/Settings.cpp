@@ -24,6 +24,8 @@ TCHAR m_Settings_IniPath[MAX_PATH];
 // Options
 
 bool Option_ShowHelp = false;
+int Option_Configuration = 0;  // Configuration from command line; 0 = not specified
+TCHAR Option_StateFilePath[MAX_PATH] = { 0 };  // State image to load from command line; empty = not specified
 
 
 //////////////////////////////////////////////////////////////////////
