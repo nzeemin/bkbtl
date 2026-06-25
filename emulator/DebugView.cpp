@@ -296,7 +296,7 @@ void DebugView_DoDraw(HDC hdc)
     ::PatBlt(hdc, x, 0, 4, cyHeight, PATCOPY);
     x += 4;
     int xPorts = x;
-    x += cxChar * 25;
+    x += cxChar * 27;
     ::PatBlt(hdc, x, 0, 4, cyHeight, PATCOPY);
     x += 4;
     int xBreaks = x;
@@ -370,6 +370,17 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
         buffera[0] = (psw & bitpos) ? '1' : '0';
         ::SetTextColor(hdc, ((psw & bitpos) != (oldPsw & bitpos)) ? colorChanged : colorText);
         TextOut(hdc, x + cxChar * (15 + 15 - i), y + 10 * cyLine, buffera, 1);
+    }
+
+    // PSW TNZVC flags as letters: letter if bit set, '-' otherwise
+    ::SetTextColor(hdc, colorText);
+    static const TCHAR* flagchars = _T("TNZVC");
+    for (int i = 0; i < 5; i++)
+    {
+        int bit = 4 - i;  // T=4, N=3, Z=2, V=1, C=0
+        WORD bitpos = 1 << bit;
+        buffera[0] = (psw & bitpos) ? flagchars[i] : '-';
+        TextOut(hdc, x + cxChar * (15 + 15 - bit), y + 11 * cyLine, buffera, 1);
     }
 
     ::SetTextColor(hdc, colorText);
@@ -492,21 +503,24 @@ int DebugView_DrawWatchpoints(HDC hdc, int x, int y)
 
 struct DebugViewPortWatch
 {
-    uint16_t address;
+    uint16_t address;       // Address shown in the first column
+    uint16_t portview;      // PORTVIEW_* selector passed to GetPortView
     LPCTSTR description;
 }
 m_DebugViewPorts[] =
 {
-    { 0177660, _T("kbd state") },
-    { 0177662, _T("kbd data") },
-    { 0177664, _T("scroll") },
-    { 0177706, _T("timer rel") },
-    { 0177710, _T("timer val") },
-    { 0177712, _T("timer ctl") },
-    { 0177714, _T("parallel") },
-    { 0177716, _T("system") },
-    { 0177130, _T("fdd state") },
-    { 0177132, _T("fdd data") },
+    { 0177660, PORTVIEW_KEYBSTATUS,  _T("keyb state") },
+    { 0177662, PORTVIEW_KEYBDATA,    _T("keyb data") },
+    { 0177662, PORTVIEW_PALETTE,     _T("palette") },
+    { 0177664, PORTVIEW_SCROLL,      _T("scroll") },
+    { 0177706, PORTVIEW_TIMERREL,    _T("timer rel") },
+    { 0177710, PORTVIEW_TIMERVAL,    _T("timer val") },
+    { 0177712, PORTVIEW_TIMERCTL,    _T("timer ctl") },
+    { 0177714, PORTVIEW_PARALLELIN,  _T("parallel in") },
+    { 0177714, PORTVIEW_PARALLELOUT, _T("parallel out") },
+    { 0177716, PORTVIEW_SYSTEM,      _T("system") },
+    { 0177716, PORTVIEW_SYSTEMMEM,   _T("system mem") },
+    { 0177716, PORTVIEW_SYSTEMTAP,   _T("system tape") },
 };
 
 void DebugView_DrawPorts(HDC hdc, int x, int y)
@@ -520,8 +534,22 @@ void DebugView_DrawPorts(HDC hdc, int x, int y)
     {
         y += cyLine;
         const DebugViewPortWatch& watch = m_DebugViewPorts[i];
-        DebugView_DrawAddressAndValue(hdc, watch.address, x, y, cxChar);
+        uint16_t value = g_pBoard->GetPortView(watch.portview);
+        DrawOctalValue(hdc, x, y, watch.address);
+        DrawOctalValue(hdc, x + 7 * cxChar, y, value);
         TextOut(hdc, x + 14 * cxChar, y, watch.description, _tcslen(watch.description));
+    }
+
+    if ((g_pBoard->GetConfiguration() & BK_COPT_FDD) != 0)
+    {
+        y += cyLine;
+        DrawOctalValue(hdc, x, y, 0177130);
+        DrawOctalValue(hdc, x + 7 * cxChar, y, g_pBoard->GetPortView(PORTVIEW_FDDSTATE));
+        TextOut(hdc, x + 14 * cxChar, y, _T("floppy state"), 12);
+        y += cyLine;
+        DrawOctalValue(hdc, x, y, 0177132);
+        DrawOctalValue(hdc, x + 7 * cxChar, y, g_pBoard->GetPortView(PORTVIEW_FDDDATA));
+        TextOut(hdc, x + 14 * cxChar, y, _T("floppy data"), 11);
     }
 }
 
@@ -560,6 +588,9 @@ void DebugView_DrawMemoryMap(HDC hdc, int x, int y, const CProcessor* pProc)
     PatBlt(hdc, x2, y1, 1, y2 - y1 + 1, PATCOPY);
     PatBlt(hdc, x1, y1, x2 - x1, 1, PATCOPY);
 
+    TCHAR bufram[] = _T("RAM N");
+    bool okBk11 = (g_pBoard->GetConfiguration() & BK_COPT_BK0011) != 0;
+
     for (uint16_t window = 0; window < 8; window++)
     {
         int yp = y2 - window * cyLine * 2;
@@ -573,14 +604,22 @@ void DebugView_DrawMemoryMap(HDC hdc, int x, int y, const CProcessor* pProc)
         switch (addrtype & (ADDRTYPE_RAM | ADDRTYPE_ROM | ADDRTYPE_IO | ADDRTYPE_DENY))
         {
         case ADDRTYPE_ROM:  addrtypestr = _T("ROM"); break;
-        case ADDRTYPE_RAM:  addrtypestr = _T("RAM"); break;
+        case ADDRTYPE_RAM:
+            if (okBk11)
+            {
+                bufram[4] = '0' + (addrtype & 7);
+                addrtypestr = bufram;
+            }
+            else
+                addrtypestr = _T("RAM");
+            break;
         case ADDRTYPE_IO:   addrtypestr = _T("I/O"); break;
         case ADDRTYPE_DENY: addrtypestr = _T("N/A"); break;
         default:
             addrtypestr = nullptr;
         }
         if (addrtypestr != nullptr)
-            TextOut(hdc, x1 + cxChar * 2, yp - (cyLine * 4) / 3, addrtypestr, 3);
+            TextOut(hdc, x1 + cxChar * 2, yp - (cyLine * 4) / 3, addrtypestr, lstrlen(addrtypestr));
     }
 
     PatBlt(hdc, x1, y1 + cyLine / 4, x2 - x1, 1, PATCOPY);
