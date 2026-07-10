@@ -41,7 +41,7 @@ void ConsoleView_PrintConsolePrompt();
 void ConsoleView_PrintRegister(LPCTSTR strName, WORD value);
 void ConsoleView_PrintMemoryDump(const CProcessor* pProc, WORD address, int lines);
 void ConsoleView_PrintMemoryDumpBytes(const CProcessor* pProc, WORD address, int lines = 8);
-BOOL ConsoleView_SaveMemoryDump();
+BOOL ConsoleView_SaveMemoryDump(uint16_t addr1 = 0, uint16_t addr2 = 0xffff);
 
 const LPCTSTR MESSAGE_UNKNOWN_COMMAND = _T("  Unknown command.\r\n");
 const LPCTSTR MESSAGE_WRONG_VALUE = _T("  Wrong value.\r\n");
@@ -297,12 +297,22 @@ void ConsoleView_DeleteAllBreakpoints()
     ConsoleView_DoConsoleCommand();
 }
 
-BOOL ConsoleView_SaveMemoryDump()
+BOOL ConsoleView_SaveMemoryDump(uint16_t addr1, uint16_t addr2)
 {
-    BYTE buf[65536];
-    for (int i = 0; i < 65536; i++)
+    if (addr2 <= addr1)
     {
-        buf[i] = g_pBoard->GetByte((uint16_t)i, 1);
+        ConsoleView_PrintFormat(_T("  End address should be greater than start address.\r\n"));
+        return FALSE;
+    }
+
+    DWORD bsize = (DWORD)addr2 - addr1 + 1;
+    BYTE* buf = static_cast<BYTE*>(::calloc(bsize, 1));
+    if (buf == nullptr)
+        return FALSE;
+
+    for (DWORD i = 0; i < bsize; i++)
+    {
+        buf[i] = g_pBoard->GetByte((uint16_t)(addr1 + i), 1);
     }
 
     const TCHAR fname[] = _T("memdump.bin");
@@ -311,11 +321,14 @@ BOOL ConsoleView_SaveMemoryDump()
             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
     DWORD dwBytesWritten = 0;
-    ::WriteFile(file, buf, 65536, &dwBytesWritten, NULL);
+    ::WriteFile(file, buf, bsize, &dwBytesWritten, NULL);
+    ::SetEndOfFile(file);
+    ::free(buf);
     ::CloseHandle(file);
-    if (dwBytesWritten != 65536)
+    if (dwBytesWritten != bsize)
         return FALSE;
 
+    ConsoleView_PrintFormat(_T("  Memory saved to %s\r\n"), fname);
     return TRUE;
 }
 
@@ -558,6 +571,7 @@ void ConsoleView_CmdShowHelp(const ConsoleCommandParams& /*params*/)
             _T("  wcXXXXXX   Remove watch at address XXXXXX\r\n")
             _T("  wc         Remove all watches\r\n")
             _T("  u          Save memory dump to file memdump.bin\r\n")
+            _T("  uXXXXXX YYYYYY  Save memory fragment to file memdump.bin\r\n")
             _T("  mo         Type MO<Enter> (BASIC) or P M<Enter> (FOCAL) to exit to Monitor\r\n")
 #if !defined(PRODUCT)
             _T("  t          Tracing on/off to trace.log file\r\n")
@@ -611,6 +625,11 @@ void ConsoleView_CmdSetRegisterPSW(const ConsoleCommandParams& params)
 void ConsoleView_CmdSaveMemoryDump(const ConsoleCommandParams& /*params*/)
 {
     ConsoleView_SaveMemoryDump();
+}
+
+void ConsoleView_CmdSaveMemoryFragment(const ConsoleCommandParams& params)
+{
+    ConsoleView_SaveMemoryDump(params.paramOct1, params.paramOct2);
 }
 
 void ConsoleView_CmdPrintMemoryDumpAtPC(const ConsoleCommandParams& /*params*/)
@@ -860,6 +879,7 @@ static ConsoleCommands[] =
     { _T("D%ho"), ARGINFO_OCT, ConsoleView_CmdPrintDisassembleAtAddress },
     { _T("d"), ARGINFO_NONE, ConsoleView_CmdPrintDisassembleAtPC },
     { _T("D"), ARGINFO_NONE, ConsoleView_CmdPrintDisassembleAtPC },
+    { _T("u%ho %ho"), ARGINFO_OCT_OCT, ConsoleView_CmdSaveMemoryFragment },
     { _T("u"), ARGINFO_NONE, ConsoleView_CmdSaveMemoryDump },
     { _T("m%ho"), ARGINFO_OCT, ConsoleView_CmdPrintMemoryDumpAtAddress },
     { _T("mr%d"), ARGINFO_REG, ConsoleView_CmdPrintMemoryDumpAtRegister },
