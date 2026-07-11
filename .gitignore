@@ -16,6 +16,7 @@ trace.log
 /emulator/Version.h
 BKBTL.APS
 trace.log
+*.bin
 *.dsk
 *.img
 *.bkd

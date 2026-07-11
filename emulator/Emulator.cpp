@@ -78,6 +78,8 @@ void CALLBACK Emulator_PrepareScreenBW512x256(const uint8_t* pVideoBuffer, int o
 void CALLBACK Emulator_PrepareScreenColor512x256(const uint8_t* pVideoBuffer, int okSmallScreen, const uint32_t* pPalette, int scroll, void* pImageBits);
 void CALLBACK Emulator_PrepareScreenBW512x384(const uint8_t* pVideoBuffer, int okSmallScreen, const uint32_t* pPalette, int scroll, void* pImageBits);
 void CALLBACK Emulator_PrepareScreenColor512x384(const uint8_t* pVideoBuffer, int okSmallScreen, const uint32_t* pPalette, int scroll, void* pImageBits);
+void CALLBACK Emulator_PrepareScreenBW768x512(const uint8_t* pVideoBuffer, int okSmallScreen, const uint32_t* pPalette, int scroll, void* pImageBits);
+void CALLBACK Emulator_PrepareScreenColor768x512(const uint8_t* pVideoBuffer, int okSmallScreen, const uint32_t* pPalette, int scroll, void* pImageBits);
 void CALLBACK Emulator_PrepareScreenBW896x512(const uint8_t* pVideoBuffer, int okSmallScreen, const uint32_t* pPalette, int scroll, void* pImageBits);
 void CALLBACK Emulator_PrepareScreenColor896x512(const uint8_t* pVideoBuffer, int okSmallScreen, const uint32_t* pPalette, int scroll, void* pImageBits);
 void CALLBACK Emulator_PrepareScreenBW1024x768(const uint8_t* pVideoBuffer, int okSmallScreen, const uint32_t* pPalette, int scroll, void* pImageBits);
@@ -97,6 +99,8 @@ static ScreenModeReference[] =
     {  512, 256, Emulator_PrepareScreenColor512x256 },
     {  512, 384, Emulator_PrepareScreenBW512x384 },
     {  512, 384, Emulator_PrepareScreenColor512x384 },
+    {  768, 512, Emulator_PrepareScreenBW768x512 },
+    {  768, 512, Emulator_PrepareScreenColor768x512 },
     {  896, 512, Emulator_PrepareScreenBW896x512 },
     {  896, 512, Emulator_PrepareScreenColor896x512 },
     { 1024, 768, Emulator_PrepareScreenBW1024x768 },
@@ -1232,6 +1236,71 @@ void CALLBACK Emulator_PrepareScreenColor512x384(const uint8_t* pVideoBuffer, in
     if (okSmallScreen)
     {
         memset((uint32_t*)pImageBits, 0, (384 - 86) * 512 * sizeof(uint32_t));  //TODO
+    }
+}
+
+void CALLBACK Emulator_PrepareScreenBW768x512(const uint8_t* pVideoBuffer, int okSmallScreen, const uint32_t* /*pPalette*/, int scroll, void* pImageBits)
+{
+    int linesToShow = okSmallScreen ? 64 : 256;
+    for (int y = 0; y < linesToShow; y++)
+    {
+        int yy = (y + scroll) & 0377;
+        const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + yy * 0100);
+        uint32_t* pBits = (uint32_t*)pImageBits + (255 - y) * 768 * 2;
+        uint32_t* pBits2 = pBits + 768;
+        for (int x = 0; x < 512 / 16; x++)
+        {
+            uint16_t src = *pVideo;
+            for (int bit = 0; bit < 16; bit += 2)
+            {
+                uint32_t c1 = (src & 1) ? 0x0ffffff : 0;
+                uint32_t c2 = (src & 2) ? 0x0ffffff : 0;
+                *(pBits++) = *(pBits2++) = c1;
+                *(pBits++) = *(pBits2++) = AVERAGERGB(c1, c2);
+                *(pBits++) = *(pBits2++) = c2;
+                src = src >> 2;
+            }
+
+            pVideo++;
+        }
+    }
+    if (okSmallScreen)
+    {
+        memset((uint32_t*)pImageBits, 0, (256 - 64) * 768 * 2 * sizeof(uint32_t));
+    }
+}
+
+void CALLBACK Emulator_PrepareScreenColor768x512(const uint8_t* pVideoBuffer, int okSmallScreen, const uint32_t* pPalette, int scroll, void* pImageBits)
+{
+    int linesToShow = okSmallScreen ? 64 : 256;
+    for (int y = 0; y < linesToShow; y++)
+    {
+        int yy = (y + scroll) & 0377;
+        const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + yy * 0100);
+        uint32_t* pBits = (uint32_t*)pImageBits + (255 - y) * 768 * 2;
+        uint32_t* pBits2 = pBits + 768;
+        for (int x = 0; x < 512 / 16; x++)
+        {
+            uint16_t src = *pVideo;
+            for (int bit = 0; bit < 16; bit += 4)
+            {
+                uint32_t c1 = pPalette[src & 3];  src = src >> 2;
+                uint32_t c2 = pPalette[src & 3];  src = src >> 2;
+                uint32_t c12 = AVERAGERGB(c1, c2);
+                *(pBits++) = *(pBits2++) = c1;
+                *(pBits++) = *(pBits2++) = c1;
+                *(pBits++) = *(pBits2++) = c12;
+                *(pBits++) = *(pBits2++) = c12;
+                *(pBits++) = *(pBits2++) = c2;
+                *(pBits++) = *(pBits2++) = c2;
+            }
+
+            pVideo++;
+        }
+    }
+    if (okSmallScreen)
+    {
+        memset((uint32_t*)pImageBits, 0, (256 - 64) * 768 * 2 * sizeof(uint32_t));
     }
 }
 

@@ -82,13 +82,13 @@ IDC_APPLICATION MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "Load State…",                 ID_FILE_LOADSTATE
-        MENUITEM "Save State…",                 ID_FILE_SAVESTATE
-        MENUITEM "Load BIN…",                   ID_FILE_LOADBIN
+        MENUITEM "Load Stateâ€¦",                 ID_FILE_LOADSTATE
+        MENUITEM "Save Stateâ€¦",                 ID_FILE_SAVESTATE
+        MENUITEM "Load BINâ€¦",                   ID_FILE_LOADBIN
         MENUITEM SEPARATOR
         MENUITEM "Screenshot",                  ID_FILE_SCREENSHOT
         MENUITEM "Screenshot to Clipboard",     ID_FILE_SCREENSHOTTOCLIPBOARD
-        MENUITEM "Save Screenshot as…",         ID_FILE_SAVESCREENSHOTAS
+        MENUITEM "Save Screenshot asâ€¦",         ID_FILE_SAVESCREENSHOTAS
         MENUITEM SEPARATOR
         MENUITEM "Settings General",            ID_FILE_SETTINGS
         MENUITEM "Settings Fonts and Colors",   ID_FILE_SETTINGS_COLORS
@@ -105,12 +105,14 @@ BEGIN
         MENUITEM "512 x 256 Color",             ID_VIEW_SCREENMODE1
         MENUITEM "512 x 384 BW",                ID_VIEW_SCREENMODE2
         MENUITEM "512 x 384 Color",             ID_VIEW_SCREENMODE3
-        MENUITEM "896 x 512 BW",                ID_VIEW_SCREENMODE4
-        MENUITEM "896 x 512 Color",             ID_VIEW_SCREENMODE5
-        MENUITEM "1024 x 768 BW",               ID_VIEW_SCREENMODE6
-        MENUITEM "1024 x 768 Color",            ID_VIEW_SCREENMODE7
-        MENUITEM "1536 x 1024 BW",              ID_VIEW_SCREENMODE8
-        MENUITEM "1536 x 1024 Color",           ID_VIEW_SCREENMODE9
+        MENUITEM "768 x 512 BW",                ID_VIEW_SCREENMODE4
+        MENUITEM "768 x 512 Color",             ID_VIEW_SCREENMODE5
+        MENUITEM "896 x 512 BW",                ID_VIEW_SCREENMODE6
+        MENUITEM "896 x 512 Color",             ID_VIEW_SCREENMODE7
+        MENUITEM "1024 x 768 BW",               ID_VIEW_SCREENMODE8
+        MENUITEM "1024 x 768 Color",            ID_VIEW_SCREENMODE9
+        MENUITEM "1536 x 1024 BW",              ID_VIEW_SCREENMODE10
+        MENUITEM "1536 x 1024 Color",           ID_VIEW_SCREENMODE11
     END
     POPUP "&Emulator"
     BEGIN

@@ -273,7 +273,7 @@ void MainWindow_RestoreSettings()
 
     // Restore ScreenViewMode
     int scrmode = Settings_GetScreenViewMode();
-    if (scrmode <= 0 || scrmode > 9) scrmode = 0;
+    if (scrmode <= 0 || scrmode > 11) scrmode = 0;
     ScreenView_SetScreenMode(scrmode);
 }
 
@@ -777,8 +777,10 @@ void MainWindow_UpdateMenu()
     case 7: scrmodecmd = ID_VIEW_SCREENMODE7; break;
     case 8: scrmodecmd = ID_VIEW_SCREENMODE8; break;
     case 9: scrmodecmd = ID_VIEW_SCREENMODE9; break;
+    case 10: scrmodecmd = ID_VIEW_SCREENMODE10; break;
+    case 11: scrmodecmd = ID_VIEW_SCREENMODE11; break;
     }
-    CheckMenuRadioItem(hMenu, ID_VIEW_SCREENMODE0, ID_VIEW_SCREENMODE9, scrmodecmd, MF_BYCOMMAND);
+    CheckMenuRadioItem(hMenu, ID_VIEW_SCREENMODE0, ID_VIEW_SCREENMODE11, scrmodecmd, MF_BYCOMMAND);
 
     // Emulator menu options
     CheckMenuItem(hMenu, ID_EMULATOR_AUTOSTART, (Settings_GetAutostart() ? MF_CHECKED : MF_UNCHECKED));
@@ -929,6 +931,12 @@ bool MainWindow_DoCommand(int commandId)
         break;
     case ID_VIEW_SCREENMODE9:
         MainWindow_DoViewScreenMode(9);
+        break;
+    case ID_VIEW_SCREENMODE10:
+        MainWindow_DoViewScreenMode(10);
+        break;
+    case ID_VIEW_SCREENMODE11:
+        MainWindow_DoViewScreenMode(11);
         break;
     case ID_EMULATOR_RUN:
         MainWindow_DoEmulatorRun();
