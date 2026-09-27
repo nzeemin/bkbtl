@@ -17,6 +17,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 // Timings ///////////////////////////////////////////////////////////
 // Таблицы таймингов основаны на статье Ю. А. Зальцмана, журнал "Персональный компьютер БК" №1 1995.
+// Таблицы таймингов были обновлены по тесту Manwe 45com-lo.bin https://manwe.pdp-11.net/?/tools/tests
 
 const int TIMING_BRANCH =   16;  // 5.4 us - BR, BEQ etc.
 const int TIMING_ILLEGAL = 144;
@@ -30,10 +31,10 @@ const int TIMING_BR     =   16;  // 5.4 us
 const int TIMING_MARK   =   36;
 
 const int TIMING_REGREG =   12;  // Base timing
-const int TIMING_A[8]   = { 0, 12, 12, 20, 12, 20, 20, 28 };  // Source
-const int TIMING_B[8]   = { 0, 20, 20, 32, 20, 32, 32, 40 };  // Destination
-const int TIMING_AB[8]  = { 0, 16, 16, 24, 16, 24, 24, 32 };  // Source and destination are the same
-const int TIMING_A2[8]  = { 0, 20, 20, 28, 20, 28, 28, 36 };
+const int TIMING_A[8]   = { 0, 12, 12, 24, 16, 20, 20, 28 };  // Source
+const int TIMING_B[8]   = { 0, 20, 20, 32, 24, 36, 32, 40 };  // Destination
+const int TIMING_AB[8]  = { 4, 16, 20, 24, 16, 24, 24, 36 };  // Source and destination are the same
+const int TIMING_A2[8]  = { 0, 20, 20, 32, 20, 28, 32, 36 };
 const int TIMING_DS[8]  = { 0, 32, 32, 40, 32, 40, 40, 48 };
 
 #define TIMING_A1 TIMING_A
@@ -642,7 +643,7 @@ void CProcessor::ExecuteSWAB()
     SetV(false);
     SetC(false);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteCLR()
@@ -662,7 +663,7 @@ void CProcessor::ExecuteCLR()
     SetV(false);
     SetC(false);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteCLRB()
@@ -684,7 +685,7 @@ void CProcessor::ExecuteCLRB()
     SetV(false);
     SetC(false);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteCOM()
@@ -715,7 +716,7 @@ void CProcessor::ExecuteCOM()
     SetV(false);
     SetC(true);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteCOMB()
@@ -746,7 +747,7 @@ void CProcessor::ExecuteCOMB()
     SetV(false);
     SetC(true);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteINC()
@@ -776,7 +777,7 @@ void CProcessor::ExecuteINC()
     SetZ(!dst);
     SetV(dst == 0100000);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteINCB()
@@ -806,7 +807,7 @@ void CProcessor::ExecuteINCB()
     SetZ(!dst);
     SetV(dst == 0200);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteDEC()
@@ -836,7 +837,7 @@ void CProcessor::ExecuteDEC()
     SetZ(!dst);
     SetV(dst == 077777);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteDECB()
@@ -866,7 +867,7 @@ void CProcessor::ExecuteDECB()
     SetZ(!dst);
     SetV(dst == 0177);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteNEG()
@@ -897,7 +898,7 @@ void CProcessor::ExecuteNEG()
     SetV(dst == 0100000);
     SetC(!GetZ());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteNEGB()
@@ -928,7 +929,7 @@ void CProcessor::ExecuteNEGB()
     SetV(dst == 0200);
     SetC(!GetZ());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteADC()
@@ -959,7 +960,7 @@ void CProcessor::ExecuteADC()
     SetV(GetC() && (dst == 0100000));
     SetC(GetC() && GetZ());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteADCB()
@@ -990,7 +991,7 @@ void CProcessor::ExecuteADCB()
     SetV(GetC() && (dst == 0200));
     SetC(GetC() && GetZ());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteSBC()
@@ -1021,7 +1022,7 @@ void CProcessor::ExecuteSBC()
     SetV(GetC() && (dst == 077777));
     SetC(GetC() && (dst == 0177777));
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteSBCB()
@@ -1052,7 +1053,7 @@ void CProcessor::ExecuteSBCB()
     SetV(GetC() && (dst == 0177));
     SetC(GetC() && (dst == 0377));
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteTST()
@@ -1127,7 +1128,7 @@ void CProcessor::ExecuteROR()
     SetC(src & 1);
     SetV(GetN() != GetC());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteRORB()
@@ -1158,7 +1159,7 @@ void CProcessor::ExecuteRORB()
     SetC(src & 1);
     SetV(GetN() != GetC());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteROL()
@@ -1189,7 +1190,7 @@ void CProcessor::ExecuteROL()
     SetC((src >> 15) != 0);
     SetV(GetN() != GetC());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteROLB()
@@ -1220,7 +1221,7 @@ void CProcessor::ExecuteROLB()
     SetC((src >> 7) != 0);
     SetV(GetN() != GetC());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteASR()
@@ -1251,7 +1252,7 @@ void CProcessor::ExecuteASR()
     SetC(src & 1);
     SetV(GetN() != GetC());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteASRB()
@@ -1282,7 +1283,7 @@ void CProcessor::ExecuteASRB()
     SetC(src & 1);
     SetV(GetN() != GetC());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteASL()
@@ -1313,7 +1314,7 @@ void CProcessor::ExecuteASL()
     SetC((src >> 15) != 0);
     SetV(GetN() != GetC());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteASLB()
@@ -1344,7 +1345,7 @@ void CProcessor::ExecuteASLB()
     SetC((src >> 7) != 0);
     SetV(GetN() != GetC());
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteSXT()  // SXT - sign-extend
@@ -1362,7 +1363,7 @@ void CProcessor::ExecuteSXT()  // SXT - sign-extend
     SetZ(!GetN());
     SetV(false);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteMTPS()  // MTPS - move to PS
@@ -1388,7 +1389,7 @@ void CProcessor::ExecuteMTPS()  // MTPS - move to PS
         SetPSW((GetPSW() & 0420) | (dst & 0357));  // preserve T
     }
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteMFPS()  // MFPS - move from PS
@@ -1411,7 +1412,7 @@ void CProcessor::ExecuteMFPS()  // MFPS - move from PS
     SetZ(psw == 0);
     SetV(false);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
 
 void CProcessor::ExecuteBR()
