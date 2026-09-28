@@ -1158,7 +1158,8 @@ void CMotherboard::SaveToImage(uint8_t* pImage)
     *pwImage++ = m_Port177716;
     *pwImage++ = m_Port177716mem;
     *pwImage++ = m_Port177716tap;
-    pwImage += 3;  // RESERVED
+    *pwImage++ = m_nKbdIrqPending;
+    pwImage += 2;  // RESERVED
     *pwImage++ = m_timer;
     *pwImage++ = m_timerreload;
     *pwImage++ = m_timerflags;
@@ -1180,29 +1181,25 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
     const uint16_t* pwImage = reinterpret_cast<const uint16_t*>(pImage + 32);
     m_Configuration = *pwImage++; //TODO: call SetConfiguration() instead
     pwImage += 6;  // RESERVED
-    m_Port177560 = *pwImage++;
-    m_Port177562 = *pwImage++;
-    m_Port177564 = *pwImage++;
-    m_Port177566 = *pwImage++;
-    m_Port177660 = *pwImage++;
-    m_Port177662rd = *pwImage++;
-    m_Port177662wr = *pwImage++;
-    m_Port177664 = *pwImage++;
-    m_Port177714in = *pwImage++;
+    m_Port177560    = *pwImage++;
+    m_Port177562    = *pwImage++;
+    m_Port177564    = *pwImage++;
+    m_Port177566    = *pwImage++;
+    m_Port177660    = *pwImage++;
+    m_Port177662rd  = *pwImage++;
+    m_Port177662wr  = *pwImage++;
+    m_Port177664    = *pwImage++;
+    m_Port177714in  = *pwImage++;
     m_Port177714out = *pwImage++;
-    m_Port177716 = *pwImage++;
+    m_Port177716    = *pwImage++;
     m_Port177716mem = *pwImage++;
     m_Port177716tap = *pwImage++;
-    pwImage += 3;  // RESERVED
+    m_nKbdIrqPending = *pwImage++;
+    pwImage += 2;  // RESERVED
     m_timer = *pwImage++;
     m_timerreload = *pwImage++;
     m_timerflags = *pwImage++;
     m_timerdivider = *pwImage++;
-
-    // Not part of the persisted format -- transient runtime bookkeeping only
-    // (see KeyboardEvent()/SetPortWord(0177660)). Clear it so a stale deferred
-    // interrupt from before the load can't fire spuriously after it.
-    m_nKbdIrqPending = 0;
 
     // CPU status
     const uint8_t* pImageCPU = pImage + 160;

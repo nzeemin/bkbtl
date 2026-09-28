@@ -35,8 +35,10 @@ inline uint8_t GetDigit(uint16_t word, int pos)
 #define PSW_Z           4      // Zero result
 #define PSW_N           8      // Negative result
 #define PSW_T           16     // Trap/Debug
-#define PSW_P           0200   // Priority
-#define PSW_HALT        0400   // Halt
+#define PSW_P           0200   // Priority: PSW7, masks timer/IRQ2/IRQ3/VIRQ
+#define PSW_HALT        0400   // Internal "currently in HALT/console mode" flag (not a real PSW bit)
+#define PSW_ACLOMASK    02000  // PSW10: masks ACLO/IRQ1/timer/IRQ2/IRQ3/VIRQ
+#define PSW_IRQ1MASK    04000  // PSW11: additionally masks IRQ1
 
 // Commands -- no operands
 #define PI_HALT         0000000

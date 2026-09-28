@@ -259,30 +259,14 @@ void CProcessor::Execute()
             uint16_t intrVector = 0;
             bool currMode = ((m_psw & 0400) != 0);  // Current processor mode: true = HALT mode, false = USER mode
             bool intrMode = false;  // true = HALT mode interrupt, false = USER mode interrupt
-            if (m_HALTrq)  // HALT command
+            // Priority order per K1801VM1 datasheet: double bus timeout, bus timeout, illegal
+            // instruction, T-bit, ACLO, IRQ1, timer/IRQ2, VIRQ, then software traps last
+            // (software traps are synchronous to the just-decoded instruction and are only
+            // delivered once nothing higher-priority is pending).
+            if (m_RPL2rq)  // Двойное зависание, priority 1
             {
-                intrVector = 0002;  intrMode = true;
-                m_HALTrq = false;
-            }
-            else if (m_BPT_rq)  // BPT command
-            {
-                intrVector = 0000014;  intrMode = false;
-                m_BPT_rq = false;
-            }
-            else if (m_IOT_rq)  // IOT command
-            {
-                intrVector = 0000020;  intrMode = false;
-                m_IOT_rq = false;
-            }
-            else if (m_EMT_rq)  // EMT command
-            {
-                intrVector = 0000030;  intrMode = false;
-                m_EMT_rq = false;
-            }
-            else if (m_TRAPrq)  // TRAP command
-            {
-                intrVector = 0000034;  intrMode = false;
-                m_TRAPrq = false;
+                intrVector = 0174;  intrMode = true;
+                m_RPL2rq = false;
             }
             else if (m_RPLYrq && currMode)  // Зависание в HALT, priority 1
             {
@@ -294,11 +278,6 @@ void CProcessor::Execute()
                 intrVector = 0000004;  intrMode = false;
                 m_RPLYrq = false;
             }
-            else if (m_RPL2rq)  // Двойное зависание, priority 1
-            {
-                intrVector = 0174;  intrMode = true;
-                m_RPL2rq = false;
-            }
             else if (m_RSVDrq)  // Reserved command, priority 2
             {
                 intrVector = 000010;  intrMode = false;
@@ -309,7 +288,7 @@ void CProcessor::Execute()
                 intrVector = 000014;  intrMode = false;
                 m_TBITrq = false;
             }
-            else if (m_ACLOrq && (m_psw & 0600) != 0600)  // ACLO, priority 4
+            else if (m_ACLOrq && (m_psw & PSW_ACLOMASK) == 0)  // ACLO, priority 4; masked by PSW10
             {
                 intrVector = 000024;  intrMode = false;
                 m_ACLOrq = false;
@@ -318,19 +297,19 @@ void CProcessor::Execute()
             {
                 intrVector = 0170;  intrMode = true;
             }
-            else if (m_IRQ2rq && (m_psw & 0200) != 0200)  // EVNT signal, priority 6
-            {
-                intrVector = 0000100;  intrMode = false;
-                m_IRQ2rq = false;
-            }
-            else if (m_IRQ1rq /*TODO: masking*/)  //TODO: fix priority
+            else if (m_IRQ1rq && (m_psw & (PSW_ACLOMASK | PSW_IRQ1MASK)) == 0)  // priority 5; masked by PSW10 or PSW11
             {
                 SetWord(0177716, m_pBoard->GetSelRegister() | 010);  // Set bit 3 of SEL1
                 MemoryError();  // Instead of this should be writing PSW->0177676, PC->0177674
                 m_IRQ1rq = false;
                 continue;
             }
-            else if (m_virqrq > 0 && (m_psw & 0200) != 0200)  // VIRQ, priority 7
+            else if (m_IRQ2rq && (m_psw & (PSW_P | PSW_ACLOMASK)) == 0)  // EVNT signal, priority 6; masked by PSW7 or PSW10
+            {
+                intrVector = 0000100;  intrMode = false;
+                m_IRQ2rq = false;
+            }
+            else if (m_virqrq > 0 && (m_psw & (PSW_P | PSW_ACLOMASK)) == 0)  // VIRQ, priority 7; masked by PSW7 or PSW10
             {
                 intrMode = false;
                 for (int irq = 0; irq <= 15; irq++)
@@ -344,6 +323,31 @@ void CProcessor::Execute()
                     }
                 }
                 if (intrVector == 0) m_virqrq = 0;
+            }
+            else if (m_HALTrq)  // HALT command, priority 13 (software traps are lowest priority)
+            {
+                intrVector = 0002;  intrMode = true;
+                m_HALTrq = false;
+            }
+            else if (m_BPT_rq)  // BPT command, priority 14
+            {
+                intrVector = 0000014;  intrMode = false;
+                m_BPT_rq = false;
+            }
+            else if (m_IOT_rq)  // IOT command, priority 15
+            {
+                intrVector = 0000020;  intrMode = false;
+                m_IOT_rq = false;
+            }
+            else if (m_EMT_rq)  // EMT command, priority 16
+            {
+                intrVector = 0000030;  intrMode = false;
+                m_EMT_rq = false;
+            }
+            else if (m_TRAPrq)  // TRAP command, priority 17
+            {
+                intrVector = 0000034;  intrMode = false;
+                m_TRAPrq = false;
             }
 
             if (intrVector == 0)
