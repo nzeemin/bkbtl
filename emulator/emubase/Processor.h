@@ -66,6 +66,9 @@ protected:  // Interrupt processing
     bool        m_ACLOrq;           // Power down interrupt pending
     bool        m_HALTrq;           // HALT command or HALT signal
     bool        m_RPL2rq;           // Double hangup interrupt pending
+    bool        m_okDoubleHangupArmed;  // Set once a hangup is being delivered; a second
+                                         // hangup while armed escalates to m_RPL2rq instead
+                                         // of a plain repeat
     bool        m_IRQ1rq;
     bool        m_IRQ2rq;           // Timer event interrupt pending
     bool        m_BPT_rq;           // BPT command interrupt pending

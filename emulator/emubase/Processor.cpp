@@ -196,6 +196,7 @@ void CProcessor::Start()
     m_waitmode = false;
     m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ1rq = m_IRQ2rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
+    m_okDoubleHangupArmed = false;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 
     // "Turn On" interrupt processing
@@ -215,6 +216,7 @@ void CProcessor::Stop()
     m_internalTick = 0;
     m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ1rq = m_IRQ2rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
+    m_okDoubleHangupArmed = false;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
     m_haltpin = false;
 }
@@ -265,18 +267,24 @@ void CProcessor::Execute()
             // delivered once nothing higher-priority is pending).
             if (m_RPL2rq)  // Двойное зависание, priority 1
             {
-                intrVector = 0174;  intrMode = true;
+                // Routed through the plain stack-based vector-4 path rather than a
+                // separate console-mode vector -- avoids the halt-mode entry machinery
+                // (not implemented; see IRQ1/HALT discussion) while still distinguishing
+                // a double fault from a single one via m_okDoubleHangupArmed.
+                intrVector = 0000004;  intrMode = false;
                 m_RPL2rq = false;
             }
             else if (m_RPLYrq && currMode)  // Зависание в HALT, priority 1
             {
                 intrVector = 0004;  intrMode = true;
                 m_RPLYrq = false;
+                m_okDoubleHangupArmed = true;
             }
             else if (m_RPLYrq && !currMode)  // Зависание в USER, priority 1
             {
                 intrVector = 0000004;  intrMode = false;
                 m_RPLYrq = false;
+                m_okDoubleHangupArmed = true;
             }
             else if (m_RSVDrq)  // Reserved command, priority 2
             {
@@ -299,10 +307,11 @@ void CProcessor::Execute()
             }
             else if (m_IRQ1rq && (m_psw & (PSW_ACLOMASK | PSW_IRQ1MASK)) == 0)  // priority 5; masked by PSW10 or PSW11
             {
-                SetWord(0177716, m_pBoard->GetSelRegister() | 010);  // Set bit 3 of SEL1
-                MemoryError();  // Instead of this should be writing PSW->0177676, PC->0177674
+                // The BK-0010 monitor ROM handles the STOP key through the same vector as
+                // a bus timeout ("прерывание по клавише СТОП или зависанию (вектор 4)");
+                // real BK hardware does not implement a separate console-mode entry for it.
+                intrVector = 0000004;  intrMode = false;
                 m_IRQ1rq = false;
-                continue;
             }
             else if (m_IRQ2rq && (m_psw & (PSW_P | PSW_ACLOMASK)) == 0)  // EVNT signal, priority 6; masked by PSW7 or PSW10
             {
@@ -380,6 +389,7 @@ void CProcessor::Execute()
 
                 SetPC(GetWord(intrVector));
                 m_psw = GetWord(intrVector + 2) & 0377;
+                m_okDoubleHangupArmed = false;  // Entry completed without a further fault
             }
         }  // end while
     }
@@ -438,7 +448,11 @@ void CProcessor::DeassertHALT()
 }
 void CProcessor::MemoryError()
 {
-    m_RPLYrq = true;
+    // A second bus fault while the first one is still being delivered escalates
+    // to a double hangup instead of repeating the same fault.
+    m_RPL2rq = m_okDoubleHangupArmed;
+    m_RPLYrq = !m_okDoubleHangupArmed;
+    m_okDoubleHangupArmed = false;
 }
 void CProcessor::AssertIRQ1()
 {
