@@ -384,8 +384,7 @@ void SpriteView_PrepareBitmap()
             {
                 // Get byte from memory
                 int addrtype = 0;
-                bool okHalt = g_pBoard->GetCPU()->IsHaltMode();
-                WORD value = g_pBoard->GetWordView(address & ~1, okHalt, FALSE, &addrtype);
+                WORD value = g_pBoard->GetWordView(address & ~1, FALSE, &addrtype);
                 if (address & 1)
                     value = value >> 8;
 

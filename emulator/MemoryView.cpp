@@ -306,9 +306,8 @@ void MemoryView_OnRButtonDown(int mousex, int mousey)
         MemoryView_GetCurrentValueRect(&rcValue, m_cxChar, m_cyLineMemory);
         pt.x = rcValue.left;  pt.y = rcValue.bottom;
 
-        bool okHaltMode = g_pBoard->GetCPU()->IsHaltMode();
         int addrType;
-        uint16_t value = g_pBoard->GetWordView((uint16_t)addr, okHaltMode, false, &addrType);
+        uint16_t value = g_pBoard->GetWordView((uint16_t)addr, false, &addrType);
 
         TCHAR buffer[24];
         if (addrType != ADDRTYPE_IO && addrType != ADDRTYPE_DENY)
@@ -389,8 +388,7 @@ void MemoryView_CopyValueToClipboard(WPARAM command)
     {
         // Get word from memory
         int addrtype;
-        bool okHalt = g_pBoard->GetCPU()->IsHaltMode();
-        value = g_pBoard->GetWordView(address, okHalt, FALSE, &addrtype);
+        value = g_pBoard->GetWordView(address, FALSE, &addrtype);
         bool okValid = (addrtype != ADDRTYPE_IO) && (addrtype != ADDRTYPE_DENY);
 
         if (!okValid)
@@ -587,8 +585,7 @@ void MemoryView_OnDraw(HDC hdc)
         {
             // Get word from memory
             int addrtype;
-            bool okHalt = g_pBoard->GetCPU()->IsHaltMode();
-            WORD word = g_pBoard->GetWordView(address, okHalt, FALSE, &addrtype);
+            WORD word = g_pBoard->GetWordView(address, FALSE, &addrtype);
             bool okValid = (addrtype != ADDRTYPE_IO) && (addrtype != ADDRTYPE_DENY);
             WORD wChanged = Emulator_GetChangeRamStatus(address);
 

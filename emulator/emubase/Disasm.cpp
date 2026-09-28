@@ -481,7 +481,7 @@ bool Disasm_GetJumpConditionHint(
     {
         uint16_t spvalue = pProc->GetSP();
         int addrtype;
-        uint16_t value = pBoard->GetWordView(spvalue, pProc->IsHaltMode(), false, &addrtype);
+        uint16_t value = pBoard->GetWordView(spvalue, false, &addrtype);
         if (instr == 000207)  // RETURN
             _sntprintf(buffer, buffersize - 1, _T("(SP)=%06o"), value);  // "(SP)=XXXXXX"
         else  // RTS
@@ -497,7 +497,7 @@ bool Disasm_GetJumpConditionHint(
     {
         uint16_t spvalue = pProc->GetSP();
         int addrtype;
-        uint16_t value = pBoard->GetWordView(spvalue, pProc->IsHaltMode(), false, &addrtype);
+        uint16_t value = pBoard->GetWordView(spvalue, false, &addrtype);
         _sntprintf(buffer, buffersize - 1, _T("(SP)=%06o"), value);  // "(SP)=XXXXXX"
         return true;
     }
@@ -511,7 +511,7 @@ bool Disasm_GetJumpConditionHint(
         else intvec = 000034;
 
         int addrtype;
-        uint16_t value = pBoard->GetWordView(intvec, pProc->IsHaltMode(), false, &addrtype);
+        uint16_t value = pBoard->GetWordView(intvec, false, &addrtype);
         _sntprintf(buffer, buffersize - 1, _T("(%06o)=%06o"), intvec, value);  // "(VVVVVV)=XXXXXX"
         return true;
     }
@@ -533,7 +533,7 @@ void Disasm_RegisterHint(const CProcessor * pProc, const CMotherboard * pBoard,
     {
     case 1:
     case 2:
-        srcval2 = pBoard->GetWordView(regval, pProc->IsHaltMode(), false, &addrtype);
+        srcval2 = pBoard->GetWordView(regval, false, &addrtype);
         if (byteword)
         {
             srcval2 = (regval & 1) ? (srcval2 >> 8) : (srcval2 & 0xff);
@@ -545,7 +545,7 @@ void Disasm_RegisterHint(const CProcessor * pProc, const CMotherboard * pBoard,
         }
         break;
     case 3:
-        srcval2 = pBoard->GetWordView(regval, pProc->IsHaltMode(), false, &addrtype);
+        srcval2 = pBoard->GetWordView(regval, false, &addrtype);
         _sntprintf(hint2, hintsize - 1, _T("(%s)=%06o"), REGISTER_NAME[regnum], srcval2);  // "(RN)=XXXXXX"
         //TODO: Show the real value in hint line 3
         break;
@@ -553,25 +553,25 @@ void Disasm_RegisterHint(const CProcessor * pProc, const CMotherboard * pBoard,
         if (byteword)
         {
             srcval2 = (regval & 1) ?
-                    ((pBoard->GetWordView(regval - 1, pProc->IsHaltMode(), false, &addrtype)) & 0xff) :
-                    ((pBoard->GetWordView(regval - 2, pProc->IsHaltMode(), false, &addrtype)) >> 8);
+                    ((pBoard->GetWordView(regval - 1, false, &addrtype)) & 0xff) :
+                    ((pBoard->GetWordView(regval - 2, false, &addrtype)) >> 8);
             _sntprintf(hint2, hintsize - 1, _T("(%s-1)=%03o"), REGISTER_NAME[regnum], srcval2);  // "(RN-1)=XXX"
         }
         else
         {
-            srcval2 = pBoard->GetWordView(regval - 2, pProc->IsHaltMode(), false, &addrtype);
+            srcval2 = pBoard->GetWordView(regval - 2, false, &addrtype);
             _sntprintf(hint2, hintsize - 1, _T("(%s-2)=%06o"), REGISTER_NAME[regnum], srcval2);  // "(RN-2)=XXXXXX"
         }
         break;
     case 5:
-        srcval2 = pBoard->GetWordView(regval - 2, pProc->IsHaltMode(), false, &addrtype);
+        srcval2 = pBoard->GetWordView(regval - 2, false, &addrtype);
         _sntprintf(hint2, hintsize - 1, _T("(%s-2)=%06o"), REGISTER_NAME[regnum], srcval2);  // "(RN+2)=XXXXXX"
         //TODO: Show the real value in hint line 3
         break;
     case 6:
         {
             uint16_t addr2 = regval + indexval;
-            srcval2 = pBoard->GetWordView(addr2 & ~1, pProc->IsHaltMode(), false, &addrtype);
+            srcval2 = pBoard->GetWordView(addr2 & ~1, false, &addrtype);
             if (byteword)
             {
                 srcval2 = (addr2 & 1) ? (srcval2 >> 8) : (srcval2 & 0xff);
@@ -584,14 +584,14 @@ void Disasm_RegisterHint(const CProcessor * pProc, const CMotherboard * pBoard,
             break;
         }
     case 7:
-        srcval2 = pBoard->GetWordView(regval + indexval, pProc->IsHaltMode(), false, &addrtype);
+        srcval2 = pBoard->GetWordView(regval + indexval, false, &addrtype);
         _sntprintf(hint2, hintsize - 1, _T("(%s+%06o)=%06o"), REGISTER_NAME[regnum], indexval, srcval2);  // "(RN+NNNNNN)=XXXXXX"
         //TODO: Show the real value in hint line 3
         break;
     }
 }
 
-void Disasm_RegisterHintPC(const CProcessor * pProc, const CMotherboard * pBoard,
+void Disasm_RegisterHintPC(const CMotherboard * pBoard,
         LPTSTR hint1, LPTSTR /*hint2*/,
         int regmod, bool byteword, uint16_t curaddr, uint16_t value)
 {
@@ -602,7 +602,7 @@ void Disasm_RegisterHintPC(const CProcessor * pProc, const CMotherboard * pBoard
     //TODO: else if (regmod == 2)
     if (regmod == 3)
     {
-        srcval2 = pBoard->GetWordView(value, pProc->IsHaltMode(), false, &addrtype);
+        srcval2 = pBoard->GetWordView(value, false, &addrtype);
         if (byteword)
         {
             srcval2 = (value & 1) ? (srcval2 >> 8) : (srcval2 & 0xff);
@@ -616,7 +616,7 @@ void Disasm_RegisterHintPC(const CProcessor * pProc, const CMotherboard * pBoard
     else if (regmod == 6)
     {
         uint16_t addr2 = curaddr + value;
-        srcval2 = pBoard->GetWordView(addr2, pProc->IsHaltMode(), false, &addrtype);
+        srcval2 = pBoard->GetWordView(addr2, false, &addrtype);
         if (byteword)
         {
             srcval2 = (addr2 & 1) ? (srcval2 >> 8) : (srcval2 & 0xff);
@@ -648,7 +648,7 @@ void Disasm_InstructionHint(const uint16_t* memory, const CProcessor * pProc, co
         if (srcreg == 7)
         {
             uint16_t value = *(curmemory++);  curaddr += 2;
-            Disasm_RegisterHintPC(pProc, pBoard, srchint1, srchint2, srcmod, byteword, curaddr, value);
+            Disasm_RegisterHintPC(pBoard, srchint1, srchint2, srcmod, byteword, curaddr, value);
         }
         else
         {
@@ -661,7 +661,7 @@ void Disasm_InstructionHint(const uint16_t* memory, const CProcessor * pProc, co
         if (dstreg == 7)
         {
             uint16_t value = *(curmemory++);  curaddr += 2;
-            Disasm_RegisterHintPC(pProc, pBoard, dsthint1, dsthint2, dstmod, byteword, curaddr, value);
+            Disasm_RegisterHintPC(pBoard, dsthint1, dsthint2, dstmod, byteword, curaddr, value);
         }
         else
         {
@@ -794,7 +794,7 @@ int Disasm_GetInstructionHint(const uint16_t* memory, const CProcessor * pProc,
         uint16_t regval = pProc->GetReg(6);
         _sntprintf(buffer, buffersize - 1, _T("SP=%06o, R5=%06o"), regval, pProc->GetReg(5));  // "SP=XXXXXX, R5=XXXXXX"
         int addrtype = 0;
-        uint16_t srcval2 = pBoard->GetWordView(regval, pProc->IsHaltMode(), false, &addrtype);
+        uint16_t srcval2 = pBoard->GetWordView(regval, false, &addrtype);
         _sntprintf(buffer2, buffersize - 1, _T("(SP)=%06o"), srcval2);  // "(SP)=XXXXXX"
     }
 

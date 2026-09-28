@@ -556,7 +556,7 @@ void DisasmView_OnUpdate()
     for (int idx = 0; idx < nWindowSize; idx++)
     {
         memory[idx] = g_pBoard->GetWordView(
-                static_cast<uint16_t>(current + idx * 2 - 10), pProc->IsHaltMode(), TRUE, addrtype + idx);
+                static_cast<uint16_t>(current + idx * 2 - 10), TRUE, addrtype + idx);
     }
 
     uint16_t address = current - 10;

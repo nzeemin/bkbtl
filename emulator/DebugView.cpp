@@ -386,11 +386,11 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
     ::SetTextColor(hdc, colorText);
 
     // Processor mode - HALT or USER
-    BOOL okHaltMode = pProc->IsHaltMode();
+    bool okHaltMode = pProc->IsHaltMode();
     TextOut(hdc, x, y + 12 * cyLine, okHaltMode ? _T("HALT") : _T("USER"), 4);
 
     // "Stopped" flag
-    BOOL okStopped = pProc->IsStopped();
+    bool okStopped = pProc->IsStopped();
     if (okStopped)
         TextOut(hdc, x + 6 * cxChar, y + 12 * cyLine, _T("STOP"), 4);
 }
@@ -404,9 +404,8 @@ void DebugView_DrawAddressAndValue(HDC hdc, uint16_t address, int x, int y, int 
     DrawOctalValue(hdc, x, y, address);
     x += 7 * cxChar;
 
-    bool okHaltMode = g_pBoard->GetCPU()->IsHaltMode();
     int addrtype = ADDRTYPE_DENY;
-    uint16_t value = g_pBoard->GetWordView(address, okHaltMode, FALSE, &addrtype);
+    uint16_t value = g_pBoard->GetWordView(address, FALSE, &addrtype);
     if (addrtype == ADDRTYPE_RAM)
     {
         uint16_t wChanged = Emulator_GetChangeRamStatus(address);
@@ -451,7 +450,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     for (int idx = 0; idx < 16; idx++)
     {
         memory[idx] = g_pBoard->GetWordView(
-                (uint16_t)(current + idx * 2 - 16), pProc->IsHaltMode(), okExec, addrtype + idx);
+                (uint16_t)(current + idx * 2 - 16), okExec, addrtype + idx);
     }
 
     WORD address = current - 16;
@@ -599,7 +598,7 @@ void DebugView_DrawMemoryMap(HDC hdc, int x, int y, const CProcessor* pProc)
         PatBlt(hdc, x1, yp, x2 - x1, 1, PATCOPY);
 
         int addrtype;
-        g_pBoard->GetWordView(address, pProc->GetHALT(), false, &addrtype);
+        g_pBoard->GetWordView(address, false, &addrtype);
         LPCTSTR addrtypestr;
         switch (addrtype & (ADDRTYPE_RAM | ADDRTYPE_ROM | ADDRTYPE_IO | ADDRTYPE_DENY))
         {

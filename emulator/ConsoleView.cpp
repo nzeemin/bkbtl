@@ -39,8 +39,8 @@ void ConsoleView_DoConsoleCommand();
 
 void ConsoleView_PrintConsolePrompt();
 void ConsoleView_PrintRegister(LPCTSTR strName, WORD value);
-void ConsoleView_PrintMemoryDump(const CProcessor* pProc, WORD address, int lines);
-void ConsoleView_PrintMemoryDumpBytes(const CProcessor* pProc, WORD address, int lines = 8);
+void ConsoleView_PrintMemoryDump(WORD address, int lines);
+void ConsoleView_PrintMemoryDumpBytes(WORD address, int lines = 8);
 BOOL ConsoleView_SaveMemoryDump(uint16_t addr1 = 0, uint16_t addr2 = 0xffff);
 
 const LPCTSTR MESSAGE_UNKNOWN_COMMAND = _T("  Unknown command.\r\n");
@@ -271,7 +271,7 @@ void ConsoleView_PrintRegister(LPCTSTR strName, WORD value)
     PrintBinaryValue(p, value);  p += 16;
     *p++ = _T('\r');
     *p++ = _T('\n');
-    *p++ = 0;
+    *p = 0;
     ConsoleView_Print(buffer);
 }
 
@@ -312,7 +312,7 @@ BOOL ConsoleView_SaveMemoryDump(uint16_t addr1, uint16_t addr2)
 
     for (DWORD i = 0; i < bsize; i++)
     {
-        buf[i] = g_pBoard->GetByte((uint16_t)(addr1 + i), 1);
+        buf[i] = g_pBoard->GetByte((uint16_t)(addr1 + i));
     }
 
     const TCHAR fname[] = _T("memdump.bin");
@@ -333,18 +333,16 @@ BOOL ConsoleView_SaveMemoryDump(uint16_t addr1, uint16_t addr2)
 }
 
 // Print memory dump
-void ConsoleView_PrintMemoryDump(const CProcessor* pProc, WORD address, int lines = 8)
+void ConsoleView_PrintMemoryDump(WORD address, int lines = 8)
 {
     address &= ~1;  // Line up to even address
-
-    bool okHaltMode = pProc->IsHaltMode();
 
     for (int line = 0; line < lines; line++)
     {
         WORD dump[8];
         int addrtype;
         for (int i = 0; i < 8; i++)
-            dump[i] = g_pBoard->GetWordView((uint16_t)(address + i * 2), okHaltMode, false, &addrtype);
+            dump[i] = g_pBoard->GetWordView((uint16_t)(address + i * 2), false, &addrtype);
 
         TCHAR buffer[2 + 6 + 2 + 7 * 8 + 1 + 16 + 1 + 2];
         TCHAR* pBuf = buffer;
@@ -380,18 +378,17 @@ void ConsoleView_PrintMemoryDump(const CProcessor* pProc, WORD address, int line
         address += 16;
     }
 }
-void ConsoleView_PrintMemoryDumpBytes(const CProcessor* pProc, WORD address, int lines)
+void ConsoleView_PrintMemoryDumpBytes(WORD address, int lines)
 {
     address &= ~1;  // Line up to even address
 
-    bool okHaltMode = pProc->IsHaltMode();
 
     for (int line = 0; line < lines; line++)
     {
         WORD dump[8];
         int addrtype;
         for (int i = 0; i < 8; i++)
-            dump[i] = g_pBoard->GetWordView((uint16_t)(address + i * 2), okHaltMode, false, &addrtype);
+            dump[i] = g_pBoard->GetWordView((uint16_t)(address + i * 2), false, &addrtype);
 
         TCHAR buffer[2 + 6 + 2 + 4 * 16 + 1 + 16 + 1 + 2];
         TCHAR buffer2[7];
@@ -442,15 +439,14 @@ void ConsoleView_PrintMemoryDumpBytes(const CProcessor* pProc, WORD address, int
 
 // Print disassembled instructions
 // Return value: number of words in the last instruction
-int ConsoleView_PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okShort)
+int ConsoleView_PrintDisassemble(WORD address, BOOL okOneInstr, BOOL okShort)
 {
-    bool okHaltMode = pProc->IsHaltMode();
 
     const int nWindowSize = 30;
     WORD memory[nWindowSize + 2];
     int addrtype;
     for (int i = 0; i < nWindowSize + 2; i++)
-        memory[i] = g_pBoard->GetWordView((uint16_t)(address + i * 2), okHaltMode, TRUE, &addrtype);
+        memory[i] = g_pBoard->GetWordView((uint16_t)(address + i * 2), TRUE, &addrtype);
 
     TCHAR bufaddr[7];
     TCHAR bufvalue[7];
@@ -636,14 +632,12 @@ void ConsoleView_CmdPrintMemoryDumpAtPC(const ConsoleCommandParams& /*params*/)
 {
     CProcessor* pProc = ConsoleView_GetCurrentProcessor();
     uint16_t address = pProc->GetPC();
-    ConsoleView_PrintMemoryDump(pProc, address);
+    ConsoleView_PrintMemoryDump(address);
 }
 void ConsoleView_CmdPrintMemoryDumpAtAddress(const ConsoleCommandParams& params)
 {
     uint16_t address = params.paramOct1;
-
-    CProcessor* pProc = ConsoleView_GetCurrentProcessor();
-    ConsoleView_PrintMemoryDump(pProc, address);
+    ConsoleView_PrintMemoryDump(address);
 }
 void ConsoleView_CmdPrintMemoryDumpAtRegister(const ConsoleCommandParams& params)
 {
@@ -651,7 +645,7 @@ void ConsoleView_CmdPrintMemoryDumpAtRegister(const ConsoleCommandParams& params
 
     CProcessor* pProc = ConsoleView_GetCurrentProcessor();
     uint16_t address = pProc->GetReg(r);
-    ConsoleView_PrintMemoryDump(pProc, address);
+    ConsoleView_PrintMemoryDump(address);
 }
 
 void ConsoleView_CmdPrintDisassembleAtPC(const ConsoleCommandParams& params)
@@ -659,15 +653,14 @@ void ConsoleView_CmdPrintDisassembleAtPC(const ConsoleCommandParams& params)
     BOOL okShort = (params.commandText[0] == _T('D'));
     CProcessor* pProc = ConsoleView_GetCurrentProcessor();
     uint16_t address = pProc->GetPC();
-    ConsoleView_PrintDisassemble(pProc, address, FALSE, okShort);
+    ConsoleView_PrintDisassemble(address, FALSE, okShort);
 }
 void ConsoleView_CmdPrintDisassembleAtAddress(const ConsoleCommandParams& params)
 {
     uint16_t address = params.paramOct1;
 
     BOOL okShort = (params.commandText[0] == _T('D'));
-    CProcessor* pProc = ConsoleView_GetCurrentProcessor();
-    ConsoleView_PrintDisassemble(pProc, address, FALSE, okShort);
+    ConsoleView_PrintDisassemble(address, FALSE, okShort);
 }
 
 void ConsoleView_CmdPrintAllRegisters(const ConsoleCommandParams& /*params*/)
@@ -686,7 +679,7 @@ void ConsoleView_CmdStepInto(const ConsoleCommandParams& /*params*/)
 {
     CProcessor* pProc = ConsoleView_GetCurrentProcessor();
 
-    ConsoleView_PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
+    ConsoleView_PrintDisassemble(pProc->GetPC(), TRUE, FALSE);
 
     g_pBoard->DebugTicks();
 
@@ -696,10 +689,10 @@ void ConsoleView_CmdStepOver(const ConsoleCommandParams& /*params*/)
 {
     CProcessor* pProc = ConsoleView_GetCurrentProcessor();
 
-    int instrLength = ConsoleView_PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
+    int instrLength = ConsoleView_PrintDisassemble(pProc->GetPC(), TRUE, FALSE);
 
     int addrtype;
-    uint16_t instr = g_pBoard->GetWordView(pProc->GetPC(), pProc->IsHaltMode(), true, &addrtype);
+    uint16_t instr = g_pBoard->GetWordView(pProc->GetPC(), true, &addrtype);
 
     // For JMP and BR use Step Into logic, not Step Over
     if ((instr & ~(uint16_t)077) == PI_JMP || (instr & ~(uint16_t)0377) == PI_BR)
@@ -780,9 +773,6 @@ void ConsoleView_CmdRemoveBreakpointAtAddress(const ConsoleCommandParams& params
 
 void ConsoleView_CmdPrintAllWatches(const ConsoleCommandParams& /*params*/)
 {
-    CProcessor* pProc = ConsoleView_GetCurrentProcessor();
-    bool okHaltMode = pProc->IsHaltMode();
-
     const uint16_t* pws = Emulator_GetWatchList();
     if (pws == nullptr || *pws == 0177777)
     {
@@ -794,7 +784,7 @@ void ConsoleView_CmdPrintAllWatches(const ConsoleCommandParams& /*params*/)
         {
             uint16_t address = *pws;
             int addrtype;
-            uint16_t value = g_pBoard->GetWordView(address, okHaltMode, false, &addrtype);
+            uint16_t value = g_pBoard->GetWordView(address, false, &addrtype);
             ConsoleView_PrintFormat(_T("  %06ho %06ho\r\n"), address, value);
             pws++;
         }

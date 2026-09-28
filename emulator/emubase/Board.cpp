@@ -15,7 +15,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Emubase.h"
 #include "Board.h"
 
-void TraceInstruction(const CProcessor* pProc, const CMotherboard* pBoard, uint16_t address, uint32_t dwTrace);
+void TraceInstruction(const CMotherboard* pBoard, uint16_t address, uint32_t dwTrace);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -391,7 +391,7 @@ bool CMotherboard::SystemFrame()
         {
 #if !defined(PRODUCT)
             if ((m_dwTrace & TRACE_CPU) && m_pCPU->GetInternalTick() == 0)
-                TraceInstruction(m_pCPU, this, m_pCPU->GetPC(), m_dwTrace);
+                TraceInstruction(this, m_pCPU->GetPC(), m_dwTrace);
 #endif
             m_pCPU->Execute();
             if (m_CPUbps != nullptr)  // Check for breakpoints
@@ -571,10 +571,10 @@ void CMotherboard::SetPrinterInPort(uint8_t data)
 // Motherboard: memory management
 
 // Read word from memory for debugger
-uint16_t CMotherboard::GetWordView(uint16_t address, bool okHaltMode, bool okExec, int* pAddrType) const
+uint16_t CMotherboard::GetWordView(uint16_t address, bool okExec, int* pAddrType) const
 {
     uint16_t offset;
-    int addrtype = TranslateAddress(address, okHaltMode, okExec, &offset);
+    int addrtype = TranslateAddress(address, okExec, &offset);
 
     *pAddrType = addrtype;
 
@@ -595,10 +595,10 @@ uint16_t CMotherboard::GetWordView(uint16_t address, bool okHaltMode, bool okExe
     return 0;
 }
 
-uint16_t CMotherboard::GetWord(uint16_t address, bool okHaltMode, bool okExec)
+uint16_t CMotherboard::GetWord(uint16_t address, bool okExec)
 {
     uint16_t offset;
-    int addrtype = TranslateAddress(address, okHaltMode, okExec, &offset);
+    int addrtype = TranslateAddress(address, okExec, &offset);
 
     switch (addrtype & ADDRTYPE_MASK)
     {
@@ -618,10 +618,10 @@ uint16_t CMotherboard::GetWord(uint16_t address, bool okHaltMode, bool okExec)
     return 0;
 }
 
-uint8_t CMotherboard::GetByte(uint16_t address, bool okHaltMode)
+uint8_t CMotherboard::GetByte(uint16_t address)
 {
     uint16_t offset;
-    int addrtype = TranslateAddress(address, okHaltMode, false, &offset);
+    int addrtype = TranslateAddress(address, false, &offset);
 
     switch (addrtype & ADDRTYPE_MASK)
     {
@@ -641,11 +641,11 @@ uint8_t CMotherboard::GetByte(uint16_t address, bool okHaltMode)
     return 0;
 }
 
-void CMotherboard::SetWord(uint16_t address, bool okHaltMode, uint16_t word)
+void CMotherboard::SetWord(uint16_t address, uint16_t word)
 {
     uint16_t offset;
 
-    int addrtype = TranslateAddress(address, okHaltMode, false, &offset);
+    int addrtype = TranslateAddress(address, false, &offset);
 
     switch (addrtype & ADDRTYPE_MASK)
     {
@@ -666,10 +666,10 @@ void CMotherboard::SetWord(uint16_t address, bool okHaltMode, uint16_t word)
     ASSERT(false);  // If we are here - then addrtype has invalid value
 }
 
-void CMotherboard::SetByte(uint16_t address, bool okHaltMode, uint8_t byte)
+void CMotherboard::SetByte(uint16_t address, uint8_t byte)
 {
     uint16_t offset;
-    int addrtype = TranslateAddress(address, okHaltMode, false, &offset);
+    int addrtype = TranslateAddress(address, false, &offset);
 
     switch (addrtype & ADDRTYPE_MASK)
     {
@@ -705,7 +705,7 @@ const uint8_t* CMotherboard::GetVideoBuffer() const
     }
 }
 
-int CMotherboard::TranslateAddress(uint16_t address, bool /*okHaltMode*/, bool /*okExec*/, uint16_t* pOffset) const
+int CMotherboard::TranslateAddress(uint16_t address, bool /*okExec*/, uint16_t* pOffset) const
 {
     // При подключенном блоке дисковода, его ПЗУ занимает адреса 160000-167776, при этом адреса 170000-177776 остаются под порты.
     // Без подключенного дисковода, порты занимают адреса 177600-177776.
@@ -945,7 +945,7 @@ uint16_t CMotherboard::GetPortView(uint16_t address) const
         return 0;
     case PORTVIEW_FDDDRIVE:
         if (m_pFloppyCtl != nullptr)
-            return m_pFloppyCtl->GetDriveView();
+            return static_cast<uint16_t>(m_pFloppyCtl->GetDriveView());
         return 0xFFFF;
     case PORTVIEW_FDDTRACK:
         if (m_pFloppyCtl != nullptr)
@@ -1307,20 +1307,19 @@ void CMotherboard::SetTeletypeCallback(TELETYPECALLBACK callback)
 
 #if !defined(PRODUCT)
 
-void TraceInstruction(const CProcessor* pProc, const CMotherboard* pBoard, uint16_t address, uint32_t dwTrace)
+void TraceInstruction(const CMotherboard* pBoard, uint16_t address, uint32_t dwTrace)
 {
-    bool okHaltMode = pProc->IsHaltMode();
     bool okBk11 = (pBoard->GetConfiguration() & BK_COPT_BK0011) != 0;
 
     uint16_t memory[4];
     int addrtype = ADDRTYPE_RAM;
-    memory[0] = pBoard->GetWordView(address + 0 * 2, okHaltMode, true, &addrtype);
+    memory[0] = pBoard->GetWordView(address + 0 * 2, true, &addrtype);
     if (!(addrtype == ADDRTYPE_RAM && (dwTrace & TRACE_CPURAM)) &&
         !(addrtype == ADDRTYPE_ROM && (dwTrace & TRACE_CPUROM)))
         return;
-    memory[1] = pBoard->GetWordView(address + 1 * 2, okHaltMode, true, &addrtype);
-    memory[2] = pBoard->GetWordView(address + 2 * 2, okHaltMode, true, &addrtype);
-    memory[3] = pBoard->GetWordView(address + 3 * 2, okHaltMode, true, &addrtype);
+    memory[1] = pBoard->GetWordView(address + 1 * 2, true, &addrtype);
+    memory[2] = pBoard->GetWordView(address + 2 * 2, true, &addrtype);
+    memory[3] = pBoard->GetWordView(address + 3 * 2, true, &addrtype);
 
     TCHAR bufaddr[7];
     PrintOctalValue(bufaddr, address);

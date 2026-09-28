@@ -178,6 +178,7 @@ CProcessor::CProcessor(CMotherboard* pBoard)
     m_stepmode = false;
     m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ1rq = m_IRQ2rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
+    m_okDoubleHangupArmed = false;
     m_haltpin = false;
     m_instruction = m_instructionpc = 0;
     m_regsrc = m_methsrc = 0;
@@ -509,9 +510,6 @@ void CProcessor::ExecuteWAIT()  // WAIT - Wait for an interrupt
 void CProcessor::ExecuteRUN()
 {
     m_HALTrq = true;
-
-    //SetPC(m_savepc);
-    //SetPSW(m_savepsw);
 }
 
 void CProcessor::ExecuteHALT()  // HALT - Останов
@@ -522,10 +520,7 @@ void CProcessor::ExecuteHALT()  // HALT - Останов
 void CProcessor::ExecuteSTEP()
 {
     m_HALTrq = true;
-
     m_stepmode = true;
-    //SetPC(m_savepc);
-    //SetPSW(m_savepsw);
 }
 
 void CProcessor::ExecuteRTI()  // RTI - Return from Interrupt

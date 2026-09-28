@@ -374,7 +374,7 @@ void MemoryMapView_PrepareBitmap()
         {
             WORD address = (WORD)(x + y * 256);
             int addrtype;
-            WORD value = g_pBoard->GetWordView(address, FALSE, FALSE, &addrtype);
+            WORD value = g_pBoard->GetWordView(address, FALSE, &addrtype);
             COLORREF color1, color2;
             BYTE val;
             switch (addrtype & ADDRTYPE_MASK)
