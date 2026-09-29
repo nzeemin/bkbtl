@@ -357,35 +357,35 @@ void CMotherboard::SetSoundAY(bool onoff)
 
 
 /*
-Каждый фрейм равен 1/25 секунды = 40 мс = 20000 тиков, 1 тик = 2 мкс.
+Каждый фрейм равен 1/50 секунды = 20 мс = 10000 тиков, 1 тик = 2 мкс.
 12 МГц = 1 / 12000000 = 0.83(3) мкс
 В каждый фрейм происходит:
-* 120000 тиков ЦП - 6 раз за тик (БК-0010, 12МГц / 4 = 3 МГц, 3.3(3) мкс), либо
-* 160000 тиков ЦП - 8 раз за тик (БК-0011, 12МГц / 3 = 4 МГц, 2.5 мкс)
+* 60000 тиков ЦП - 6 раз за тик (БК-0010, 12МГц / 4 = 3 МГц, 3.3(3) мкс), либо
+* 80000 тиков ЦП - 8 раз за тик (БК-0011, 12МГц / 3 = 4 МГц, 2.5 мкс)
 * программируемый таймер - на каждый 128-й тик процессора; 42.6(6) мкс либо 32 мкс
-* 2 тика IRQ2 50 Гц, в 0-й и 10000-й тик фрейма
-* 625 тиков FDD - каждый 32-й тик (300 RPM = 5 оборотов в секунду)
-* 68571 тиков AY-3-891x: 1.714275 МГц (12МГц / 7 = 1.714 МГц, 5.83(3) мкс)
+* 1 тик IRQ2 50 Гц, в 0-й тик фрейма
+* 312(.5) тиков FDD - каждый 32-й тик (300 RPM = 5 оборотов в секунду)
+* 34285(.5) тиков AY-3-891x: 1.714275 МГц (12МГц / 7 = 1.714 МГц, 5.83(3) мкс)
 */
 bool CMotherboard::SystemFrame()
 {
     int frameProcTicks = (m_Configuration & BK_COPT_BK0011) ? 8 : 6;
-    const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
+    const int audioticks = 10143 / (SOUNDSAMPLERATE / 50);
     m_SoundChanges = 0;
-    const int teletypeTicks = 20000 / (9600 / 25);
+    const int teletypeTicks = 10000 / (9600 / 50);
     int floppyTicks = 32;  // FDD rotation is a fixed real-time rate (300 RPM), independent of CPU config
     int teletypeTxCount = 0;
 
     int frameTapeTicks = 0, tapeSamplesPerFrame = 0, tapeReadError = 0;
     if (m_TapeReadCallback != nullptr || m_TapeWriteCallback != nullptr)
     {
-        tapeSamplesPerFrame = m_nTapeSampleRate / 25;
-        frameTapeTicks = 20000 / tapeSamplesPerFrame;
+        tapeSamplesPerFrame = m_nTapeSampleRate / 50;
+        frameTapeTicks = 10000 / tapeSamplesPerFrame;
     }
 
     int timerTicks = 0;
 
-    for (int frameticks = 0; frameticks < 20000; frameticks++)
+    for (int frameticks = 0; frameticks < 10000; frameticks++)
     {
         for (int procticks = 0; procticks < frameProcTicks; procticks++)  // CPU ticks
         {
@@ -408,7 +408,7 @@ bool CMotherboard::SystemFrame()
             }
         }
 
-        if (frameticks % 10000 == 0)
+        if (frameticks == 0)
         {
             Tick50();  // 1/50 timer event
         }
@@ -425,7 +425,7 @@ bool CMotherboard::SystemFrame()
         if ((m_TapeReadCallback != nullptr || m_TapeWriteCallback != nullptr) && frameticks % frameTapeTicks == 0)
         {
             int tapeSamples = 0;
-            const int readsTotal = 20000 / frameTapeTicks;
+            const int readsTotal = 10000 / frameTapeTicks;
             for (;;)
             {
                 tapeSamples++;

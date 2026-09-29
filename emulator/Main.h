@@ -15,7 +15,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 
 
-#define FRAMERATE 25  // Количество фремов в секунду
+#define FRAMERATE 50  // Количество фремов в секунду
 
 #define MAX_LOADSTRING 100
 

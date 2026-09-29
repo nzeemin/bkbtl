@@ -185,7 +185,7 @@ int APIENTRY _tWinMain(
                     ::QueryPerformanceCounter(&nFrameFinishTime);
                     LONGLONG nTimeElapsed = (nFrameFinishTime.QuadPart - nFrameStartTime.QuadPart)
                             * 1000ll / nPerformanceFrequency.QuadPart;
-                    if (nTimeElapsed <= 0 || nTimeElapsed >= nFrameDelay)
+                    if (nTimeElapsed < 0 || nTimeElapsed >= nFrameDelay)
                         break;
                     LONGLONG nDelayRemaining = nFrameDelay - nTimeElapsed;
                     ::Sleep((DWORD)(nDelayRemaining / 2));

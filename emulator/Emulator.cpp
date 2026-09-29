@@ -689,7 +689,7 @@ bool Emulator_SystemFrame()
     if (nTicksElapsed >= 1200)
     {
         double dFramesPerSecond = m_nFrameCount * 1000.0 / nTicksElapsed;
-        double dSpeed = dFramesPerSecond / 25.0 * 100;
+        double dSpeed = dFramesPerSecond / FRAMERATE * 100;
         TCHAR buffer[16];
         _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%03.f%%"), dSpeed);
         MainWindow_SetStatusbarText(StatusbarPartFPS, buffer);
@@ -701,9 +701,9 @@ bool Emulator_SystemFrame()
         m_dwTickCount = dwCurrentTicks;
     }
 
-    // Calculate emulator uptime (25 frames per second)
+    // Calculate emulator uptime (FRAMERATE frames per second)
     m_nUptimeFrameCount++;
-    if (m_nUptimeFrameCount >= 25)
+    if (m_nUptimeFrameCount >= FRAMERATE)
     {
         m_dwEmulatorUptime++;
         m_nUptimeFrameCount = 0;
@@ -717,9 +717,9 @@ bool Emulator_SystemFrame()
         MainWindow_SetStatusbarText(StatusbarPartUptime, buffer);
     }
 
-    // Update "Sound" indicator every 5 frames
+    // Update "Sound" indicator every 1/5 second
     m_nEmulatorSoundChanges += g_pBoard->GetSoundChanges();
-    if (m_nUptimeFrameCount % 5 == 0)
+    if (m_nUptimeFrameCount % (FRAMERATE / 5) == 0)
     {
         bool soundOn = m_nEmulatorSoundChanges > 0;
         MainWindow_SetStatusbarText(StatusbarPartSound, soundOn ? _T("Sound") : nullptr);
