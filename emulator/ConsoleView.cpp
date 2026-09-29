@@ -552,6 +552,7 @@ void ConsoleView_CmdShowHelp(const ConsoleCommandParams& /*params*/)
             _T("  gXXXXXX    Go; run and stop at address XXXXXX\r\n")
             _T("  m          Memory dump at current address\r\n")
             _T("  mXXXXXX    Memory dump at address XXXXXX\r\n")
+            _T("  mXXXXXX YYYYYY  Set memory value at address XXXXXX\r\n")
             _T("  mrN        Memory dump at address from register N; N=0..7\r\n")
             _T("  r          Show register values\r\n")
             _T("  rN         Show value of register N; N=0..7,ps\r\n")
@@ -638,6 +639,23 @@ void ConsoleView_CmdPrintMemoryDumpAtAddress(const ConsoleCommandParams& params)
 {
     uint16_t address = params.paramOct1;
     ConsoleView_PrintMemoryDump(address);
+}
+void ConsoleView_CmdSetMemoryAtAddress(const ConsoleCommandParams& params)
+{
+    uint16_t address = params.paramOct1;
+    uint16_t value = params.paramOct2;
+
+    int addrtype;
+    g_pBoard->GetWordView(address, false, &addrtype);
+    if ((addrtype & ADDRTYPE_MASK) != ADDRTYPE_RAM)
+    {
+        ConsoleView_Print(_T("  Can't change memory value for this memory type.\r\n"));
+        return;
+    }
+
+    g_pBoard->SetWord(address, value);
+
+    MainWindow_UpdateAllViews();
 }
 void ConsoleView_CmdPrintMemoryDumpAtRegister(const ConsoleCommandParams& params)
 {
@@ -871,6 +889,8 @@ static ConsoleCommands[] =
     { _T("D"), ARGINFO_NONE, ConsoleView_CmdPrintDisassembleAtPC },
     { _T("u%ho %ho"), ARGINFO_OCT_OCT, ConsoleView_CmdSaveMemoryFragment },
     { _T("u"), ARGINFO_NONE, ConsoleView_CmdSaveMemoryDump },
+    { _T("m%ho %ho"), ARGINFO_OCT_OCT, ConsoleView_CmdSetMemoryAtAddress },
+    { _T("m%ho=%ho"), ARGINFO_OCT_OCT, ConsoleView_CmdSetMemoryAtAddress },
     { _T("m%ho"), ARGINFO_OCT, ConsoleView_CmdPrintMemoryDumpAtAddress },
     { _T("mr%d"), ARGINFO_REG, ConsoleView_CmdPrintMemoryDumpAtRegister },
     { _T("m"), ARGINFO_NONE, ConsoleView_CmdPrintMemoryDumpAtPC },

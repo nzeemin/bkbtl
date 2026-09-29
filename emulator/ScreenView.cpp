@@ -369,7 +369,7 @@ void ScreenView_ScanKeyboard()
             {
                 BYTE pcscan = (BYTE)scan;
 
-                DebugPrintFormat(_T("Key PC: 0x%0x 0x%0x 0x%0x\r\n"), scan, keys[VK_SHIFT], keys[VK_CONTROL]);
+                //DebugPrintFormat(_T("Key PC: 0x%0x 0x%0x 0x%0x\r\n"), scan, keys[VK_SHIFT], keys[VK_CONTROL]);
 
                 BYTE bkscan = pTable[pcscan];
                 if (bkscan != 0)
