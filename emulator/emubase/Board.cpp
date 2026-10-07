@@ -963,6 +963,14 @@ uint16_t CMotherboard::GetPortView(uint16_t address) const
 
 void CMotherboard::SetPortByte(uint16_t address, uint8_t byte)
 {
+    if ((address & 0177776) == 0177662 && (m_Configuration & BK_COPT_BK0011) == 0)
+    {
+        // BK-0010: the register is read-only; reject before the read-modify-write below,
+        // which would otherwise consume the pending key code.
+        m_pCPU->MemoryError();
+        return;
+    }
+
     if (address == 0177714 && m_okSoundAY)
     {
         m_pSoundAY->SetReg(m_nSoundAYReg & 0xf, byte ^ 0xff);
@@ -1046,7 +1054,8 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
 
     case 0177716:  // System register - memory management, tape management
         m_Port177716 |= 4;  // Set bit 2
-        if (word & 04000)
+        // BK-0011 only: bit 11 selects the memory-paging register; BK-0010 has just the tape/speaker one
+        if ((m_Configuration & BK_COPT_BK0011) != 0 && (word & 04000))
         {
             m_Port177716mem = word;
 
@@ -1080,7 +1089,10 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         break;
 
     case 0177662:  // Palette register
-        m_Port177662wr = word;
+        if ((m_Configuration & BK_COPT_BK0011) == 0)  // BK-0010: the register is read-only
+            m_pCPU->MemoryError();
+        else
+            m_Port177662wr = word;
         break;
 
     case 0177664:  // Scroll register

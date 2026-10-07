@@ -311,6 +311,9 @@ void CProcessor::Execute()
                 // The BK-0010 monitor ROM handles the STOP key through the same vector as
                 // a bus timeout ("прерывание по клавише СТОП или зависанию (вектор 4)");
                 // real BK hardware does not implement a separate console-mode entry for it.
+                // The microcode's write to 177716 sets its "write flag" (bit 2), which is how
+                // handlers tell a STOP key press from a genuine bus hang (BIT #4,@#177716).
+                SetWord(0177716, 0210);
                 intrVector = 0000004;  intrMode = false;
                 m_IRQ1rq = false;
             }
