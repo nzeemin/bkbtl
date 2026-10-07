@@ -971,6 +971,15 @@ void CMotherboard::SetPortByte(uint16_t address, uint8_t byte)
         return;
     }
 
+    if ((address & 0177776) == 0177664)
+    {
+        // Scroll register: byte writes don't work on real hardware -- the whole word is
+        // written with the byte zero-extended (offset = byte, bit 9 cleared), whatever the
+        // address parity.
+        SetPortWord(0177664, byte);
+        return;
+    }
+
     if (address == 0177714 && m_okSoundAY)
     {
         m_pSoundAY->SetReg(m_nSoundAYReg & 0xf, byte ^ 0xff);
