@@ -372,8 +372,8 @@ bool Disasm_CheckForJump(const uint16_t* memory, int* pDelta)
 
     // BR, BNE, BEQ, BGE, BLT, BGT, BLE
     // BPL, BMI, BHI, BLOS, BVC, BVS, BHIS, BLO
-    if ((instr & 0177400) >= 0000400 && (instr & 0177400) < 0004000 ||
-        (instr & 0177400) >= 0100000 && (instr & 0177400) < 0104000)
+    if (((instr & 0177400) >= 0000400 && (instr & 0177400) < 0004000) ||
+        ((instr & 0177400) >= 0100000 && (instr & 0177400) < 0104000))
     {
         *pDelta = ((int)(char)(instr & 0xff)) + 1;
         return true;
@@ -773,7 +773,7 @@ int Disasm_GetInstructionHint(const uint16_t* memory, const CProcessor * pProc,
     }
 
     // CLC..CCC, SEC..SCC -- show flags
-    if (instr >= 0000241 && instr <= 0000257 || instr >= 0000261 && instr <= 0000277)
+    if ((instr >= 0000241 && instr <= 0000257) || (instr >= 0000261 && instr <= 0000277))
     {
         uint16_t psw = pProc->GetPSW();
         _sntprintf(buffer, buffersize - 1, _T("C=%c, V=%c, Z=%c, N=%c"),
@@ -781,8 +781,8 @@ int Disasm_GetInstructionHint(const uint16_t* memory, const CProcessor * pProc,
     }
 
     // JSR, JMP -- show non-trivial cases only
-    if ((instr & ~(uint16_t)0777) == PI_JSR && (instr & 077) != 067 && (instr & 077) != 037 ||
-        (instr & ~(uint16_t)077) == PI_JMP && (instr & 077) != 067 && (instr & 077) != 037)
+    if (((instr & ~(uint16_t)0777) == PI_JSR && (instr & 077) != 067 && (instr & 077) != 037) ||
+        ((instr & ~(uint16_t)077) == PI_JMP && (instr & 077) != 067 && (instr & 077) != 037))
     {
         int dstreg = instr & 7;
         int dstmod = (instr >> 3) & 7;

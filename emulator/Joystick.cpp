@@ -99,6 +99,17 @@ UINT Joystick_GetJoystickState()
     if (joyinfo.wYpos < yTop) state |= JOYSTICK_UP;
     if (joyinfo.wYpos > yBottom) state |= JOYSTICK_DOWN;
 
+//#if !defined(PRODUCT)
+//    static UINT stateOld = 0xffff;  // joystick diagnostics
+//    if (state != stateOld)
+//    {
+//        stateOld = state;
+//        DebugPrintFormat(_T("Joystick %d: state=%03o btn=%u X=%u Y=%u Xrange=%u-%u Yrange=%u-%u\r\n"),
+//                g_nJoystickCurrent, state, joyinfo.wButtons, joyinfo.wXpos, joyinfo.wYpos,
+//                g_JoystickCaps.wXmin, g_JoystickCaps.wXmax, g_JoystickCaps.wYmin, g_JoystickCaps.wYmax);
+//    }
+//#endif
+
     return state;
 }
 

@@ -491,14 +491,14 @@ void CMotherboard::KeyboardEvent(uint8_t scancode, bool okPressed, bool okAr2)
         uint16_t mask = 0;
         switch (scancode)
         {
-        case BK_KEY_JOYSTICK_BUTTON1: mask = 0x01; break;
-        case BK_KEY_JOYSTICK_BUTTON2: mask = 0x02; break;
-        case BK_KEY_JOYSTICK_BUTTON3: mask = 0x04; break;
-        case BK_KEY_JOYSTICK_BUTTON4: mask = 0x08; break;
-        case BK_KEY_JOYSTICK_LEFT:    mask = 0x10; break;
-        case BK_KEY_JOYSTICK_DOWN:    mask = 0x20; break;
-        case BK_KEY_JOYSTICK_RIGHT:   mask = 0x40; break;
-        case BK_KEY_JOYSTICK_UP:      mask = 0x80; break;
+        case BK_KEY_JOYSTICK_BUTTON1: mask = 0x10; break;
+        case BK_KEY_JOYSTICK_BUTTON2: mask = 0x20; break;
+        case BK_KEY_JOYSTICK_BUTTON3: mask = 0x40; break;
+        case BK_KEY_JOYSTICK_BUTTON4: mask = 0x80; break;
+        case BK_KEY_JOYSTICK_LEFT:    mask = 0x08; break;
+        case BK_KEY_JOYSTICK_DOWN:    mask = 0x04; break;
+        case BK_KEY_JOYSTICK_RIGHT:   mask = 0x02; break;
+        case BK_KEY_JOYSTICK_UP:      mask = 0x01; break;
         }
 
         if (okPressed)
