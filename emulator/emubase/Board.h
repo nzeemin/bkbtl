@@ -138,6 +138,14 @@ typedef void (CALLBACK* SOUNDGENCALLBACK)(unsigned short L, unsigned short R);
 // Teletype callback function type - board calls it if symbol ready to transmit
 typedef void (CALLBACK* TELETYPECALLBACK)(unsigned char value);
 
+// Instruction execution callback -- called by CPU just before an instruction is executed,
+// memory and registers are still in pre-execution state
+// Input:
+//   pProc      Processor executing the instruction
+//   address    Address of the instruction, PC value before the fetch
+//   opcode     First word of the instruction as fetched
+typedef void (CALLBACK* INSTRUCTIONCALLBACK)(const CProcessor* pProc, uint16_t address, uint16_t opcode);
+
 class CFloppyController;
 class CSoundAY;
 
@@ -176,6 +184,8 @@ public:  // Debug
     void        SetCPUBreakpoints(const uint16_t* bps) { m_CPUbps = bps; } // Set CPU breakpoint list
     uint32_t    GetTrace() const { return m_dwTrace; }
     void        SetTrace(uint32_t dwTrace);
+    // Assign callback for CPU instruction execution, nullptr to remove
+    void        SetInstructionCallback(INSTRUCTIONCALLBACK callback);
 public:  // System control
     void        SetConfiguration(uint16_t conf);
     uint16_t    GetConfiguration() const { return m_Configuration; }

@@ -15,8 +15,6 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Emubase.h"
 #include "Board.h"
 
-void TraceInstruction(const CMotherboard* pBoard, uint16_t address, uint32_t dwTrace);
-
 
 //////////////////////////////////////////////////////////////////////
 
@@ -101,6 +99,11 @@ void CMotherboard::SetTrace(uint32_t dwTrace)
     m_dwTrace = dwTrace;
     if (m_pFloppyCtl != nullptr)
         m_pFloppyCtl->SetTrace((dwTrace & TRACE_FLOPPY) != 0);
+}
+
+void CMotherboard::SetInstructionCallback(INSTRUCTIONCALLBACK callback)
+{
+    m_pCPU->SetInstructionCallback(callback);
 }
 
 void CMotherboard::Reset()
@@ -389,10 +392,6 @@ bool CMotherboard::SystemFrame()
     {
         for (int procticks = 0; procticks < frameProcTicks; procticks++)  // CPU ticks
         {
-#if !defined(PRODUCT)
-            if ((m_dwTrace & TRACE_CPU) && m_pCPU->GetInternalTick() == 0)
-                TraceInstruction(this, m_pCPU->GetPC(), m_dwTrace);
-#endif
             m_pCPU->Execute();
             if (m_CPUbps != nullptr)  // Check for breakpoints
             {
@@ -1323,43 +1322,5 @@ void CMotherboard::SetTeletypeCallback(TELETYPECALLBACK callback)
     }
 }
 
-
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(PRODUCT)
-
-void TraceInstruction(const CMotherboard* pBoard, uint16_t address, uint32_t dwTrace)
-{
-    bool okBk11 = (pBoard->GetConfiguration() & BK_COPT_BK0011) != 0;
-
-    uint16_t memory[4];
-    int addrtype = ADDRTYPE_RAM;
-    memory[0] = pBoard->GetWordView(address + 0 * 2, true, &addrtype);
-    if (!(addrtype == ADDRTYPE_RAM && (dwTrace & TRACE_CPURAM)) &&
-        !(addrtype == ADDRTYPE_ROM && (dwTrace & TRACE_CPUROM)))
-        return;
-    memory[1] = pBoard->GetWordView(address + 1 * 2, true, &addrtype);
-    memory[2] = pBoard->GetWordView(address + 2 * 2, true, &addrtype);
-    memory[3] = pBoard->GetWordView(address + 3 * 2, true, &addrtype);
-
-    TCHAR bufaddr[7];
-    PrintOctalValue(bufaddr, address);
-
-    TCHAR instr[8];
-    TCHAR args[32];
-    DisassembleInstruction(memory, address, instr, args);
-    TCHAR buffer[64];
-    if (okBk11 && (addrtype & ADDRTYPE_MASK) == ADDRTYPE_RAM)
-    {
-        int nRamPage = addrtype & 7;
-        _sntprintf(buffer, 64, _T("%d:%s\t%s\t%s\r\n"), nRamPage, bufaddr, instr, args);
-    }
-    else
-        _sntprintf(buffer, 64, _T("%s\t%s\t%s\r\n"), bufaddr, instr, args);
-
-    DebugLog(buffer);
-}
-
-#endif
 
 //////////////////////////////////////////////////////////////////////

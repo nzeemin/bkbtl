@@ -663,6 +663,54 @@ void Emulator_SetSoundAY(bool onoff)
     g_pBoard->SetSoundAY(onoff);
 }
 
+#if !defined(PRODUCT)
+
+void CALLBACK Emulator_Instruction_Callback(const CProcessor* /*pProc*/, uint16_t address, uint16_t opcode)
+{
+    uint32_t dwTrace = g_pBoard->GetTrace();
+
+    int instrtype = ADDRTYPE_RAM;  // Address type of the instruction itself
+    g_pBoard->GetWordView(address, true, &instrtype);
+    if (!(instrtype == ADDRTYPE_RAM && (dwTrace & TRACE_CPURAM)) &&
+        !(instrtype == ADDRTYPE_ROM && (dwTrace & TRACE_CPUROM)))
+        return;
+
+    int addrtype = ADDRTYPE_RAM;
+    uint16_t memory[4];
+    memory[0] = opcode;
+    memory[1] = g_pBoard->GetWordView(address + 1 * 2, true, &addrtype);
+    memory[2] = g_pBoard->GetWordView(address + 2 * 2, true, &addrtype);
+    memory[3] = g_pBoard->GetWordView(address + 3 * 2, true, &addrtype);
+
+    TCHAR bufaddr[7];
+    PrintOctalValue(bufaddr, address);
+
+    TCHAR instr[8];
+    TCHAR args[32];
+    DisassembleInstruction(memory, address, instr, args);
+    TCHAR buffer[64];
+    bool okBk11 = (g_pBoard->GetConfiguration() & BK_COPT_BK0011) != 0;
+    if (okBk11 && (instrtype & ADDRTYPE_MASK) == ADDRTYPE_RAM)
+    {
+        int nRamPage = instrtype & ADDRTYPE_RAMMASK;
+        _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%d:%s\t%s\t%s\r\n"), nRamPage, bufaddr, instr, args);
+    }
+    else
+        _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%s\t%s\t%s\r\n"), bufaddr, instr, args);
+
+    DebugLog(buffer);
+}
+
+void Emulator_SetTrace(uint32_t dwTrace)
+{
+    g_pBoard->SetTrace(dwTrace);
+
+    bool okInstructionTrace = (dwTrace & TRACE_CPU) != 0;
+    g_pBoard->SetInstructionCallback(okInstructionTrace ? Emulator_Instruction_Callback : nullptr);
+}
+
+#endif // !PRODUCT
+
 bool Emulator_SystemFrame()
 {
     SoundGen_SetVolume(Settings_GetSoundVolume());

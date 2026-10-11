@@ -67,6 +67,11 @@ void Emulator_GetScreenSize(int scrmode, int* pwid, int* phei);
 const uint32_t * Emulator_GetPalette(int screenMode);
 void Emulator_PrepareScreenRGB32(void* pBits, int screenMode);
 
+#if !defined(PRODUCT)
+// Set trace flags (TRACE_xxx) and install/remove the instruction callback accordingly
+void Emulator_SetTrace(uint32_t dwTrace);
+#endif
+
 // Update cached values after Run or Step
 void Emulator_OnUpdate();
 uint16_t Emulator_GetChangeRamStatus(uint16_t address);

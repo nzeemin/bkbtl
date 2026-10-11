@@ -79,6 +79,7 @@ protected:  // Interrupt processing
     uint16_t    m_virq[16];         // VIRQ vector
 protected:
     CMotherboard* m_pBoard;
+    INSTRUCTIONCALLBACK m_pInstructionCallback;  ///< Called before each instruction execution, nullptr = off
 
 public:  // Register control
     uint16_t    GetPSW() const { return m_psw; }
@@ -124,6 +125,8 @@ public:  // Processor control
     void        ClearVIRQ();  // Cancel all pending VIRQ interrupts (called on RESET/INIT signal)
     void        ClearVIRQByIndex(int que);  // Cancel one VIRQ slot (interrupt-enable bit cleared)
     void        Execute();   // Execute one instruction - for debugger only
+    // Assign callback for instruction execution, nullptr to remove
+    void        SetInstructionCallback(INSTRUCTIONCALLBACK callback) { m_pInstructionCallback = callback; }
 
 public:  // Saving/loading emulator status (pImage addresses up to 32 bytes)
     void        SaveToImage(uint8_t* pImage);
