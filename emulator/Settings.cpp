@@ -304,6 +304,8 @@ SETTINGS_GETSET_DWORD(Tape, _T("Tape"), BOOL, FALSE);
 
 SETTINGS_GETSET_DWORD(MemoryMap, _T("MemoryMap"), BOOL, FALSE);
 
+SETTINGS_GETSET_DWORD(InstrHistory, _T("InstrHistory"), BOOL, FALSE);
+
 SETTINGS_GETSET_DWORD(SpriteAddress, _T("SpriteAddress"), WORD, 0);
 
 SETTINGS_GETSET_DWORD(SpriteWidth, _T("SpriteWidth"), WORD, 2);

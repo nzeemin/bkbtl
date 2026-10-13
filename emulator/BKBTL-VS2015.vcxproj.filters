@@ -39,6 +39,7 @@
     <ClCompile Include="Joystick.cpp" />
     <ClCompile Include="KeyboardView.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="InstrHistoryView.cpp" />
     <ClCompile Include="MemoryMapView.cpp" />
     <ClCompile Include="MemoryView.cpp" />
     <ClCompile Include="ScreenView.cpp" />

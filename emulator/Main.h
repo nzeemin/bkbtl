@@ -44,7 +44,9 @@ void MainWindow_ShowHideDebug();
 void MainWindow_ShowHideToolbar();
 void MainWindow_ShowHideKeyboard();
 void MainWindow_ShowHideTape();
+void MainWindow_AdjustWindowLayout();
 void MainWindow_ShowHideMemoryMap();
+void MainWindow_ShowHideInstrHistory();
 void MainWindow_ShowHideSpriteViewer();
 void MainWindow_AdjustWindowSize();
 
@@ -180,6 +182,8 @@ void Settings_SetTape(BOOL flag);
 BOOL Settings_GetTape();
 void Settings_SetMemoryMap(BOOL flag);
 BOOL Settings_GetMemoryMap();
+void Settings_SetInstrHistory(BOOL flag);
+BOOL Settings_GetInstrHistory();
 WORD Settings_GetSpriteAddress();
 void Settings_SetSpriteAddress(WORD value);
 WORD Settings_GetSpriteWidth();

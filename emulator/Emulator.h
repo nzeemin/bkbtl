@@ -67,8 +67,22 @@ void Emulator_GetScreenSize(int scrmode, int* pwid, int* phei);
 const uint32_t * Emulator_GetPalette(int screenMode);
 void Emulator_PrepareScreenRGB32(void* pBits, int screenMode);
 
+// Instruction history, always recorded
+const int INSTR_HISTORY_SIZE = 256;  // Must be a power of two
+
+struct InstructionRecord
+{
+    uint16_t pc;
+    uint16_t words[3];  // Opcode and two next words; the instruction is at most 3 words long
+    uint16_t psw;       // Processor status word before the instruction
+};
+
+int Emulator_GetHistoryLength();
+const InstructionRecord& Emulator_GetHistoryRecord(int index);  // index 0 = most recent
+void Emulator_ClearHistory();
+
 #if !defined(PRODUCT)
-// Set trace flags (TRACE_xxx) and install/remove the instruction callback accordingly
+// Set trace flags (TRACE_xxx); the instruction callback itself is always installed
 void Emulator_SetTrace(uint32_t dwTrace);
 #endif
 

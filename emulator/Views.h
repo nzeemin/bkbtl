@@ -22,6 +22,7 @@ const LPCTSTR CLASSNAME_SCREENVIEW      = CLASSNAMEPREFIX _T("SCREEN");
 const LPCTSTR CLASSNAME_KEYBOARDVIEW    = CLASSNAMEPREFIX _T("KEYBOARD");
 const LPCTSTR CLASSNAME_DEBUGVIEW       = CLASSNAMEPREFIX _T("DEBUG");
 const LPCTSTR CLASSNAME_DISASMVIEW      = CLASSNAMEPREFIX _T("DISASM");
+const LPCTSTR CLASSNAME_INSTRHISTORYVIEW = CLASSNAMEPREFIX _T("INSTRHISTORY");
 const LPCTSTR CLASSNAME_MEMORYVIEW      = CLASSNAMEPREFIX _T("MEMORY");
 const LPCTSTR CLASSNAME_MEMORYMAPVIEW   = CLASSNAMEPREFIX _T("MEMORYMAP");
 const LPCTSTR CLASSNAME_SPRITEVIEW      = CLASSNAMEPREFIX _T("SPRITE");
@@ -93,7 +94,22 @@ void DisasmView_Redraw();
 LRESULT CALLBACK DisasmViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK DisasmViewViewerWndProc(HWND, UINT, WPARAM, LPARAM);
 void DisasmView_OnUpdate();
+int  DisasmView_GetWidth();  // Width of the view when other views are shown to the right, in pixels
 void DisasmView_LoadUnloadSubtitles();
+
+
+//////////////////////////////////////////////////////////////////////
+// InstrHistoryView
+
+extern HWND g_hwndInstrHistory;  // Instr History View window handle
+
+void InstrHistoryView_RegisterClass();
+void InstrHistoryView_Create(HWND hwndParent, int x, int y, int width, int height);
+void InstrHistoryView_Redraw();
+LRESULT CALLBACK InstrHistoryViewWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK InstrHistoryViewViewerWndProc(HWND, UINT, WPARAM, LPARAM);
+void InstrHistoryView_OnUpdate();  // Take the snapshot of the history ring
+int  InstrHistoryView_GetWidth();  // Fixed width of the view, in pixels
 
 
 //////////////////////////////////////////////////////////////////////

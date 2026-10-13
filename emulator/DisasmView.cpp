@@ -81,6 +81,8 @@ BOOL  m_okDisasmJumpPredict;
 TCHAR m_strDisasmHint[42] = { 0 };
 TCHAR m_strDisasmHint2[42] = { 0 };
 
+const int DISASMVIEW_WIDTH_CHARS = 80;  // Width of the view when other views are shown to the right, in characters
+
 int m_cxDisasmBreakpointZone = 16;  // Width of breakpoint zone at the left, for mouse click
 int m_cyDisasmLine = 10;  // cyLine for the current font
 
@@ -136,6 +138,20 @@ void DisasmView_Done()
         free(m_pDisasmLineItems);
         m_pDisasmLineItems = nullptr;
     }
+}
+
+// Width of the view when it shares the row with other views: DISASMVIEW_WIDTH_CHARS characters of the debug font
+int DisasmView_GetWidth()
+{
+    HDC hdc = GetDC(g_hwnd);
+    HFONT hFont = CreateMonospacedFont();
+    HGDIOBJ hOldFont = SelectObject(hdc, hFont);
+    int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
+    SelectObject(hdc, hOldFont);
+    VERIFY(::DeleteObject(hFont));
+    ReleaseDC(g_hwnd, hdc);
+
+    return cxChar * DISASMVIEW_WIDTH_CHARS + 8;  // 8 is for the border and the margin
 }
 
 void DisasmView_Create(HWND hwndParent, int x, int y, int width, int height)

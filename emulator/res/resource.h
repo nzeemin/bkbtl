@@ -111,6 +111,7 @@
 #define ID_DEBUG_TELETYPE               32885
 #define ID_DEBUG_SPRITES                32886
 #define ID_VIEW_MEMORYMAP               32887
+#define ID_VIEW_INSTRHISTORY            32888
 #define ID_DEBUG_MEMORY_WORDBYTE        32894
 #define ID_DEBUG_MEMORY_HEXMODE         32895
 #define ID_DEBUG_MEMORY_GOTO            32896
