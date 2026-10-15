@@ -170,6 +170,7 @@ CProcessor::CProcessor(CMotherboard* pBoard)
     ASSERT(pBoard != nullptr);
     m_pBoard = pBoard;
     m_pInstructionCallback = nullptr;
+    m_pInterruptCallback = nullptr;
     ::memset(m_R, 0, sizeof(m_R));
     m_psw = 0340;
     m_okStopped = true;
@@ -384,6 +385,7 @@ void CProcessor::Execute()
             else  // USER mode interrupt
             {
                 uint16_t oldpsw = m_psw;
+                uint16_t oldPc = GetPC();  // PC where the interrupt appears, for m_pInterruptCallback
                 m_psw &= ~0400;
 
                 // Save PC/PSW to stack
@@ -395,6 +397,10 @@ void CProcessor::Execute()
                 SetPC(GetWord(intrVector));
                 m_psw = GetWord(intrVector + 2) & 0377;
                 m_okDoubleHangupArmed = false;  // Entry completed without a further fault
+
+                // The interrupt is taken when the new PC/PSW were loaded; on a bus fault it was not
+                if (m_pInterruptCallback != nullptr && !m_RPLYrq && !m_RPL2rq)
+                    m_pInterruptCallback(this, oldPc, intrVector);
             }
         }  // end while
     }

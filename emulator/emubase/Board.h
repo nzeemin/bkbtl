@@ -59,6 +59,7 @@ enum BKConfiguration
 #define TRACE_CPUROM       1  // Trace CPU instructions from ROM
 #define TRACE_CPURAM       2  // Trace CPU instructions from RAM
 #define TRACE_CPU          3  // Trace CPU instructions (mask)
+#define TRACE_CPUINT       4  // Trace CPU interrupts
 #define TRACE_FLOPPY    0100  // Trace floppies
 #define TRACE_ALL    0177777  // Trace all
 
@@ -146,6 +147,15 @@ typedef void (CALLBACK* TELETYPECALLBACK)(unsigned char value);
 //   opcode     First word of the instruction as fetched
 typedef void (CALLBACK* INSTRUCTIONCALLBACK)(const CProcessor* pProc, uint16_t address, uint16_t opcode);
 
+// Interrupt callback -- called by CPU when an interrupt or trap has been taken: the old PC/PSW
+// are saved to the stack and the new PC/PSW are loaded from the vector
+// Input:
+//   pProc      Processor that took the interrupt;
+//              pProc->GetPC() / GetPSW() are the handler address and PSW
+//   oldPc      PC where the interrupt appeared: the address of the code that was interrupted
+//   vector     Interrupt vector address
+typedef void (CALLBACK* INTERRUPTCALLBACK)(const CProcessor* pProc, uint16_t oldPc, uint16_t vector);
+
 class CFloppyController;
 class CSoundAY;
 
@@ -186,6 +196,8 @@ public:  // Debug
     void        SetTrace(uint32_t dwTrace);
     // Assign callback for CPU instruction execution, nullptr to remove
     void        SetInstructionCallback(INSTRUCTIONCALLBACK callback);
+    /// \brief Assign callback for CPU interrupts, nullptr to remove
+    void        SetInterruptCallback(INTERRUPTCALLBACK callback);
 public:  // System control
     void        SetConfiguration(uint16_t conf);
     uint16_t    GetConfiguration() const { return m_Configuration; }
