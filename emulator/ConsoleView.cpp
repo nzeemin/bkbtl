@@ -310,9 +310,13 @@ BOOL ConsoleView_SaveMemoryDump(uint16_t addr1, uint16_t addr2)
     if (buf == nullptr)
         return FALSE;
 
+    // Use the debugger view of memory: no I/O side effects and no bus timeouts
     for (DWORD i = 0; i < bsize; i++)
     {
-        buf[i] = g_pBoard->GetByte((uint16_t)(addr1 + i));
+        uint16_t address = (uint16_t)(addr1 + i);
+        int addrtype;
+        uint16_t word = g_pBoard->GetWordView(address & ~1, false, &addrtype);
+        buf[i] = (address & 1) ? (uint8_t)(word >> 8) : (uint8_t)(word & 0xff);
     }
 
     const TCHAR fname[] = _T("memdump.bin");
