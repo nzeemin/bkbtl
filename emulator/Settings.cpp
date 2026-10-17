@@ -227,6 +227,8 @@ SETTINGS_GETSET_DWORD(WindowMaximized, _T("WindowMaximized"), BOOL, FALSE);
 
 SETTINGS_GETSET_DWORD(Configuration, _T("Configuration"), int, 0);
 
+SETTINGS_GETSET_DWORD(VM1G, _T("VM1G"), BOOL, FALSE);
+
 void Settings_GetFloppyFilePath(int slot, LPTSTR buffer)
 {
     TCHAR bufValueName[8];

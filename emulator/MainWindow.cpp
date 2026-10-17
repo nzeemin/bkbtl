@@ -68,6 +68,7 @@ void MainWindow_DoFileSaveState();
 void MainWindow_DoFileLoadState();
 void MainWindow_DoEmulatorFloppy(int slot);
 void MainWindow_DoEmulatorConf(BKConfiguration configuration);
+void MainWindow_DoEmulatorVM1G();
 void MainWindow_DoFileScreenshot();
 void MainWindow_DoFileScreenshotToClipboard();
 void MainWindow_DoFileScreenshotSaveAs();
@@ -875,6 +876,7 @@ void MainWindow_UpdateMenu()
     case BK_CONF_BK0011_FDD:   configcmd = ID_CONF_BK0011FDD; break;
     }
     CheckMenuRadioItem(hMenu, ID_CONF_BK0010BASIC, ID_CONF_BK0011FDD, configcmd, MF_BYCOMMAND);
+    CheckMenuItem(hMenu, ID_CONF_VM1G, (Settings_GetVM1G() ? MF_CHECKED : MF_UNCHECKED));
 
     // Emulator|FloppyX
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY0, (g_pBoard->IsFloppyImageAttached(0) ? MF_CHECKED : MF_UNCHECKED));
@@ -1072,6 +1074,9 @@ bool MainWindow_DoCommand(int commandId)
         break;
     case ID_CONF_BK0011FDD:
         MainWindow_DoEmulatorConf(BK_CONF_BK0011_FDD);
+        break;
+    case ID_CONF_VM1G:
+        MainWindow_DoEmulatorVM1G();
         break;
     case ID_VIEW_DEBUG:
         MainWindow_DoViewDebug();
@@ -1346,6 +1351,23 @@ void MainWindow_DoEmulatorConf(BKConfiguration configuration)
     Emulator_InitConfiguration(configuration);
 
     Settings_SetConfiguration(configuration);
+
+    MainWindow_UpdateMenu();
+    MainWindow_UpdateWindowTitle();
+    MainWindow_UpdateAllViews();
+    KeyboardView_Update();
+}
+
+void MainWindow_DoEmulatorVM1G()
+{
+    // Ask user -- we have to reset machine to change the processor
+    if (!AlertOkCancel(_T("Reset required after processor change.\nAre you agree?")))
+        return;
+
+    Settings_SetVM1G(!Settings_GetVM1G());
+
+    // Reinitialize the current configuration to apply the processor variant
+    Emulator_InitConfiguration(g_nEmulatorConfiguration);
 
     MainWindow_UpdateMenu();
     MainWindow_UpdateWindowTitle();

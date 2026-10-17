@@ -143,6 +143,8 @@ BEGIN
         MENUITEM "BK 0010.01 FDD",              ID_CONF_BK0010FDD
         MENUITEM "BK 0011M",                    ID_CONF_BK0011
         MENUITEM "BK 0011M FDD",                ID_CONF_BK0011FDD
+        MENUITEM SEPARATOR
+        MENUITEM "K1801VM1G",                   ID_CONF_VM1G
     END
     POPUP "&Drives"
     BEGIN

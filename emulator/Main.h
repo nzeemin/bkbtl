@@ -140,6 +140,8 @@ void Settings_SetWindowMaximized(BOOL flag);
 BOOL Settings_GetWindowMaximized();
 void Settings_SetConfiguration(int configuration);
 int  Settings_GetConfiguration();
+void Settings_SetVM1G(BOOL flag);  // Emulate K1801VM1G processor: MUL and timer interrupt
+BOOL Settings_GetVM1G();
 void Settings_SetFloppyFilePath(int slot, LPCTSTR sFilePath);
 void Settings_GetFloppyFilePath(int slot, LPTSTR buffer);
 void Settings_SetScreenViewMode(int mode);

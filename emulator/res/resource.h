@@ -81,6 +81,7 @@
 #define ID_CONF_BK0010FDD               32815
 #define ID_CONF_BK0011                  32816
 #define ID_CONF_BK0011FDD               32817
+#define ID_CONF_VM1G                    32818
 #define ID_EMULATOR_JOYSTICKNUMPAD      32820
 #define ID_EMULATOR_JOYSTICK1           32821
 #define ID_EMULATOR_JOYSTICK2           32822

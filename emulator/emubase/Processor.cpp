@@ -29,6 +29,7 @@ const int TIMING_NOP    =   12;  // 4 us - NOP and all commands without operands
 const int TIMING_SOB    =   20;  // 6.8 us
 const int TIMING_BR     =   16;  // 5.4 us
 const int TIMING_MARK   =   36;
+const int TIMING_MUL    =   96;  // K1801VM1G only; flat value, not measured, real time depends on the multiplier
 
 const int TIMING_REGREG =   12;  // Base timing
 const int TIMING_A[8]   = { 0, 12, 12, 24, 16, 20, 20, 28 };  // Source
@@ -108,7 +109,7 @@ void CProcessor::Init()
     RegisterMethodRef( 0040000, 0047777, &CProcessor::ExecuteBIC );
     RegisterMethodRef( 0050000, 0057777, &CProcessor::ExecuteBIS );
     RegisterMethodRef( 0060000, 0067777, &CProcessor::ExecuteADD );
-    // MUL             0070000, 0070777
+    RegisterMethodRef( 0070000, 0070777, &CProcessor::ExecuteMUL );  // traps as illegal unless VM1G
     // DIV             0071000, 0071777
     // ASH             0072000, 0072777
     // ASHC            0073000, 0073777
@@ -182,6 +183,8 @@ CProcessor::CProcessor(CMotherboard* pBoard)
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     m_okDoubleHangupArmed = false;
     m_haltpin = false;
+    m_okVM1G = false;
+    m_TIMERrq = false;
     m_instruction = m_instructionpc = 0;
     m_regsrc = m_methsrc = 0;
     m_regdest = m_methdest = 0;
@@ -200,6 +203,7 @@ void CProcessor::Start()
     m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ1rq = m_IRQ2rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     m_okDoubleHangupArmed = false;
+    m_TIMERrq = false;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 
     // "Turn On" interrupt processing
@@ -220,6 +224,7 @@ void CProcessor::Stop()
     m_RPLYrq = m_RSVDrq = m_TBITrq = m_ACLOrq = m_HALTrq = m_RPL2rq = m_IRQ1rq = m_IRQ2rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     m_okDoubleHangupArmed = false;
+    m_TIMERrq = false;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
     m_haltpin = false;
 }
@@ -324,6 +329,11 @@ void CProcessor::Execute()
                 intrVector = 0000100;  intrMode = false;
                 m_IRQ2rq = false;
             }
+            else if (m_TIMERrq && (m_psw & (PSW_P | PSW_ACLOMASK)) == 0)  // VM1G timer, masked by PSW7 or PSW10
+            {
+                intrVector = 0000270;  intrMode = false;
+                m_TIMERrq = false;
+            }
             else if (m_virqrq > 0 && (m_psw & (PSW_P | PSW_ACLOMASK)) == 0)  // VIRQ, priority 7; masked by PSW7 or PSW10
             {
                 intrMode = false;
@@ -411,6 +421,15 @@ void CProcessor::TickIRQ2()
     if (m_okStopped) return;  // Processor is stopped - nothing to do
 
     m_IRQ2rq = true;
+}
+
+bool CProcessor::TickTimer()
+{
+    if (m_okStopped || !m_okVM1G) return false;  // Only K1801VM1G has the timer interrupt
+    if (m_TIMERrq) return false;  // Previous request is not taken yet
+
+    m_TIMERrq = true;
+    return true;
 }
 
 void CProcessor::PowerFail()
@@ -1402,15 +1421,8 @@ void CProcessor::ExecuteMTPS()  // MTPS - move to PS
     else
         dst = GetLReg(m_regdest);
 
-    if (GetPSW() & 0400) //in halt?
-    {
-        //allow everything
-        SetPSW((GetPSW() & 0400) | dst);
-    }
-    else
-    {
-        SetPSW((GetPSW() & 0420) | (dst & 0357));  // preserve T
-    }
+    // MTPS changes only priority and flags: the high byte (PSW8-15) and T are preserved
+    SetPSW((GetPSW() & ~0357) | (dst & 0357));
 
     m_internalTick = TIMING_REGREG + TIMING_B[m_methdest];
 }
@@ -1598,6 +1610,40 @@ void CProcessor::ExecuteSOB()  // SOB - subtract one: R = R - 1; if R != 0 : PC 
         SetPC(GetPC() - (m_instruction & static_cast<uint16_t>(077)) * 2 );
 
     m_internalTick = TIMING_SOB;
+}
+
+void CProcessor::ExecuteMUL()  // MUL - signed multiply: Rn,Rn|1 = Rn * src (K1801VM1G only)
+{
+    if (!m_okVM1G)
+    {
+        ExecuteUNKNOWN();  // K1801VM1A/B/V trap this opcode as illegal
+        return;
+    }
+
+    // The source is in the destination field; it is read before the register is written
+    uint16_t src;
+    if (m_methdest)
+    {
+        uint16_t src_addr = GetWordAddr(m_methdest, m_regdest);
+        if (m_RPLYrq) return;
+        src = GetWord(src_addr);
+        if (m_RPLYrq) return;
+    }
+    else
+        src = GetReg(m_regdest);
+
+    int result = static_cast<int>(static_cast<short>(GetReg(m_regsrc))) * static_cast<short>(src);
+
+    // With an odd register the high half is lost: both writes land in the same register
+    SetReg(m_regsrc, static_cast<uint16_t>((static_cast<unsigned int>(result) >> 16) & 0xffff));
+    SetReg(m_regsrc | 1, static_cast<uint16_t>(result & 0xffff));
+
+    SetN(result < 0);
+    SetZ(result == 0);
+    SetV(false);
+    SetC(result >= 0100000 || result <= -0100000);  // |result| does not fit in 15 bits
+
+    m_internalTick = TIMING_MUL + TIMING_A[m_methdest];
 }
 
 void CProcessor::ExecuteMOV()  // MOV - move
@@ -2136,7 +2182,8 @@ void CProcessor::SaveToImage(uint8_t* pImage)
     flags2 |= (m_IOT_rq ? 4 : 0);
     flags2 |= (m_EMT_rq ? 8 : 0);
     flags2 |= (m_TRAPrq ? 16 : 0);
-    *pbImage++ = flags2;                            //   28     1   Flags
+    flags2 |= (m_TIMERrq ? 32 : 0);
+    *pbImage++ = flags2;                           //   28     1   Flags
     *pbImage++ = (uint8_t)m_virqrq;                 //   29     1   VIRQ request
     //                                              //   30     2   Reserved
     memcpy(pImage + 32, m_virq, 2 * 16);            //   32    32   VIRQ vectors
@@ -2170,7 +2217,8 @@ void CProcessor::LoadFromImage(const uint8_t* pImage)
     m_IOT_rq    = ((flags2 &  4) != 0);
     m_EMT_rq    = ((flags2 &  8) != 0);
     m_TRAPrq    = ((flags2 & 16) != 0);
-    m_virqrq = *pbImage++;                          //   29     1   VIRQ request
+    m_TIMERrq   = ((flags2 & 32) != 0);
+    m_virqrq = *pbImage++;                         //   29     1   VIRQ request
     //                                              //   30     2   Reserved
     memcpy(m_virq, pImage + 32, 2 * 16);            //   32    32   VIRQ vectors
 }

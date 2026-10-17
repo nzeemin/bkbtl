@@ -27,6 +27,7 @@ enum BKConfiguration
     BK_COPT_ROM_BASIC = 2,
     BK_COPT_ROM_FOCAL = 4,
     BK_COPT_FDD = 16,
+    BK_COPT_VM1G = 128,
 
     // Configurations BK-0010(01)
     BK_CONF_BK0010_BASIC =  // БК-0010(01) и BASIC-86

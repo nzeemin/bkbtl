@@ -57,6 +57,7 @@ CMotherboard::~CMotherboard()
 void CMotherboard::SetConfiguration(uint16_t conf)
 {
     m_Configuration = conf;
+    m_pCPU->SetVM1G((m_Configuration & BK_COPT_VM1G) != 0);
 
     // Define memory map
     m_MemoryMap = 0xf0;  // By default, 000000-077777 is RAM, 100000-177777 is ROM
@@ -272,6 +273,7 @@ void CMotherboard::ResetDevices()
     // its interrupt request, so none of those requests should survive into the
     // instruction that follows RESET.
     m_pCPU->ClearVIRQ();
+    m_pCPU->ClearTimerRequest();  // The timer is reset too, its pending interrupt must not survive RESET
 }
 
 void CMotherboard::Tick50()  // 50 Hz timer
@@ -330,7 +332,16 @@ void CMotherboard::TimerTick() // Timer Tick, 31250 Hz = 32 мкс (BK-0011), 23
             m_timer = m_timerreload;
 
             if ((m_timerflags & 4) != 0)  // If EXPENABLE
-                m_timerflags |= 128;  // Set EXPIRY bit
+            {
+                if (m_Configuration & BK_COPT_VM1G)
+                {
+                    // K1801VM1G: raise the timer interrupt; EXPIRY means the previous request is still pending
+                    if (!m_pCPU->TickTimer())
+                        m_timerflags |= 128;
+                }
+                else
+                    m_timerflags |= 128;  // Set EXPIRY bit
+            }
         }
         // In WRAPAROUND mode the EXPIRY bit is never set, regardless of EXPENABLE
     }
@@ -344,6 +355,10 @@ void CMotherboard::SetTimerReload(uint16_t val)  // Sets timer reload value, wri
 void CMotherboard::SetTimerState(uint16_t val) // Sets timer state, write to port 177712
 {
     //DebugPrintFormat(_T("SetTimerState %06o\r\n"), val);
+
+    // K1801VM1G: enabling expiry while the counter is already zero (not WRAPAROUND) raises the request at once
+    if ((m_Configuration & BK_COPT_VM1G) && m_timer == 0 && (val & 4) != 0 && (val & 2) == 0)
+        m_pCPU->TickTimer();
     m_timer = m_timerreload;
     m_timerdivider = 0;
 
@@ -1205,6 +1220,7 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
     // Board data
     const uint16_t* pwImage = reinterpret_cast<const uint16_t*>(pImage + 32);
     m_Configuration = *pwImage++; //TODO: call SetConfiguration() instead
+    m_pCPU->SetVM1G((m_Configuration & BK_COPT_VM1G) != 0);  // The saved state defines the processor variant
     pwImage += 6;  // RESERVED
     m_Port177560    = *pwImage++;
     m_Port177562    = *pwImage++;

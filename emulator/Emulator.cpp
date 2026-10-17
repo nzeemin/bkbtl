@@ -281,7 +281,11 @@ LPCTSTR Emulator_GetConfigurationName()
 
 bool Emulator_InitConfiguration(BKConfiguration configuration)
 {
-    g_pBoard->SetConfiguration((uint16_t)configuration);
+    // The processor variant is a separate setting, it is not part of g_nEmulatorConfiguration
+    uint16_t boardConf = (uint16_t)configuration;
+    if (Settings_GetVM1G())
+        boardConf |= BK_COPT_VM1G;
+    g_pBoard->SetConfiguration(boardConf);
 
     uint8_t buffer[8192];
 
@@ -721,6 +725,7 @@ LPCTSTR Emulator_GetInterruptName(uint16_t vector)
     case 0060: return _T("KEYB");
     case 0064: return _T("TTY");
     case 0100: return _T("EVNT");
+    case 0270: return _T("TIMER");  // K1801VM1G timer expiry
     case 0274: return _T("KEYB2");
     default:   return _T("VIRQ");
     }
@@ -1763,6 +1768,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
 
     // Restore emulator state from the image
     g_pBoard->LoadFromImage(pImage);
+    Settings_SetVM1G((g_pBoard->GetConfiguration() & BK_COPT_VM1G) != 0);  // Keep the setting and menu in sync with the state
     Emulator_ClearHistory();
 
     m_dwEmulatorUptime = *(uint32_t*)(pImage + 16);
@@ -1774,6 +1780,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
 
     g_okEmulatorRunning = false;
 
+    MainWindow_UpdateMenu();
     MainWindow_UpdateAllViews();
 
     return true;

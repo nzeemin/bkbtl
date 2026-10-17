@@ -48,6 +48,7 @@ protected:  // Processor state
     bool        m_stepmode;         // Read true if it's step mode
     bool        m_haltpin;          // HALT
     bool        m_waitmode;         // WAIT
+    bool        m_okVM1G;           // true = K1801VM1G (MUL, timer interrupt), false = K1801VM1A/B/V
 
 protected:  // Current instruction processing
     uint16_t    m_instruction;      // Current instruction
@@ -75,6 +76,7 @@ protected:  // Interrupt processing
     bool        m_IOT_rq;           // IOT command interrupt pending
     bool        m_EMT_rq;           // EMT command interrupt pending
     bool        m_TRAPrq;           // TRAP command interrupt pending
+    bool        m_TIMERrq;          // Timer expiry interrupt pending (K1801VM1G only), vector 0270
     int         m_virqrq;           // VIRQ pending
     uint16_t    m_virq[16];         // VIRQ vector
 protected:
@@ -121,6 +123,13 @@ public:  // Processor control
     void        Start();     // Start processor
     void        Stop();      // Stop processor
     void        TickIRQ2();  // IRQ2 signal
+    // Timer expiry signal, K1801VM1G only. Returns false if the previous request is still pending
+    // or the chip is not VM1G; true if a new request was raised.
+    bool        TickTimer();
+    // Select the chip variant: true = K1801VM1G, false = K1801VM1A/B/V. This is configuration, not state.
+    void        SetVM1G(bool okVM1G) { m_okVM1G = okVM1G; }
+    bool        IsVM1G() const { return m_okVM1G; }
+    void        ClearTimerRequest() { m_TIMERrq = false; }  // Cancel pending timer interrupt (called on RESET/INIT signal)
     void        PowerFail();
     void        InterruptVIRQ(int que, uint16_t interrupt);  // External interrupt via VIRQ signal
     void        ClearVIRQ();  // Cancel all pending VIRQ interrupts (called on RESET/INIT signal)
@@ -196,6 +205,7 @@ protected:  // Implementation - instruction execution
     void        ExecuteMTPS();
     void        ExecuteMFPS();
     void        ExecuteMARK();
+    void        ExecuteMUL();   // K1801VM1G only
     // Two fields
     void        ExecuteMOV ();
     void        ExecuteMOVB();

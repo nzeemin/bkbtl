@@ -51,6 +51,8 @@ LPCTSTR g_CommandLineHelp =
     _T("/nodebug /debugoff\r\n\tSwitch off the debug mode\r\n")
     _T("/sound /soundon\r\n\tTurn sound on\r\n")
     _T("/nosound /soundoff\r\n\tTurn sound off\r\n")
+    _T("/vm1g\r\n\tEmulate K1801VM1G processor (MUL instruction, timer interrupt)\r\n")
+    _T("/novm1g /vm1goff\r\n\tEmulate K1801VM1A/B/V processor\r\n")
     _T("/diskN:filePath\r\n\tAttach disk image, N=0..3\r\n")
     _T("/conf:confname\r\n\tSelect configuration:\r\n\tBK-0010-BASIC, BK-0010-FOCAL, BK-0010-FDD, BK-0011M, BK-0011M-FDD\r\n")
     _T("/state:filepath\r\n\tLoad emulator state from the given image file\r\n");
@@ -312,6 +314,14 @@ void ParseCommandLine()
         else if (_tcscmp(arg, _T("/soundoff")) == 0 || _tcscmp(arg, _T("/nosound")) == 0)
         {
             Settings_SetSound(FALSE);
+        }
+        else if (_tcscmp(arg, _T("/vm1g")) == 0)
+        {
+            Settings_SetVM1G(TRUE);
+        }
+        else if (_tcscmp(arg, _T("/novm1g")) == 0 || _tcscmp(arg, _T("/vm1goff")) == 0)
+        {
+            Settings_SetVM1G(FALSE);
         }
         else if (_tcslen(arg) > 7 && _tcsncmp(arg, _T("/disk"), 5) == 0)  // "/diskN:filePath", N=A..D
         {
