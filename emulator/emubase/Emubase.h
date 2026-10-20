@@ -33,19 +33,45 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //   Return value: number of words in the instruction
 uint16_t DisassembleInstruction(const uint16_t* pMemory, uint16_t addr, TCHAR* sInstr, TCHAR* sArg);
 
-bool Disasm_CheckForJump(const uint16_t* memory, int* pDelta);
+// Check if the instruction is a jump with a known target, for the jump arrow
+//   memory  - memory image: the instruction and the word after it (the offset or the address of the target)
+//   address - address of the instruction
+//   pDelta  - distance in words from the instruction to the target, negative = back
+//   Return value: true if the instruction is a jump with a known target
+bool Disasm_CheckForJump(const uint16_t* memory, uint16_t address, int* pDelta);
 
-// Prepare "Jump Hint" string, and also calculate condition for conditional jump
-// Returns: jump prediction flag: true = will jump, false = will not jump
-bool Disasm_GetJumpConditionHint(
-    const uint16_t* memory, const CProcessor * pProc, const CMotherboard * pBoard, LPTSTR buffer);
+// Hints of the current instruction: up to three lines of text and the jump prediction
+#define DISASM_HINT_LINES       3
+#define DISASM_HINT_SIZE        64   // Size of a hint line, in characters, including the terminator
+#define DISASM_HINT_PIECE_SIZE  24   // Size of a hint of one operand, a line joins the hints of the source and the destination
 
-// Prepare "Instruction Hint" for a regular instruction (not a branch/jump one)
+struct DisasmHint
+{
+    TCHAR lines[DISASM_HINT_LINES][DISASM_HINT_SIZE];  // The lines; the unused ones are empty
+    int   count;        // Number of the lines used, 0..3; 0 = no hints
+    bool  isJump;       // The instruction is a jump or a return: the hint has the color of the jump hints
+    bool  jumpPredict;  // Jump prediction flag: true = will jump, false = will not jump
+};
+
+// Prepare the hints of the instruction at PC
+//   memory - memory image: the instruction and the two words after it
+//   pProc  - processor, the instruction is at its PC
+void Disasm_GetHint(const uint16_t* memory, const CProcessor * pProc, const CMotherboard * pBoard, DisasmHint* pHint);
+
+// A wrapper for the callers of the old interface; the application uses Disasm_GetHint() instead.
+// Prepare "Instruction Hint" for a regular instruction (not a branch/jump one), the first two lines
 // buffer, buffer2 - buffers for 1st and 2nd lines of the instruction hint, min size 42
-// Returns: number of hint lines; 0 = no hints
+// Returns: number of hint lines, at most 2; 0 = no hints
 int Disasm_GetInstructionHint(
     const uint16_t* memory, const CProcessor * pProc, const CMotherboard * pBoard,
     LPTSTR buffer, LPTSTR buffer2);
+
+// A wrapper over the jump hint code of Disasm_GetHint(), kept for the callers that use the old interface: the application
+// itself calls Disasm_GetHint(). Gives the first line of the jump hint only (a string buffer of at
+// least 32 characters; empty if the instruction has no jump hint) and calculates the condition for a conditional jump
+// Returns: jump prediction flag: true = will jump, false = will not jump
+bool Disasm_GetJumpConditionHint(
+    const uint16_t* memory, const CProcessor * pProc, const CMotherboard * pBoard, LPTSTR buffer);
 
 
 //////////////////////////////////////////////////////////////////////
