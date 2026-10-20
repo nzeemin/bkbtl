@@ -30,3 +30,6 @@ environment:
 
 build:
   project: $(project_name)
+
+test_script:
+  - if not "%CONFIGURATION%"=="Product" vstest.console.exe /Logger:Appveyor tests\%CONFIGURATION%\BKBTL-Tests.dll

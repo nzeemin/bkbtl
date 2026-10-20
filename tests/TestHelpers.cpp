@@ -1,0 +1,139 @@
+﻿/*  This file is part of BKBTL.
+    BKBTL is free software: you can redistribute it and/or modify it under the terms
+of the GNU Lesser General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version.
+    BKBTL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU Lesser General Public License for more details.
+    You should have received a copy of the GNU Lesser General Public License along with
+BKBTL. If not, see <http://www.gnu.org/licenses/>. */
+
+// TestHelpers.cpp : fixtures shared by the tests
+
+#include "stdafx.h"
+#include <CppUnitTest.h>
+#include "TestHelpers.h"
+
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+// The processor builds its instruction table once per process
+TEST_MODULE_INITIALIZE(TestModuleInitialize)
+{
+    CProcessor::Init();
+}
+
+TEST_MODULE_CLEANUP(TestModuleCleanup)
+{
+    CProcessor::Done();
+}
+
+void Eq(unsigned int expected, unsigned int actual, const TCHAR* msg)
+{
+    Assert::AreEqual(expected, actual, msg);
+}
+
+void FlagsText(uint16_t flags, TCHAR* buf)
+{
+    buf[0] = (flags & TF_N) ? 'N' : 'n';
+    buf[1] = (flags & TF_Z) ? 'Z' : 'z';
+    buf[2] = (flags & TF_V) ? 'V' : 'v';
+    buf[3] = (flags & TF_C) ? 'C' : 'c';
+    buf[4] = 0;
+}
+
+TestBoard::TestBoard()
+{
+    m_pBoard = new CMotherboard();
+    m_pBoard->Reset();
+
+    // The CPU stays in the state we set: no flags, all registers zero
+    CProcessor* pCPU = CPU();
+    pCPU->SetPSW(0);
+    for (int r = 0; r < 8; r++)
+        pCPU->SetReg(r, 0);
+}
+
+TestBoard::~TestBoard()
+{
+    delete m_pBoard;
+}
+
+void TestBoard::SetWord(uint16_t address, uint16_t word)
+{
+    m_pBoard->SetWord(address, word);
+}
+
+uint16_t TestBoard::GetWord(uint16_t address)
+{
+    int addrtype;
+    return m_pBoard->GetWordView(static_cast<uint16_t>(address & 0xFFFE), false, &addrtype);
+}
+
+void TestBoard::LoadProgram(uint16_t address, const uint16_t* words, size_t count)
+{
+    for (size_t i = 0; i < count; i++)
+        SetWord(static_cast<uint16_t>(address + i * 2), words[i]);
+    CPU()->SetPC(address);
+}
+
+void TestBoard::SetRegs(const uint16_t* regs)
+{
+    for (int r = 0; r < 8; r++)
+        CPU()->SetReg(r, regs[r]);
+}
+
+void TestBoard::SetFlags(uint16_t flags)
+{
+    CPU()->SetPSW(flags & TF_ALL);
+}
+
+uint16_t TestBoard::GetFlags()
+{
+    CProcessor* pCPU = CPU();
+    return static_cast<uint16_t>((pCPU->GetN() ? TF_N : 0) | (pCPU->GetZ() ? TF_Z : 0) |
+            (pCPU->GetV() ? TF_V : 0) | (pCPU->GetC() ? TF_C : 0));
+}
+
+TempFile::TempFile(const TCHAR* extension)
+{
+    static unsigned int counter = 0;
+    TCHAR dir[MAX_PATH];
+    ::GetTempPath(MAX_PATH, dir);
+    _stprintf_s(m_path, _T("%sbkbtl-test-%u-%u%s"), dir, static_cast<unsigned int>(::GetCurrentProcessId()), counter++, extension);
+    ::DeleteFile(m_path);
+}
+
+TempFile::~TempFile()
+{
+    ::SetFileAttributes(m_path, FILE_ATTRIBUTE_NORMAL);
+    ::DeleteFile(m_path);
+}
+
+void TempFile::Write(const std::vector<uint8_t>& content)
+{
+    FILE* fp = ::_tfopen(m_path, _T("wb"));
+    Assert::IsTrue(fp != nullptr, _T("temp file is created"));
+    if (!content.empty())
+        ::fwrite(&content[0], 1, content.size(), fp);
+    ::fclose(fp);
+}
+
+std::vector<uint8_t> TempFile::Read() const
+{
+    std::vector<uint8_t> content;
+    FILE* fp = ::_tfopen(m_path, _T("rb"));
+    Assert::IsTrue(fp != nullptr, _T("temp file is opened"));
+    ::fseek(fp, 0, SEEK_END);
+    long size = ::ftell(fp);
+    ::fseek(fp, 0, SEEK_SET);
+    content.resize(static_cast<size_t>(size));
+    if (size > 0)
+        ::fread(&content[0], 1, static_cast<size_t>(size), fp);
+    ::fclose(fp);
+    return content;
+}
+
+void TempFile::SetReadOnly(bool readOnly)
+{
+    ::SetFileAttributes(m_path, readOnly ? FILE_ATTRIBUTE_READONLY : FILE_ATTRIBUTE_NORMAL);
+}

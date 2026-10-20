@@ -26,7 +26,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 // Disassembler
 
-// Disassemble one instruction of KM1801VM2 processor
+// Disassemble one instruction of K1801VM1 processor
 //   pMemory - memory image (we read only words of the instruction)
 //   sInstr  - instruction mnemonics buffer - at least 8 characters
 //   sArg    - instruction arguments buffer - at least 32 characters

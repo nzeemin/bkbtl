@@ -17,19 +17,20 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Emubase.h"
 
 
-// Формат отображения режимов адресации
+// Display formats for the addressing modes
 const LPCTSTR ADDRESS_MODE_FORMAT[] =
 {
     _T("%s"), _T("(%s)"), _T("(%s)+"), _T("@(%s)+"), _T("-(%s)"), _T("@-(%s)"), _T("%06o(%s)"), _T("@%06o(%s)")
 };
-// Формат отображения режимов адресации для регистра PC
+// Display formats for the addressing modes of the PC register
 const LPCTSTR ADDRESS_MODE_PC_FORMAT[] =
 {
     _T("PC"), _T("(PC)"), _T("#%06o"), _T("@#%06o"), _T("-(PC)"), _T("@-(PC)"), _T("%06o"), _T("@%06o")
 };
 
+//   word   - the extra word of the operand; used only if the addressing mode has one
 //   strSrc - at least 24 characters
-uint16_t ConvertSrcToString(uint16_t instr, uint16_t addr, TCHAR* strSrc, uint16_t code)
+uint16_t ConvertSrcToString(uint16_t instr, uint16_t addr, TCHAR* strSrc, uint16_t word)
 {
     const size_t strSrcSize = 24;
 
@@ -44,7 +45,6 @@ uint16_t ConvertSrcToString(uint16_t instr, uint16_t addr, TCHAR* strSrc, uint16
 
         if (param == 6 || param == 7)
         {
-            uint16_t word = code;  //TODO: pMemory
             _sntprintf(strSrc, strSrcSize - 1, format, word, pszReg);
             return 1;
         }
@@ -57,13 +57,11 @@ uint16_t ConvertSrcToString(uint16_t instr, uint16_t addr, TCHAR* strSrc, uint16
 
         if (param == 2 || param == 3)
         {
-            uint16_t word = code;  //TODO: pMemory
             _sntprintf(strSrc, strSrcSize - 1, format, word);
             return 1;
         }
         else if (param == 6 || param == 7)
         {
-            uint16_t word = code;  //TODO: pMemory
             _sntprintf(strSrc, strSrcSize - 1, format, static_cast<uint16_t>(addr + word + 2));
             return 1;
         }
@@ -74,8 +72,9 @@ uint16_t ConvertSrcToString(uint16_t instr, uint16_t addr, TCHAR* strSrc, uint16
     return 0;
 }
 
+//   word   - the extra word of the operand; used only if the addressing mode has one
 //   strDst - at least 24 characters
-uint16_t ConvertDstToString (uint16_t instr, uint16_t addr, TCHAR* strDst, uint16_t code)
+uint16_t ConvertDstToString (uint16_t instr, uint16_t addr, TCHAR* strDst, uint16_t word)
 {
     const size_t strDstSize = 24;
 
@@ -90,7 +89,7 @@ uint16_t ConvertDstToString (uint16_t instr, uint16_t addr, TCHAR* strDst, uint1
 
         if (param == 6 || param == 7)
         {
-            _sntprintf(strDst, strDstSize - 1, format, code, pszReg);
+            _sntprintf(strDst, strDstSize - 1, format, word, pszReg);
             return 1;
         }
         else
@@ -102,12 +101,12 @@ uint16_t ConvertDstToString (uint16_t instr, uint16_t addr, TCHAR* strDst, uint1
 
         if (param == 2 || param == 3)
         {
-            _sntprintf(strDst, strDstSize - 1, format, code);
+            _sntprintf(strDst, strDstSize - 1, format, word);
             return 1;
         }
         else if (param == 6 || param == 7)
         {
-            _sntprintf(strDst, strDstSize - 1, format, static_cast<uint16_t>(addr + code + 2));
+            _sntprintf(strDst, strDstSize - 1, format, static_cast<uint16_t>(addr + word + 2));
             return 1;
         }
         else
@@ -191,12 +190,11 @@ uint16_t DisassembleInstruction(const uint16_t* pMemory, uint16_t addr, TCHAR* s
         if (GetDigit(instr, 0) == 7)
         {
             _tcscpy(strInstr, _T("RETURN"));
+            return 1;
         }
-        else
-        {
-            _tcscpy(strInstr, _T("RTS"));
-            _tcscpy(strArg, REGISTER_NAME[GetDigit(instr, 0)]);
-        }
+
+        _tcscpy(strInstr, _T("RTS"));
+        _tcscpy(strArg, REGISTER_NAME[GetDigit(instr, 0)]);
         return 1;
     }
 
@@ -248,7 +246,7 @@ uint16_t DisassembleInstruction(const uint16_t* pMemory, uint16_t addr, TCHAR* s
     }
 
     length = 1;
-    _sntprintf(strDst, strDstSize - 1, _T("%06ho"), (uint16_t)(addr + ((short)(char)(uint8_t)(instr & 0xff) * 2) + 2));
+    _sntprintf(strDst, strDstSize - 1, _T("%06ho"), static_cast<uint16_t>(addr + (static_cast<short>(static_cast<char>(static_cast<uint8_t>(instr & 0xff))) * 2) + 2));
 
     // Branches & interrupts
     switch (instr & ~static_cast<uint16_t>(0377))
@@ -329,7 +327,7 @@ uint16_t DisassembleInstruction(const uint16_t* pMemory, uint16_t addr, TCHAR* s
     case PI_SOB:
         _tcscpy(strInstr, _T("SOB"));
         strReg = REGISTER_NAME[GetDigit(instr, 2)];
-        _sntprintf(strDst, strDstSize - 1, _T("%06o"), addr - (GetDigit(instr, 1) * 8 + GetDigit(instr, 0)) * 2 + 2);
+        _sntprintf(strDst, strDstSize - 1, _T("%06o"), static_cast<uint16_t>(addr - (GetDigit(instr, 1) * 8 + GetDigit(instr, 0)) * 2 + 2));
         _sntprintf(strArg, strArgSize - 1, _T("%s, %s"), strReg, strDst);  // strArg = strReg + ", " + strDst;
         return 1;
     }
@@ -391,7 +389,7 @@ bool Disasm_CheckForJump(const uint16_t* memory, uint16_t address, int* pDelta)
     if (((instr & 0177400) >= 0000400 && (instr & 0177400) < 0004000) ||
         ((instr & 0177400) >= 0100000 && (instr & 0177400) < 0104000))
     {
-        *pDelta = ((int)(signed char)(instr & 0xff)) + 1;
+        *pDelta = (static_cast<int>(static_cast<int8_t>(instr & 0xff))) + 1;
         return true;
     }
 
@@ -418,7 +416,7 @@ bool Disasm_CheckForJump(const uint16_t* memory, uint16_t address, int* pDelta)
             uint16_t target = memory[1];
             if ((target & 1) != 0)
                 return false;  // an odd address is not a target of a jump
-            *pDelta = static_cast<int>(static_cast<short>(static_cast<uint16_t>(target - address))) / 2;
+            *pDelta = static_cast<int>(static_cast<int16_t>(static_cast<uint16_t>(target - address))) / 2;
             return true;
         }
     }
@@ -491,7 +489,7 @@ static bool Disasm_ReadHintValue(const CMotherboard * pBoard, uint16_t address, 
     return true;
 }
 
-// "label=value", the value is read at the address
+// "(label)=value", the value is read at the address
 static bool Disasm_MemoryHint(LPTSTR hint, size_t hintsize, const CMotherboard * pBoard,
         LPCTSTR label, uint16_t address, bool byteword)
 {
@@ -502,7 +500,7 @@ static bool Disasm_MemoryHint(LPTSTR hint, size_t hintsize, const CMotherboard *
     return okValue;
 }
 
-// "label=HHHHHH:LLLLLL": a 32-bit FIS value, two words at the address and at address + 2.
+// "(label)=HHHHHH:LLLLLL": a 32-bit FIS value, two words at the address and at address + 2.
 // An odd address cannot be read as a word pair (bus error); a pair that is not readable shows N/A or I/O.
 static void Disasm_PairHint(LPTSTR hint, size_t hintsize, const CMotherboard * pBoard,
         LPCTSTR label, uint16_t address)
@@ -848,28 +846,28 @@ static int Disasm_InstructionHintLines(const uint16_t* memory, const CProcessor 
     uint16_t instr = *memory;
 
     // Source and Destination
-    if ((instr & ~(uint16_t)0107777) == PI_MOV || (instr & ~(uint16_t)0107777) == PI_CMP ||
-        (instr & ~(uint16_t)0107777) == PI_BIT || (instr & ~(uint16_t)0107777) == PI_BIC || (instr & ~(uint16_t)0107777) == PI_BIS ||
-        (instr & ~(uint16_t)0007777) == PI_ADD || (instr & ~(uint16_t)0007777) == PI_SUB)
+    if ((instr & ~static_cast<uint16_t>(0107777)) == PI_MOV || (instr & ~static_cast<uint16_t>(0107777)) == PI_CMP ||
+        (instr & ~static_cast<uint16_t>(0107777)) == PI_BIT || (instr & ~static_cast<uint16_t>(0107777)) == PI_BIC || (instr & ~static_cast<uint16_t>(0107777)) == PI_BIS ||
+        (instr & ~static_cast<uint16_t>(0007777)) == PI_ADD || (instr & ~static_cast<uint16_t>(0007777)) == PI_SUB)
     {
         int srcreg = (instr >> 6) & 7;
         int srcmod = (instr >> 9) & 7;
         int dstreg = instr & 7;
         int dstmod = (instr >> 3) & 7;
         // The bit 15 is the byte flag, except for SUB (0160000), which is a word operation
-        bool okByte = (instr & 0100000) != 0 && (instr & ~(uint16_t)0007777) != PI_SUB;
+        bool okByte = (instr & 0100000) != 0 && (instr & ~static_cast<uint16_t>(0007777)) != PI_SUB;
         Disasm_InstructionHint(memory, pProc, pBoard, buffer, buffer2, buffer3, srcreg, srcmod, dstreg, dstmod, okByte);
     }
 
     // Register and Destination
-    if ((instr & ~(uint16_t)0777) == PI_MUL || (instr & ~(uint16_t)0777) == PI_DIV ||
-        (instr & ~(uint16_t)0777) == PI_ASH || (instr & ~(uint16_t)0777) == PI_ASHC ||
-        (instr & ~(uint16_t)0777) == PI_XOR)
+    if ((instr & ~static_cast<uint16_t>(0777)) == PI_MUL || (instr & ~static_cast<uint16_t>(0777)) == PI_DIV ||
+        (instr & ~static_cast<uint16_t>(0777)) == PI_ASH || (instr & ~static_cast<uint16_t>(0777)) == PI_ASHC ||
+        (instr & ~static_cast<uint16_t>(0777)) == PI_XOR)
     {
         int srcreg = (instr >> 6) & 7;
         int dstreg = instr & 7;
         int dstmod = (instr >> 3) & 7;
-        if ((instr & ~(uint16_t)0777) != PI_XOR)
+        if ((instr & ~static_cast<uint16_t>(0777)) != PI_XOR)
         {
             // MUL, DIV, ASH, ASHC are written "operand, register": line 1 is the operand piece, then the register;
             // a register that the operand piece already shows is not repeated
@@ -886,12 +884,12 @@ static int Disasm_InstructionHintLines(const uint16_t* memory, const CProcessor 
     }
 
     // Destination only
-    if ((instr & ~(uint16_t)0100077) == PI_CLR || (instr & ~(uint16_t)0100077) == PI_COM ||
-        (instr & ~(uint16_t)0100077) == PI_INC || (instr & ~(uint16_t)0100077) == PI_DEC || (instr & ~(uint16_t)0100077) == PI_NEG ||
-        (instr & ~(uint16_t)0100077) == PI_TST ||
-        (instr & ~(uint16_t)0100077) == PI_ASR || (instr & ~(uint16_t)0100077) == PI_ASL ||
-        (instr & ~(uint16_t)077) == PI_SWAB || (instr & ~(uint16_t)077) == PI_SXT ||
-        (instr & ~(uint16_t)077) == PI_MTPS || (instr & ~(uint16_t)077) == PI_MFPS)
+    if ((instr & ~static_cast<uint16_t>(0100077)) == PI_CLR || (instr & ~static_cast<uint16_t>(0100077)) == PI_COM ||
+        (instr & ~static_cast<uint16_t>(0100077)) == PI_INC || (instr & ~static_cast<uint16_t>(0100077)) == PI_DEC || (instr & ~static_cast<uint16_t>(0100077)) == PI_NEG ||
+        (instr & ~static_cast<uint16_t>(0100077)) == PI_TST ||
+        (instr & ~static_cast<uint16_t>(0100077)) == PI_ASR || (instr & ~static_cast<uint16_t>(0100077)) == PI_ASL ||
+        (instr & ~static_cast<uint16_t>(077)) == PI_SWAB || (instr & ~static_cast<uint16_t>(077)) == PI_SXT ||
+        (instr & ~static_cast<uint16_t>(077)) == PI_MTPS || (instr & ~static_cast<uint16_t>(077)) == PI_MFPS)
     {
         int dstreg = instr & 7;
         int dstmod = (instr >> 3) & 7;
@@ -900,9 +898,9 @@ static int Disasm_InstructionHintLines(const uint16_t* memory, const CProcessor 
 
         // MFPS, MTPS: also the low byte of the PSW; SXT: also the N flag, the value of the result is -N
         TCHAR extra[16] = { 0 };
-        if ((instr & ~(uint16_t)077) == PI_MFPS || (instr & ~(uint16_t)077) == PI_MTPS)
+        if ((instr & ~static_cast<uint16_t>(077)) == PI_MFPS || (instr & ~static_cast<uint16_t>(077)) == PI_MTPS)
             _sntprintf(extra, 15, _T("PS=%03o"), static_cast<unsigned int>(pProc->GetPSW() & 0377));  // "PS=XXX"
-        else if ((instr & ~(uint16_t)077) == PI_SXT)
+        else if ((instr & ~static_cast<uint16_t>(077)) == PI_SXT)
             _sntprintf(extra, 15, _T("N=%c"), (pProc->GetPSW() & PSW_N) ? '1' : '0');  // "N=X"
         if (extra[0] != 0)
         {
@@ -912,8 +910,8 @@ static int Disasm_InstructionHintLines(const uint16_t* memory, const CProcessor 
     }
 
     // ADC, SBC, ROR, ROL: destination only, and also show C flag
-    if ((instr & ~(uint16_t)0100077) == PI_ADC || (instr & ~(uint16_t)0100077) == PI_SBC ||
-        (instr & ~(uint16_t)0100077) == PI_ROR || (instr & ~(uint16_t)0100077) == PI_ROL)
+    if ((instr & ~static_cast<uint16_t>(0100077)) == PI_ADC || (instr & ~static_cast<uint16_t>(0100077)) == PI_SBC ||
+        (instr & ~static_cast<uint16_t>(0100077)) == PI_ROR || (instr & ~static_cast<uint16_t>(0100077)) == PI_ROL)
     {
         int dstreg = instr & 7;
         int dstmod = (instr >> 3) & 7;
@@ -933,8 +931,8 @@ static int Disasm_InstructionHintLines(const uint16_t* memory, const CProcessor 
 
     // JSR, JMP: the destination, except the relative and the absolute addressing, which have the arrow;
     // JSR also shows its link register (CALL, JSR PC, has none to show)
-    bool okJsr = (instr & ~(uint16_t)0777) == PI_JSR;
-    if (okJsr || (instr & ~(uint16_t)077) == PI_JMP)
+    bool okJsr = (instr & ~static_cast<uint16_t>(0777)) == PI_JSR;
+    if (okJsr || (instr & ~static_cast<uint16_t>(077)) == PI_JMP)
     {
         bool okTrivial = (instr & 077) == 067 || (instr & 077) == 037;
         int linkreg = okJsr ? ((instr >> 6) & 7) : -1;
@@ -990,8 +988,8 @@ static int Disasm_InstructionHintLines(const uint16_t* memory, const CProcessor 
 
     // FADD, FSUB, FMUL, FDIV: the register points at the arguments, the first one at (Rn), the second at (Rn+4);
     // the roles are not claimed, the values are shown by position. Line 1: the register; line 2: the two values.
-    if ((instr & ~(uint16_t)7) == PI_FADD || (instr & ~(uint16_t)7) == PI_FSUB ||
-        (instr & ~(uint16_t)7) == PI_FMUL || (instr & ~(uint16_t)7) == PI_FDIV)
+    if ((instr & ~static_cast<uint16_t>(7)) == PI_FADD || (instr & ~static_cast<uint16_t>(7)) == PI_FSUB ||
+        (instr & ~static_cast<uint16_t>(7)) == PI_FMUL || (instr & ~static_cast<uint16_t>(7)) == PI_FDIV)
     {
         int reg = instr & 7;
         uint16_t regval = pProc->GetReg(reg);
@@ -1004,7 +1002,7 @@ static int Disasm_InstructionHintLines(const uint16_t* memory, const CProcessor 
         _sntprintf(buffer2, buffersize - 1, _T("%s, %s"), pair1, pair2);  // "(RN)=HHHHHH:LLLLLL, (RN+4)=HHHHHH:LLLLLL"
     }
 
-    if ((instr & ~(uint16_t)077) == PI_MARK)
+    if ((instr & ~static_cast<uint16_t>(077)) == PI_MARK)
     {
         // MARK nn: SP = PC + 2*nn, PC = R5, R5 = (SP)+; here PC is the address of MARK, the instruction is one word long
         uint16_t spnew = static_cast<uint16_t>(pProc->GetPC() + 2 + 2 * (instr & 077));
