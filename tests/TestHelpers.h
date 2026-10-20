@@ -39,18 +39,28 @@ public:
     ~TestBoard();
 
     CMotherboard* Board() { return m_pBoard; }
+
+    /// Select the configuration (BK_CONF_*, also BK_COPT_VM1G) and reset the board; the CPU is then
+    /// in the same state as after the constructor
+    void Configure(uint16_t configuration);
     CProcessor* CPU() { return m_pBoard->GetCPU(); }
 
-    /// Write a word to the memory
+    /// Write a word / byte to the memory
     void SetWord(uint16_t address, uint16_t word);
-    /// Read a word from the memory without side effects
+    void SetByte(uint16_t address, uint8_t byte);
+    /// Read a word / byte from the memory without side effects
     uint16_t GetWord(uint16_t address);
+    uint8_t GetByte(uint16_t address);
 
     /// Put the program words to the memory and set PC to the first of them
     void LoadProgram(uint16_t address, const uint16_t* words, size_t count);
     void SetRegs(const uint16_t* regs);  ///< R0..R7, 8 values
     void SetFlags(uint16_t flags);       ///< N, Z, V, C bits (TF_*), the other PSW bits are cleared
     uint16_t GetFlags();                 ///< N, Z, V, C bits (TF_*)
+
+    /// Execute the given number of instructions. The interrupts (traps, reserved instructions) are
+    /// taken inside the same step, as the processor does it.
+    void Run(int instructions = 1);
 
 private:
     CMotherboard* m_pBoard;

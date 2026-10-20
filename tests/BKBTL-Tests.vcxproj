@@ -87,6 +87,9 @@
     <ClCompile Include="BoardTests.cpp" />
     <ClCompile Include="DisasmTests.cpp" />
     <ClCompile Include="HintTests.cpp" />
+    <ClCompile Include="ProcessorControlTests.cpp" />
+    <ClCompile Include="ProcessorInterruptTests.cpp" />
+    <ClCompile Include="ProcessorTests.cpp" />
     <ClCompile Include="TestCommon.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
     <ClCompile Include="stdafx.cpp">

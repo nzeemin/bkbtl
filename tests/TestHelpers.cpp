@@ -53,6 +53,17 @@ TestBoard::TestBoard()
         pCPU->SetReg(r, 0);
 }
 
+void TestBoard::Configure(uint16_t configuration)
+{
+    m_pBoard->SetConfiguration(configuration);
+    m_pBoard->Reset();
+
+    CProcessor* pCPU = CPU();
+    pCPU->SetPSW(0);
+    for (int r = 0; r < 8; r++)
+        pCPU->SetReg(r, 0);
+}
+
 TestBoard::~TestBoard()
 {
     delete m_pBoard;
@@ -63,10 +74,21 @@ void TestBoard::SetWord(uint16_t address, uint16_t word)
     m_pBoard->SetWord(address, word);
 }
 
+void TestBoard::SetByte(uint16_t address, uint8_t byte)
+{
+    m_pBoard->SetByte(address, byte);
+}
+
 uint16_t TestBoard::GetWord(uint16_t address)
 {
     int addrtype;
     return m_pBoard->GetWordView(static_cast<uint16_t>(address & 0xFFFE), false, &addrtype);
+}
+
+uint8_t TestBoard::GetByte(uint16_t address)
+{
+    uint16_t word = GetWord(address);
+    return (address & 1) ? static_cast<uint8_t>(word >> 8) : static_cast<uint8_t>(word & 0xFF);
 }
 
 void TestBoard::LoadProgram(uint16_t address, const uint16_t* words, size_t count)
@@ -92,6 +114,16 @@ uint16_t TestBoard::GetFlags()
     CProcessor* pCPU = CPU();
     return static_cast<uint16_t>((pCPU->GetN() ? TF_N : 0) | (pCPU->GetZ() ? TF_Z : 0) |
             (pCPU->GetV() ? TF_V : 0) | (pCPU->GetC() ? TF_C : 0));
+}
+
+void TestBoard::Run(int instructions)
+{
+    for (int i = 0; i < instructions; i++)
+    {
+        // Execute() waits for the timing of the previous instruction before it executes the next one
+        CPU()->ClearInternalTick();
+        CPU()->Execute();
+    }
 }
 
 TempFile::TempFile(const TCHAR* extension)
