@@ -237,14 +237,15 @@ void ScreenView_OnDraw(HDC hdc)
     {
         m_xScreenOffset = (rc.right - m_cxScreenWidth) / 2;
         ::PatBlt(hdc, 0, 0, m_xScreenOffset, rc.bottom, PATCOPY);
-        ::PatBlt(hdc, rc.right, 0, m_cxScreenWidth + m_xScreenOffset - rc.right, rc.bottom, PATCOPY);
+        int xRight = m_xScreenOffset + m_cxScreenWidth;  // Right bar starts where the screen image ends
+        ::PatBlt(hdc, xRight, 0, rc.right - xRight, rc.bottom, PATCOPY);
     }
     if (rc.bottom > m_cyScreenHeight)
     {
         m_yScreenOffset = (rc.bottom - m_cyScreenHeight) / 2;
         ::PatBlt(hdc, m_xScreenOffset, 0, m_cxScreenWidth, m_yScreenOffset, PATCOPY);
-        int frombottom = rc.bottom - m_yScreenOffset - m_cyScreenHeight;
-        ::PatBlt(hdc, m_xScreenOffset, rc.bottom, m_cxScreenWidth, -frombottom, PATCOPY);
+        int yBottom = m_yScreenOffset + m_cyScreenHeight;  // Bottom bar starts where the screen image ends
+        ::PatBlt(hdc, m_xScreenOffset, yBottom, m_cxScreenWidth, rc.bottom - yBottom, PATCOPY);
     }
 
     ::SelectObject(hdc, hOldBrush);

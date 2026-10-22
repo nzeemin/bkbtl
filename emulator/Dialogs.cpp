@@ -96,16 +96,24 @@ void ShowCommandLineHelpBox()
 INT_PTR CALLBACK CommandLineHelpBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
+    static HFONT hfont = NULL;
     switch (message)
     {
     case WM_INITDIALOG:
         {
             HWND hwndText = ::GetDlgItem(hDlg, IDC_EDIT1);
-            HFONT hfont = CreateMonospacedFont();
+            hfont = CreateMonospacedFont();
             SendMessage(hwndText, WM_SETFONT, (WPARAM)hfont, 0);
             ::SetDlgItemText(hDlg, IDC_EDIT1, g_CommandLineHelp);
             return (INT_PTR)TRUE;
         }
+    case WM_DESTROY:
+        if (hfont != NULL)
+        {
+            VERIFY(::DeleteObject(hfont));
+            hfont = NULL;
+        }
+        break;
     case WM_COMMAND:
         if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
         {
